@@ -2,6 +2,8 @@ lexer grammar YupLexer;
 
 FUNCTION            :   '#';
 TYPE_ANNOTATION     :   '::';
+ASSIGN              :   '=';
+TERMINATOR          :   ';';
 
 LPAREN              :   '(';
 RPAREN              :   ')';

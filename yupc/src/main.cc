@@ -1,4 +1,5 @@
 #include "CLI/CLI.hpp"
+#include "lexer/YupLexer.h"
 #include <string>
 #include <iostream>
 #include <filesystem>
@@ -33,7 +34,8 @@ int main(int argc, char *argv[]) {
         std::string abs_src_path = fs::absolute(src_path);
         std::string src_content = file_to_str(abs_src_path);
 
-        std::cout << src_content << "\n";
+        antlr4::ANTLRInputStream input(src_content);
+        YupLexer lexer(&input);
     });
 
     CLI11_PARSE(yupc, argc, argv);
