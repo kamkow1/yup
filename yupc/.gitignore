@@ -3,3 +3,5 @@ demo_proj/
 .vscode/
 .antlr/
 src/.antlr/
+src/lexer/
+src/parser/

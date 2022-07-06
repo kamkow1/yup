@@ -16,6 +16,7 @@ conan_basic_setup()
 
 add_executable(yupc 
     src/main.cc
+    src/lexer/YupLexer.cc
 )
 
 target_link_libraries(yupc ${ANTLR_BUILD_PATH} ${CONAN_LIBS})
