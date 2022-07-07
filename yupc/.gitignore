@@ -5,3 +5,6 @@ demo_proj/
 src/.antlr/
 src/lexer/
 src/parser/
+.idea/
+cmake-build-debug/
+cmake-build-release/
