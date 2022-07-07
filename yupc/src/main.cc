@@ -26,9 +26,9 @@ std::string file_to_str(const std::string& path)
 
 int main(int argc, char *argv[]) 
 {
-    CLI::App yupc{"a compiler for the yup programming language"};
+    CLI::App cli{"a compiler for the yup programming language"};
 
-    auto build_cmd = yupc.add_subcommand("build", "compiles a .yup source file into an executable binary");
+    auto build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
 
     std::string src_path;
     build_cmd
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         visitor.visit(ctx);
     });
 
-    CLI11_PARSE(yupc, argc, argv);
+    CLI11_PARSE(cli, argc, argv);
 
     return 0;
 }
