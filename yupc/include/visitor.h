@@ -3,6 +3,7 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Constant.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
 #include <vector>
 #include <iostream>
 #include <map>
@@ -23,4 +24,12 @@ static llvm::IRBuilder<> irBuilder(codegenCtx);
 static std::unique_ptr<llvm::Module> module;
 static std::map<std::string, llvm::Value*> symbolTable;
 
-llvm::Value *logError(const char *str);
+// logger
+inline llvm::Value *logError(const char* str)
+{
+    std::stringstream message;
+    message << str << "\n";
+
+    fprintf(stderr, "%s", message.str().c_str());
+    return nullptr;
+}
