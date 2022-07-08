@@ -17,13 +17,20 @@ set (ANTLR_INCLUDE_PATH
         /archive/ARCHIVE/antlr4-cpp-runtime/runtime/src/support
         )
 
+set (LLVM_INCLUDE_PATH /archive/ARCHIVE/llvm-project/llvm/build/include)
+
 set (ANTLR_BUILD_PATH /archive/ARCHIVE/antlr4-cpp-runtime/dist/libantlr4-runtime.so)
 
-include_directories (${ANTLR_INCLUDE_PATH})
+include_directories (${ANTLR_INCLUDE_PATH} ${LLVM_INCLUDE_PATH})
 
 conan_basic_setup ()
 
 find_package (Threads REQUIRED)
+find_package (LLVM REQUIRED CONFIG)
+
+add_definitions (${LLVM_DEFINITIONS})
+
+llvm_map_components_to_libnames(llvm_libs support core)
 
 add_executable (yupc
     src/main.cc
@@ -32,4 +39,4 @@ add_executable (yupc
     src/ast_visitor/visitor.cc
     )
 
-target_link_libraries (yupc ${ANTLR_BUILD_PATH} ${CONAN_LIBS} Threads::Threads)
+target_link_libraries (yupc ${ANTLR_BUILD_PATH} ${CONAN_LIBS} ${llvm_libs} Threads::Threads)
