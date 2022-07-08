@@ -1,7 +1,7 @@
 #include "CLI/CLI.hpp"
 #include "lexer/YupLexer.h"
 #include "parser/YupParser.h"
-#include "ast_visitor/visitor.h"
+#include "../include/visitor.h"
 #include <string>
 #include <iostream>
 #include <filesystem>
