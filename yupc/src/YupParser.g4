@@ -4,15 +4,20 @@ options {
     tokenVocab = 'lexer/YupLexer';
 }
 
-file                :   (statement TERMINATOR)*;
+file                :   statement*;
 
-statement           :   expr
+statement           :   expr                    TERMINATOR
                     |   func_def
-                    |   assignment;
+                    |   assignment              TERMINATOR
+                    |   func_return             TERMINATOR;
 
 assignment          :   IDENTIFIER ASSIGN expr;
 
-func_def            :   FUNCTION IDENTIFIER LPAREN (func_param*)? RPAREN type_annot code_block;
+func_def            :   func_signature code_block;
+
+func_signature      :   FUNCTION IDENTIFIER LPAREN (func_param*)? RPAREN type_annot;
+
+func_return         :   RETURN expr;
 
 code_block          :   LSQBR statement* RSQBR;
 

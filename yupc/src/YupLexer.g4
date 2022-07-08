@@ -4,6 +4,7 @@ FUNCTION            :   '#';
 TYPE_ANNOTATION     :   '::';
 ASSIGN              :   '=';
 TERMINATOR          :   ';';
+RETURN              :   'return';
 
 LPAREN              :   '(';
 RPAREN              :   ')';

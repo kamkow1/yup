@@ -1,35 +1,32 @@
 #pragma once
-#include "../src/parser/YupParserBaseVisitor.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/Constant.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
+#include <../src/parser/YupParserBaseVisitor.h>
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/Constant.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/Function.h>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Verifier.h>
 #include <vector>
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <vector>
+#include <iostream>
 
 class Visitor : public YupParserBaseVisitor
 {
 public:
     std::any visitFunc_def(YupParser::Func_defContext *ctx) override;
-
     std::any visitFile(YupParser::FileContext *ctx) override;
-
     std::any visitConstant(YupParser::ConstantContext *ctx) override;
+    std::any visitType_annot(YupParser::Type_annotContext *ctx) override;
+    std::any visitFunc_param(YupParser::Func_paramContext *ctx) override;
+    std::any visitFunc_signature(YupParser::Func_signatureContext *ctx) override;
+    std::any visitFunc_return(YupParser::Func_returnContext *ctx) override;
 };
 
 static llvm::LLVMContext codegenCtx;
 static llvm::IRBuilder<> irBuilder(codegenCtx);
-static std::unique_ptr<llvm::Module> module;
+static std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>("hello", codegenCtx);
 static std::map<std::string, llvm::Value*> symbolTable;
-
-// logger
-inline llvm::Value *logError(const char* str)
-{
-    std::stringstream message;
-    message << str << "\n";
-
-    fprintf(stderr, "%s", message.str().c_str());
-    return nullptr;
-}

@@ -37,6 +37,6 @@ add_executable (yupc
     src/lexer/YupLexer.cc
     src/parser/YupParser.cc
     src/ast_visitor/visitor.cc
-        src/ast_visitor/function.cc src/ast_visitor/constant.cc)
+        src/ast_visitor/function.cc src/ast_visitor/constant.cc src/ast_visitor/type.cc include/util.h)
 
 target_link_libraries (yupc ${ANTLR_BUILD_PATH} ${CONAN_LIBS} ${llvm_libs} Threads::Threads)

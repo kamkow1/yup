@@ -9,5 +9,6 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         return llvm::ConstantInt::get(codegenCtx, llvm::APInt(sizeof value, (uint64_t) value, false));
     }
 
-    return logError("couldn't match type and generate proper IR constant");
+    fprintf(stderr, "%s\n", "couldn't match type and generate proper IR constant");
+    exit(1);
 }
