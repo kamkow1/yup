@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <visitor.h>
 #include <util.h>
+#include <messaging/information.h>
 
 namespace fs = std::filesystem;
 
@@ -23,6 +24,9 @@ int main(int argc, char *argv[])
     {
         std::string abs_src_path = fs::absolute(src_path);
         std::string src_content = fileToString(abs_src_path);
+
+        std::string commandInfo = "compiling source file " + abs_src_path;
+        logCommandInformation(commandInfo);
 
         antlr4::ANTLRInputStream input(src_content);
         YupLexer lexer(&input);
