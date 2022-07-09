@@ -32,7 +32,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
 
     if (!function)
     {
-        fprintf(stderr, "cannot get signature for function \"%s\"\n", funcName.c_str());
+        fprintf(stderr, "ERROR: cannot get signature for function \"%s\"\n", funcName.c_str());
         exit(1);
     }
 

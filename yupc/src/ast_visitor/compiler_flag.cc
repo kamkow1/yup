@@ -14,5 +14,6 @@ std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
         os.flush();
     }
 
-    return nullptr;
+    fprintf(stderr, "ERROR: unknown compiler flag \"%s\"\n", flagName.c_str());
+    exit(1);
 }

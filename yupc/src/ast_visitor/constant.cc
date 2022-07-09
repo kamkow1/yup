@@ -11,6 +11,6 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         return constantInt;
     }
 
-    fprintf(stderr, "%s\n", "couldn't match type and generate proper IR constant");
+    fprintf(stderr, "ERROR: couldn't match type and generate proper IR constant\n");
     exit(1);
 }
