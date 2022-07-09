@@ -29,6 +29,8 @@ public:
     std::any visitCompiler_flag(YupParser::Compiler_flagContext *ctx) override;
 };
 
+extern std::string targetName;
+
 extern std::string moduleName;
 
 extern llvm::LLVMContext codegenCtx;

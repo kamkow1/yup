@@ -4,6 +4,8 @@
 #include <llvm/IR/Value.h>
 #include <map>
 
+std::string targetName;
+
 std::string moduleName;
 
 llvm::LLVMContext codegenCtx;

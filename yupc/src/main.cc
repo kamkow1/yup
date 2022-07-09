@@ -21,10 +21,16 @@ int main(int argc, char *argv[])
         ->add_option("-s,--source", src_path, "path to a .yup file")
         ->required();
 
+    build_cmd
+        ->add_option("-t,--target", targetName, "specifies assembly target for clang");
+
     build_cmd->callback([&]() 
     {
         std::string abs_src_path = fs::absolute(src_path);
         std::string src_content = fileToString(abs_src_path);
+
+        std::string targetInfo = "selected target " + targetName;
+        logCommandInformation(targetInfo);
 
         std::string commandInfo = "compiling source file " + abs_src_path;
         logCommandInformation(commandInfo);
