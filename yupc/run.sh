@@ -1,1 +1,1 @@
-./build/bin/yupc build --source ./demo_proj/main.yup
+./build/bin/yupc build --source demo_proj/main.yup

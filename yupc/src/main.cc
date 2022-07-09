@@ -2,25 +2,11 @@
 #include <YupLexer.h>
 #include <YupParser.h>
 #include <string>
-#include <iostream>
 #include <filesystem>
 #include <visitor.h>
+#include <util.h>
 
 namespace fs = std::filesystem;
-
-std::string fileToString(const std::string& path)
-{
-    std::ifstream input_file(path);
-    if (!input_file.is_open()) 
-    {
-        std::cerr << "Could not open the file - '"
-             << path << "'" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    return std::string((
-        std::istreambuf_iterator<char>(input_file)), 
-        std::istreambuf_iterator<char>());
-}
 
 int main(int argc, char *argv[]) 
 {
@@ -47,7 +33,7 @@ int main(int argc, char *argv[])
 
         Visitor visitor;
 
-        moduleName = abs_src_path;
+        moduleName = getIRFileName(abs_src_path);
         visitor.visit(ctx);
     });
 
