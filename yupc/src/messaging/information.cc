@@ -5,12 +5,12 @@
 void logCommandInformation(std::string &detail)
 {
     std::cout
-        << termcolor::green
+        << termcolor::bright_blue
         << "["
         << termcolor::underline
         << "INFO"
         << termcolor::reset
-        << termcolor::green
+        << termcolor::bright_blue
         << "]: "
         << termcolor::reset
         << detail
