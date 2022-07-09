@@ -14,5 +14,6 @@ void logCommandInformation(std::string &detail)
         << "]: "
         << termcolor::reset
         << detail
+        << termcolor::reset
         << "\n";
 }
