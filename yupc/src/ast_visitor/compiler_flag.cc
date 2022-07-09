@@ -1,6 +1,7 @@
 #include <visitor.h>
 #include <messaging/errors.h>
 #include <messaging/information.h>
+#include <compiler_options.h>
 
 std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
 {
@@ -41,9 +42,13 @@ std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
         std::string resultInfo = "compiled to " + binaryName + " with status code " + std::to_string(result);
         logCommandInformation(resultInfo);
 
-        std::string cleanupCommand = "rm -f " + moduleName;
-        std::system(cleanupCommand.c_str());
-        logCommandInformation(cleanupCommand);
+        // remove the .ll file
+        if (!emitIR)
+        {
+            std::string cleanupCommand = "rm -f " + moduleName;
+            std::system(cleanupCommand.c_str());
+            logCommandInformation(cleanupCommand);
+        }
 
         std::string permCommand = "chmod +x " + binaryName;
         std::system(permCommand.c_str());

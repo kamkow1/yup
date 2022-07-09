@@ -7,6 +7,7 @@
 #include <util.h>
 #include <messaging/information.h>
 #include <parser_error_listener.h>
+#include <compiler_options.h>
 
 namespace fs = std::filesystem;
 
@@ -22,7 +23,11 @@ int main(int argc, char *argv[])
         ->required();
 
     build_cmd
-        ->add_option("-t,--target", targetName, "specifies assembly target for clang");
+        ->add_option("-t,--target", targetName, "specifies assembly target for clang")
+        ->required();
+
+    build_cmd
+        ->add_flag("--ir,--emit-ir", emitIR, "enables emitting of the llvm intermediate representation");
 
     build_cmd->callback([&]() 
     {

@@ -4,6 +4,8 @@
 #include <llvm/IR/Value.h>
 #include <map>
 
+// compilation specific options
+bool emitIR;
 std::string targetName;
 
 std::string moduleName;
