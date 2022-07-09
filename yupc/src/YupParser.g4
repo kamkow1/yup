@@ -9,7 +9,10 @@ file                :   statement*;
 statement           :   expr                    TERMINATOR
                     |   func_def
                     |   assignment              TERMINATOR
-                    |   func_return             TERMINATOR;
+                    |   func_return             TERMINATOR
+                    |   compiler_flag;
+
+compiler_flag       :   COMPILER_FLAG_SYM IDENTIFIER;
 
 assignment          :   IDENTIFIER ASSIGN expr;
 

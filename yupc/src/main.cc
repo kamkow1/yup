@@ -1,16 +1,15 @@
-#include "CLI/CLI.hpp"
+#include <CLI/CLI.hpp>
 #include "lexer/YupLexer.h"
 #include "parser/YupParser.h"
-#include "../include/visitor.h"
 #include <string>
 #include <iostream>
 #include <filesystem>
-#include <sstream>
-#include <fstream>
+#include <visitor.h>
+#include <thread>
 
 namespace fs = std::filesystem;
 
-std::string file_to_str(const std::string& path) 
+std::string fileToString(const std::string& path)
 {
     std::ifstream input_file(path);
     if (!input_file.is_open()) 
@@ -38,7 +37,7 @@ int main(int argc, char *argv[])
     build_cmd->callback([&]() 
     {
         std::string abs_src_path = fs::absolute(src_path);
-        std::string src_content = file_to_str(abs_src_path);
+        std::string src_content = fileToString(abs_src_path);
 
         antlr4::ANTLRInputStream input(src_content);
         YupLexer lexer(&input);
@@ -48,6 +47,9 @@ int main(int argc, char *argv[])
         YupParser::FileContext* ctx = parser.file();
 
         Visitor visitor;
+
+        moduleName = abs_src_path;
+        std::cout << "current thread id: " << std::this_thread::get_id() << "\n";
         visitor.visit(ctx);
     });
 

@@ -1,10 +1,11 @@
 lexer grammar YupLexer;
 
-FUNCTION            :   '#';
+FUNCTION            :   'fun';
 TYPE_ANNOTATION     :   '::';
 ASSIGN              :   '=';
 TERMINATOR          :   ';';
 RETURN              :   'return';
+COMPILER_FLAG_SYM   :   '@';
 
 LPAREN              :   '(';
 RPAREN              :   ')';
