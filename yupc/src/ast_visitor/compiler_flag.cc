@@ -4,7 +4,6 @@ std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
 {
     // match compiler flag name
     std::string flagName = ctx->IDENTIFIER()->getText();
-    std::cout << flagName << "\n";
 
     if (flagName == "end")
     {
@@ -14,6 +13,6 @@ std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
         os.flush();
     }
 
-    fprintf(stderr, "ERROR: unknown compiler flag \"%s\"\n", flagName.c_str());
+    fprintf(stderr, "ERROR: unknown compiler flag %s\n", flagName.c_str());
     exit(1);
 }
