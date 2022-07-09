@@ -5,7 +5,6 @@
 #include <iostream>
 #include <filesystem>
 #include <visitor.h>
-#include <thread>
 
 namespace fs = std::filesystem;
 
