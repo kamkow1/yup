@@ -7,13 +7,14 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Bitcode/BitcodeWriter.h>
 #include <vector>
 #include <iostream>
 #include <map>
 #include <sstream>
 #include <vector>
 #include <iostream>
-#include <llvm/Support/FileSystem.h>
 
 class Visitor : public YupParserBaseVisitor
 {
@@ -28,9 +29,9 @@ public:
     std::any visitCompiler_flag(YupParser::Compiler_flagContext *ctx) override;
 };
 
-static std::string moduleName;
+extern std::string moduleName;
 
-static llvm::LLVMContext codegenCtx;
-static llvm::IRBuilder<> irBuilder(codegenCtx);
-static std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>(moduleName, codegenCtx);
-static std::map<std::string, llvm::Value*> symbolTable;
+extern llvm::LLVMContext codegenCtx;
+extern llvm::IRBuilder<> irBuilder;
+extern std::unique_ptr<llvm::Module> module;
+extern std::map<std::string, llvm::Value*> symbolTable;

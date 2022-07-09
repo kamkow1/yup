@@ -30,11 +30,12 @@ find_package (LLVM REQUIRED CONFIG)
 
 add_definitions (${LLVM_DEFINITIONS})
 
-llvm_map_components_to_libnames(llvm_libs support core)
+llvm_map_components_to_libnames(llvm_libs support core bitwriter)
 
 add_executable (yupc
         src/lexer/YupLexer.cc
         src/parser/YupParser.cc
+        src/ast_visitor/ir_data.cc
         src/main.cc
         src/ast_visitor/visitor.cc
         src/ast_visitor/compiler_flag.cc

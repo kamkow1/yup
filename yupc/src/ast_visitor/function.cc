@@ -1,6 +1,7 @@
 #include <visitor.h>
 #include <util.h>
 
+
 class FuncParam
 {
 public:
@@ -60,8 +61,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     }
 
     llvm::verifyFunction(*function, &llvm::outs());
-    llvm::verifyModule(*module, &llvm::outs());
-    module->print(llvm::outs(), nullptr);
+
     return function;
 }
 

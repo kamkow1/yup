@@ -1,5 +1,4 @@
 #include <visitor.h>
-#include <thread>
 
 std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
 {
@@ -9,11 +8,10 @@ std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
 
     if (flagName == "end")
     {
-        std::cout << "current thread id: " << std::this_thread::get_id() << "\n";
-        if (!module->isMaterialized())
-        {
-            std::cout << "module is empty\n";
-        }
+        llvm::verifyModule(*module, &llvm::outs());
+        llvm::raw_string_ostream os(moduleName);
+        module->print(llvm::outs(), nullptr);
+        os.flush();
     }
 
     return nullptr;

@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
         Visitor visitor;
 
         moduleName = abs_src_path;
-        std::cout << "current thread id: " << std::this_thread::get_id() << "\n";
         visitor.visit(ctx);
     });
 
