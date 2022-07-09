@@ -10,6 +10,10 @@ std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
     if (flagName == "end")
     {
         std::cout << "current thread id: " << std::this_thread::get_id() << "\n";
+        if (!module->isMaterialized())
+        {
+            std::cout << "module is empty\n";
+        }
     }
 
     return nullptr;
