@@ -30,9 +30,9 @@ inline std::string fileToString(const std::string& path)
     std::ifstream input_file(path);
     if (!input_file.is_open())
     {
-        std::cerr << "ERROR: Could not open the file - '"
-                  << path << "'" << std::endl;
-        exit(EXIT_FAILURE);
+        std::string errorMessage = "unable to open file \"" + path + "\"";
+        logInputError(errorMessage);
+        exit(1);
     }
 
     auto beg = (std::istreambuf_iterator<char>(input_file));
