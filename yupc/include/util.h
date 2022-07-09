@@ -12,6 +12,7 @@ inline llvm::Type* matchType(std::string typeName)
         case strToInt("i64"): return llvm::Type::getInt32Ty(codegenCtx);
         case strToInt("flt"): return llvm::Type::getFloatTy(codegenCtx);
         case strToInt("bool"): return llvm::Type::getInt8Ty(codegenCtx);
+        case strToInt("void"): return llvm::Type::getVoidTy(codegenCtx);
             // TODO: string type and void type
     }
 

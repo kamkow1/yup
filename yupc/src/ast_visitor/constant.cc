@@ -6,7 +6,9 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
     {
         std::string text = ctx->V_INT()->getText();
         int value = std::atoi(text.c_str());
-        return llvm::ConstantInt::get(codegenCtx, llvm::APInt(sizeof value, (uint64_t) value, false));
+        llvm::ConstantInt* constantInt
+            = llvm::ConstantInt::get(codegenCtx, llvm::APInt(32,  value, false));
+        return constantInt;
     }
 
     fprintf(stderr, "%s\n", "couldn't match type and generate proper IR constant");

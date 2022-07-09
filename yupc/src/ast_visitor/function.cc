@@ -45,12 +45,20 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
         symbolTable[arg.getName().str()] = &arg;
     }
 
-    int blockStatementCount = ctx->code_block()->statement().size();
-    std::any retResult = this->visit(ctx->code_block()->statement()[blockStatementCount - 1]);
-    //llvm::Value *retValue = std::any_cast<llvm::Value*>(retResult);
+    if (!function->getFunctionType()->getReturnType()->isVoidTy())
+    {
+        int blockStatementCount = ctx->code_block()->statement().size();
+        std::any retResult = this->visit(ctx->code_block()->statement()[blockStatementCount - 1]);
+        llvm::Value* retValue = std::any_cast<llvm::Value*>(retResult);
 
-    // TODO: fix return statement segfault
-    //irBuilder.CreateRet(retValue);
+        // TODO: fix return statement segfault
+        //irBuilder.CreateRet(retValue);
+    }
+    else
+    {
+        irBuilder.CreateRetVoid();
+    }
+
     llvm::verifyFunction(*function, &llvm::outs());
     llvm::verifyModule(*module, &llvm::outs());
 
