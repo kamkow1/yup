@@ -6,6 +6,7 @@
 #include <visitor.h>
 #include <util.h>
 #include <messaging/information.h>
+#include <parser_error_listener.h>
 
 namespace fs = std::filesystem;
 
@@ -32,6 +33,11 @@ int main(int argc, char *argv[])
         YupLexer lexer(&input);
         antlr4::CommonTokenStream tokens(&lexer);
         YupParser parser(&tokens);
+
+        // add error listener
+        ParserErrorListener parserErrorListener;
+        parser.removeErrorListeners();
+        parser.addErrorListener(&parserErrorListener);
 
         YupParser::FileContext* ctx = parser.file();
 

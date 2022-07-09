@@ -33,3 +33,19 @@ void logInputError(std::string &detail)
         << termcolor::reset
         << "\n";
 }
+
+void logParsingError(std::string &detail)
+{
+    std::cout
+        << termcolor::yellow
+        << "["
+        << termcolor::underline
+        << "PARSING ERROR"
+        << termcolor::reset
+        << termcolor::yellow
+        << "]: "
+        << termcolor::reset
+        << detail
+        << termcolor::reset
+        << "\n";
+}

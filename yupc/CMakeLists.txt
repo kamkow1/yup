@@ -42,6 +42,6 @@ add_executable (yupc
         src/ast_visitor/function.cc
         src/ast_visitor/constant.cc
         src/ast_visitor/type.cc
-        include/util.h src/messaging/erros.cc include/messaging/errors.h src/messaging/information.cc include/messaging/information.h)
+        include/util.h src/messaging/erros.cc include/messaging/errors.h src/messaging/information.cc include/messaging/information.h src/parser_error_listener.cc include/parser_error_listener.h)
 
 target_link_libraries (yupc ${ANTLR_BUILD_PATH} ${CONAN_LIBS} ${llvm_libs} Threads::Threads)
