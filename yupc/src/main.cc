@@ -23,8 +23,13 @@ int main(int argc, char *argv[])
         ->required();
 
     build_cmd
-        ->add_option("-t,--target", targetName, "specifies assembly target for clang")
-        ->required();
+        ->add_option("-a,--arch", archName, "specifies targeted cpu's assembly for clang");
+
+    build_cmd
+        ->add_option("-t,--target", targetName, "specifies target for clang");
+
+    build_cmd
+        ->add_option("-m,--mmcu", mmcu, "specifies target microcontroller (when --target == avr)");
 
     build_cmd
         ->add_flag("--ir,--emit-ir", emitIR, "enables emitting of the llvm intermediate representation");
@@ -34,7 +39,7 @@ int main(int argc, char *argv[])
         std::string abs_src_path = fs::absolute(src_path);
         std::string src_content = fileToString(abs_src_path);
 
-        std::string targetInfo = "selected target " + targetName;
+        std::string targetInfo = "selected architecture " + archName;
         logCommandInformation(targetInfo);
 
         std::string commandInfo = "compiling source file " + abs_src_path;

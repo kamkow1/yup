@@ -1,1 +1,1 @@
-./build/bin/yupc build --source demo_proj/main.yup --target x86-64
+./build/bin/yupc build --source demo_proj/main.yup --arch x86-64

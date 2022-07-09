@@ -6,6 +6,8 @@
 
 // compilation specific options
 bool emitIR;
+std::string archName;
+std::string mmcu;
 std::string targetName;
 
 std::string moduleName;

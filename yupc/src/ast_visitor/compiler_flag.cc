@@ -28,13 +28,13 @@ std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
         std::string binaryName = moduleName.substr(0, moduleName.size() - 3);
 
         std::string clangCommand =
-                "clang --output "
-                + binaryName
-                + " "
-                + moduleName
-                + " -march="
-                + targetName
-                + " -Wno-override-module";
+                "clang --output " + binaryName + " " + moduleName
+                + " -march=" + archName
+                + (targetName.length() > 0 ? " --target=" + targetName : "")
+                + (mmcu.length() > 0 ? " -mmcu="+ mmcu : "")
+                // clang flags
+                + " -Wno-override-module"
+                + " -Wno-unused-command-line-argument";
 
         logCommandInformation(clangCommand);
         int result = std::system(clangCommand.c_str());
