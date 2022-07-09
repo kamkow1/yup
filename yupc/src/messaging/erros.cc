@@ -20,5 +20,16 @@ void logCompilerError(std::string &detail)
 
 void logInputError(std::string &detail)
 {
-    std::cout << termcolor::magenta << "[INPUT ERROR]: " << detail << termcolor::reset << "\n";
+    std::cout
+        << termcolor::magenta
+        << "["
+        << termcolor::underline
+        << "INPUT ERROR"
+        << termcolor::reset
+        << termcolor::magenta
+        <<"]: "
+        << termcolor::reset
+        << detail
+        << termcolor::reset
+        << "\n";
 }
