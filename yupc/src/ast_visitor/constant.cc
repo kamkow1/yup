@@ -1,4 +1,5 @@
 #include <visitor.h>
+#include <messaging/errors.h>
 
 std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
 {
@@ -11,6 +12,7 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         return constantInt;
     }
 
-    fprintf(stderr, "ERROR: couldn't match type and generate proper IR constant\n");
+    std::string errorMessage = "couldn't match type and create a constant";
+    logCompilerError(errorMessage);
     exit(1);
 }

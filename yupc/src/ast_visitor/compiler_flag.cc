@@ -1,4 +1,5 @@
 #include <visitor.h>
+#include <messaging/errors.h>
 
 std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
 {
@@ -15,6 +16,7 @@ std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
         return nullptr;
     }
 
-    fprintf(stderr, "ERROR: unknown compiler flag %s\n", flagName.c_str());
+    std::string errorMessage = "unknown compiler flag \"" + flagName + "\"";
+    logCompilerError(errorMessage);
     exit(1);
 }

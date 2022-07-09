@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <filesystem>
+#include <messaging/errors.h>
 
 inline constexpr unsigned int strToInt(const char* str, int h = 0)
 {
@@ -15,10 +16,12 @@ inline llvm::Type* matchType(std::string typeName)
         case strToInt("flt"): return llvm::Type::getFloatTy(codegenCtx);
         case strToInt("bool"): return llvm::Type::getInt8Ty(codegenCtx);
         case strToInt("void"): return llvm::Type::getVoidTy(codegenCtx);
-            // TODO: string type and void type
+            // TODO: string type
     }
 
-    fprintf(stderr, "%s%s\n", "couldn't match type ", typeName.c_str());
+    std::string errorMessage = "couldn't match type \"" + typeName + "\"";
+    logCompilerError(errorMessage);
+
     exit(1);
 }
 

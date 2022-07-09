@@ -1,6 +1,6 @@
 #include <visitor.h>
 #include <util.h>
-
+#include <messaging/errors.h>
 
 class FuncParam
 {
@@ -32,7 +32,8 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
 
     if (!function)
     {
-        fprintf(stderr, "ERROR: cannot get signature for function \"%s\"\n", funcName.c_str());
+        std::string errorMessage = "cannot resolve the signature for function " + funcName;
+        logCompilerError(errorMessage);
         exit(1);
     }
 
