@@ -1,4 +1,4 @@
-#include "../../include/visitor.h"
+#include <visitor.h>
 
 std::any Visitor::visitFile(YupParser::FileContext *ctx)
 {
