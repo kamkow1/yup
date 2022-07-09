@@ -6,12 +6,11 @@ java -jar $jar_loc ./YupLexer.g4 -Dlanguage=Cpp -o ./lexer
 
 java -jar $jar_loc ./YupParser.g4 -Dlanguage=Cpp -o ./parser -no-listener -visitor
 
+# rename
 mv lexer/YupLexer.cpp lexer/YupLexer.cc
-
 mv parser/YupParser.cpp parser/YupParser.cc
 
-# clean up
+cd ..
 
-if [ -d .antlr/ ]; then
-    rm -r .antlr/
-fi
+mv src/lexer/YupLexer.h include/YupLexer.h
+mv src/parser/YupParser.h include/YupParser.h

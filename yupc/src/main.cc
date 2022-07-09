@@ -1,6 +1,6 @@
 #include <CLI/CLI.hpp>
-#include "lexer/YupLexer.h"
-#include "parser/YupParser.h"
+#include <YupLexer.h>
+#include <YupParser.h>
 #include <string>
 #include <iostream>
 #include <filesystem>
