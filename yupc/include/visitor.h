@@ -8,13 +8,14 @@
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/FileSystem.h>
-#include <llvm/Bitcode/BitcodeWriter.h>
+#include <llvm/IR/Value.h>
 #include <vector>
 #include <iostream>
 #include <map>
 #include <sstream>
 #include <vector>
 #include <iostream>
+#include <stack>
 
 class Visitor : public YupParserBaseVisitor
 {
@@ -35,3 +36,5 @@ extern llvm::LLVMContext codegenCtx;
 extern llvm::IRBuilder<> irBuilder;
 extern std::unique_ptr<llvm::Module> module;
 extern std::map<std::string, llvm::Value*> symbolTable;
+
+extern std::stack<llvm::Value*> valueStack;

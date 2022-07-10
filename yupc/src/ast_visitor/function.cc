@@ -50,11 +50,11 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     if (!function->getFunctionType()->getReturnType()->isVoidTy())
     {
         int blockStatementCount = ctx->code_block()->statement().size();
-        std::any retResult = this->visit(ctx->code_block()->statement()[blockStatementCount - 1]);
-        llvm::Value* retValue = std::any_cast<llvm::Value*>(retResult);
+        this->visit(ctx->code_block()->statement()[blockStatementCount - 1]);
 
-        // TODO: fix return statement segfault
-        //irBuilder.CreateRet(retValue);
+        llvm::Value* retValue = valueStack.top();
+        irBuilder.CreateRet(retValue);
+        valueStack.pop();
     }
     else
     {

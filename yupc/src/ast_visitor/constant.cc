@@ -7,9 +7,8 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
     {
         std::string text = ctx->V_INT()->getText();
         int value = std::atoi(text.c_str());
-        llvm::ConstantInt* constantInt
-            = llvm::ConstantInt::get(codegenCtx, llvm::APInt(32,  value, false));
-        return constantInt;
+        valueStack.push(llvm::ConstantInt::get(llvm::Type::getInt32Ty(codegenCtx), value));
+        return nullptr;
     }
 
     std::string errorMessage = "couldn't match type and create a constant";
