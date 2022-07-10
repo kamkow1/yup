@@ -50,9 +50,12 @@ std::any Visitor::visitCompiler_flag(YupParser::Compiler_flagContext *ctx)
             logCommandInformation(cleanupCommand);
         }
 
-        std::string permCommand = "chmod +x " + binaryName;
-        std::system(permCommand.c_str());
-        logCommandInformation(permCommand);
+        if (!givePermissions)
+        {
+            std::string permCommand = "chmod +x " + binaryName;
+            std::system(permCommand.c_str());
+            logCommandInformation(permCommand);
+        }
 
         return nullptr;
     }

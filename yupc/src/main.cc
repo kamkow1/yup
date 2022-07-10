@@ -34,6 +34,9 @@ int main(int argc, char *argv[])
     build_cmd
         ->add_flag("--ir,--emit-ir", emitIR, "enables emitting of the llvm intermediate representation");
 
+    build_cmd
+        ->add_flag("--np,--no-perm", givePermissions, "allows the compiler to give permissions to the binary file");
+
     build_cmd->callback([&]() 
     {
         std::string abs_src_path = fs::absolute(src_path);

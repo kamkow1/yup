@@ -9,6 +9,7 @@ bool emitIR;
 std::string archName;
 std::string mmcu;
 std::string targetName;
+bool givePermissions;
 
 std::string moduleName;
 
