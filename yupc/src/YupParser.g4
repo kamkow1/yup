@@ -33,4 +33,4 @@ expr                :   constant
 
 constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_NULL;
 
-func_call           :   IDENTIFIER ((expr*)? | LPAREN RPAREN);
+func_call           :   IDENTIFIER (expr* | LPAREN RPAREN);

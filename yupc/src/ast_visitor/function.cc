@@ -50,6 +50,9 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
 
     llvm::verifyFunction(*function, &llvm::outs());
 
+    // add function to symbol table for later use
+    symbolTable[funcName] = function;
+
     return function;
 }
 
@@ -106,11 +109,40 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
     return function;
 }
 
-std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx) {
+std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
+{
     std::any typeAnnot = this->visit(ctx->type_annot());
     std::string typeName = std::any_cast<std::string>(typeAnnot);
     llvm::Type* type = matchType(typeName);
 
     FuncParam* funcParam = new FuncParam(type, typeName);
     return funcParam;
+}
+
+std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
+{
+    std::string funcName = ctx->IDENTIFIER()->getText();
+
+    if (!symbolTable.contains(funcName))
+    {
+        std::string errorMessage
+            = "cannot call function " + funcName + " because it doesn't appear to exist in this context";
+        logCompilerError(errorMessage);
+        exit(1);
+    }
+
+    std::vector<llvm::Value*> args;
+    for (const auto &expr : ctx->expr())
+    {
+        this->visit(expr);
+        llvm::Value* argVal = valueStack.top();
+        args.push_back(argVal);
+        valueStack.pop();
+    }
+
+    llvm::Function* function = (llvm::Function*) symbolTable[funcName];
+
+    llvm::CallInst::Create(function, llvm::makeArrayRef(args));
+
+    return nullptr;
 }
