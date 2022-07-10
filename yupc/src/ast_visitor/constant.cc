@@ -7,7 +7,17 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
     {
         std::string text = ctx->V_INT()->getText();
         int value = std::atoi(text.c_str());
-        valueStack.push(llvm::ConstantInt::get(llvm::Type::getInt32Ty(codegenCtx), value));
+        llvm::ConstantInt* constant = llvm::ConstantInt::get(llvm::Type::getInt32Ty(codegenCtx), value);
+        valueStack.push(constant);
+        return nullptr;
+    }
+
+    if (ctx->V_FLOAT() != nullptr)
+    {
+        std::string text = ctx->V_FLOAT()->getText();
+        float value = std::atof(text.c_str());
+        llvm::Value* constant = llvm::ConstantFP::get(codegenCtx, llvm::APFloat(value));
+        valueStack.push(constant);
         return nullptr;
     }
 

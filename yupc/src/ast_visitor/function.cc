@@ -2,19 +2,6 @@
 #include <util.h>
 #include <messaging/errors.h>
 
-class FuncParam
-{
-public:
-    llvm::Type* paramType;
-    std::string paramName;
-
-    FuncParam(llvm::Type* type, std::string pn)
-    {
-        paramType = type;
-        paramName = pn;
-    }
-};
-
 std::any Visitor::visitFunc_return(YupParser::Func_returnContext *ctx)
 {
     std::any value = this->visit(ctx->expr());
@@ -65,6 +52,19 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
 
     return function;
 }
+
+class FuncParam
+{
+public:
+    llvm::Type* paramType;
+    std::string paramName;
+
+    FuncParam(llvm::Type* type, std::string pn)
+    {
+        paramType = type;
+        paramName = std::move(pn);
+    }
+};
 
 std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 {
