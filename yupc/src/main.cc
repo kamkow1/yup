@@ -64,6 +64,48 @@ int main(int argc, char *argv[])
 
         moduleName = getIRFileName(abs_src_path);
         visitor.visit(ctx);
+
+        // -3 is .ll
+        std::string binaryName = moduleName.substr(0, moduleName.size() - 3);
+
+        std::string clangCommand =
+                "clang --output " + binaryName + " " + moduleName
+                + " -march=" + archName
+                + (targetName.length() > 0 ? " --target=" + targetName : "")
+                + (mmcu.length() > 0 ? " -mmcu="+ mmcu : "")
+                // clang flags
+                + " -Wno-override-module"
+                + " -Wno-unused-command-line-argument";
+
+        logCommandInformation(clangCommand);
+        int result = std::system(clangCommand.c_str());
+
+        std::string resultInfo = "compiled to " + binaryName + " with status code " + std::to_string(result);
+        logCommandInformation(resultInfo);
+
+        // remove the .ll file
+        if (!emitIR)
+        {
+            std::string cleanupCommand = "rm -f " + moduleName;
+            std::system(cleanupCommand.c_str());
+            logCommandInformation(cleanupCommand);
+        }
+
+        if (!givePermissions)
+        {
+            std::string permCommand = "chmod +x " + binaryName;
+            std::system(permCommand.c_str());
+            logCommandInformation(permCommand);
+        }
+
+        llvm::verifyModule(*module, &llvm::outs());
+        std::error_code ec;
+        llvm::raw_fd_ostream os(moduleName, ec, llvm::sys::fs::OF_None);
+        module->print(os, nullptr);
+        os.flush();
+
+        std::string info = "dumped module " + moduleName;
+        logCommandInformation(info);
     });
 
     CLI11_PARSE(cli, argc, argv);
