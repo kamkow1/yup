@@ -8,4 +8,6 @@ src/parser/
 .idea/
 cmake-build-debug/
 cmake-build-release/
-CMakeFiles
+CMakeFiles/
+include/YupParser.h
+include/YupLexer.h
