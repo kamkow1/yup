@@ -34,6 +34,9 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
         symbolTable[arg.getName().str()] = &arg;
     }
 
+    // descend the parse tree before return
+    this->visit(ctx->code_block());
+
     if (!function->getFunctionType()->getReturnType()->isVoidTy())
     {
         int blockStatementCount = ctx->code_block()->statement().size();
@@ -49,9 +52,6 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     }
 
     llvm::verifyFunction(*function, &llvm::outs());
-
-    // add function to symbol table for later use
-    symbolTable[funcName] = function;
 
     return function;
 }
@@ -123,26 +123,36 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
 {
     std::string funcName = ctx->IDENTIFIER()->getText();
 
-    if (!symbolTable.contains(funcName))
+    if (symbolTable.find(funcName) != symbolTable.end())
     {
         std::string errorMessage
-            = "cannot call function " + funcName + " because it doesn't appear to exist in this context";
+            = "cannot call function \"" + funcName + "\" because it doesn't exist in the symbol table";
         logCompilerError(errorMessage);
         exit(1);
     }
 
     std::vector<llvm::Value*> args;
-    for (const auto &expr : ctx->expr())
+    int exprLength = ctx->expr().size();
+    for (unsigned i = 0; i < exprLength; ++i)
     {
+        YupParser::ExprContext* expr = ctx->expr()[i];
         this->visit(expr);
         llvm::Value* argVal = valueStack.top();
         args.push_back(argVal);
         valueStack.pop();
     }
 
-    llvm::Function* function = (llvm::Function*) symbolTable[funcName];
+    llvm::Function* fnCallee = module->getFunction(funcName);
 
-    llvm::CallInst::Create(function, llvm::makeArrayRef(args));
+    if (args.size() != fnCallee->arg_size())
+    {
+        std::string errorMessage= "found function \"" + funcName
+                + "\" but couldn't match given argument list length to the function signature";
+        logCompilerError(errorMessage);
+        exit(1);
+    }
 
-    return nullptr;
+    std::string callLabel = std::string("call") + "_" + funcName;
+
+    return irBuilder.CreateCall(fnCallee, args, callLabel);
 }

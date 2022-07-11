@@ -1,6 +1,5 @@
-cmake_minimum_required (VERSION 3.16.3)
-
-project (yupc)
+cmake_minimum_required(VERSION 3.5)
+project(yupc)
 
 set (CMAKE_CXX_STANDARD 20)
 set (GCC_COVERAGE_LINK_FLAGS "--libs")
@@ -32,22 +31,25 @@ add_definitions (${LLVM_DEFINITIONS})
 
 llvm_map_components_to_libnames(llvm_libs support core)
 
-add_executable (yupc
-        src/lexer/YupLexer.cc
-        src/parser/YupParser.cc
-        src/ast_visitor/data.cc
-        src/main.cc
-        src/ast_visitor/visitor.cc
-        src/ast_visitor/compiler_flag.cc
-        src/ast_visitor/function.cc
-        src/ast_visitor/constant.cc
-        src/ast_visitor/type.cc
-        include/util.h src/messaging/erros.cc
-        include/messaging/errors.h
-        src/messaging/information.cc
-        include/messaging/information.h
-        src/parser_error_listener.cc
-        include/parser_error_listener.h
-        include/compiler_options.h)
+set (SRCS
+    src/ast_visitor/code_block.cc
+    src/ast_visitor/compiler_flag.cc
+    src/ast_visitor/constant.cc
+    src/ast_visitor/data.cc
+    src/ast_visitor/function.cc
+    src/ast_visitor/type.cc
+    src/ast_visitor/visitor.cc
+    src/lexer/YupLexer.cc
+    src/messaging/errors.cc
+    src/messaging/information.cc
+    src/parser/YupParser.cc
+    src/parser/YupParserBaseVisitor.cpp
+    src/parser/YupParserVisitor.cpp
+    src/main.cc
+    src/parser_error_listener.cc
+)
 
-target_link_libraries (yupc ${ANTLR_BUILD_PATH} ${CONAN_LIBS} ${llvm_libs} Threads::Threads)
+
+add_executable(${CMAKE_PROJECT_NAME} ${SRCS})
+
+target_link_libraries(${CMAKE_PROJECT_NAME} ${ANTLR_BUILD_PATH} ${CONAN_LIBS} ${llvm_libs} Threads::Threads)
