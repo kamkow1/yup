@@ -50,3 +50,13 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
 
     return true;
 }
+
+std::any Visitor::visitIdentifierExpr(YupParser::IdentifierExprContext *ctx)
+{
+    // push value
+    std::string name = ctx->IDENTIFIER()->getText();
+    llvm::Value* val = symbolTable[name];
+    valueStack.push(val);
+
+    return nullptr;
+}

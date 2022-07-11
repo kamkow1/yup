@@ -25,8 +25,9 @@ func_param          :   IDENTIFIER type_annot;
 
 type_annot          :   TYPE_ANNOTATION IDENTIFIER;
 
-expr                :   constant
-                    |   func_call;
+expr                :   constant                #ConstantExpr
+                    |   func_call               #FuncCallExpr
+                    |   IDENTIFIER              #IdentifierExpr;
 
 constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_NULL;
 

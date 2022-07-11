@@ -195,13 +195,41 @@ public:
   class  ExprContext : public antlr4::ParserRuleContext {
   public:
     ExprContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    ConstantContext *constant();
-    Func_callContext *func_call();
+   
+    ExprContext() = default;
+    void copyFrom(ExprContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
 
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  IdentifierExprContext : public ExprContext {
+  public:
+    IdentifierExprContext(ExprContext *ctx);
+
+    antlr4::tree::TerminalNode *IDENTIFIER();
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
+  };
+
+  class  ConstantExprContext : public ExprContext {
+  public:
+    ConstantExprContext(ExprContext *ctx);
+
+    ConstantContext *constant();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  FuncCallExprContext : public ExprContext {
+  public:
+    FuncCallExprContext(ExprContext *ctx);
+
+    Func_callContext *func_call();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   ExprContext* expr();
