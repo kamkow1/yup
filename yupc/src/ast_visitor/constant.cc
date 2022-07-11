@@ -21,6 +21,15 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         return nullptr;
     }
 
+    if (ctx->V_BOOL() != nullptr)
+    {
+        std::string text = ctx->V_BOOL()->getText();
+        bool value = text == "True";
+        llvm::Value* constant = llvm::ConstantInt::get(llvm::Type::getInt8Ty(codegenCtx), value);
+        valueStack.push(constant);
+        return nullptr;
+    }
+
     std::string errorMessage = "couldn't match type and create a constant";
     logCompilerError(errorMessage);
     exit(1);
