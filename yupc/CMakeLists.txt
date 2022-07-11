@@ -38,7 +38,7 @@ set (SRCS
     src/ast_visitor/function.cc
     src/ast_visitor/type.cc
     src/ast_visitor/visitor.cc
-    src/ast_visitor/assignment.cc
+    src/ast_visitor/variable.cc
     src/lexer/YupLexer.cc
     src/messaging/errors.cc
     src/messaging/information.cc
