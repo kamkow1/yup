@@ -19,10 +19,9 @@ public:
   };
 
   enum {
-    RuleFile = 0, RuleStatement = 1, RuleCompiler_flag = 2, RuleAssignment = 3, 
-    RuleFunc_def = 4, RuleFunc_signature = 5, RuleFunc_return = 6, RuleCode_block = 7, 
-    RuleFunc_param = 8, RuleType_annot = 9, RuleExpr = 10, RuleConstant = 11, 
-    RuleFunc_call = 12
+    RuleFile = 0, RuleStatement = 1, RuleAssignment = 2, RuleFunc_def = 3, 
+    RuleFunc_signature = 4, RuleFunc_return = 5, RuleCode_block = 6, RuleFunc_param = 7, 
+    RuleType_annot = 8, RuleExpr = 9, RuleConstant = 10, RuleFunc_call = 11
   };
 
   explicit YupParser(antlr4::TokenStream *input);
@@ -44,7 +43,6 @@ public:
 
   class FileContext;
   class StatementContext;
-  class Compiler_flagContext;
   class AssignmentContext;
   class Func_defContext;
   class Func_signatureContext;
@@ -79,7 +77,6 @@ public:
     Func_defContext *func_def();
     AssignmentContext *assignment();
     Func_returnContext *func_return();
-    Compiler_flagContext *compiler_flag();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -87,20 +84,6 @@ public:
   };
 
   StatementContext* statement();
-
-  class  Compiler_flagContext : public antlr4::ParserRuleContext {
-  public:
-    Compiler_flagContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *COMPILER_FLAG_SYM();
-    antlr4::tree::TerminalNode *IDENTIFIER();
-
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  Compiler_flagContext* compiler_flag();
 
   class  AssignmentContext : public antlr4::ParserRuleContext {
   public:

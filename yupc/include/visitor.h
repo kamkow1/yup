@@ -27,7 +27,6 @@ public:
     std::any visitFunc_param(YupParser::Func_paramContext *ctx) override;
     std::any visitFunc_signature(YupParser::Func_signatureContext *ctx) override;
     std::any visitFunc_return(YupParser::Func_returnContext *ctx) override;
-    std::any visitCompiler_flag(YupParser::Compiler_flagContext *ctx) override;
     std::any visitFunc_call(YupParser::Func_callContext *ctx) override;
     std::any visitCode_block(YupParser::Code_blockContext *ctx) override;
 };

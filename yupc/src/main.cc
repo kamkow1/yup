@@ -7,7 +7,6 @@
 #include <util.h>
 #include <messaging/information.h>
 #include <parser_error_listener.h>
-#include <compiler_options.h>
 
 namespace fs = std::filesystem;
 
@@ -22,18 +21,23 @@ int main(int argc, char *argv[])
         ->add_option("-s,--source", src_path, "path to a .yup file")
         ->required();
 
+    std::string archName;
     build_cmd
         ->add_option("-a,--arch", archName, "specifies targeted cpu's assembly for clang");
 
+    std::string targetName;
     build_cmd
         ->add_option("-t,--target", targetName, "specifies target for clang");
 
+    std::string mmcu;
     build_cmd
         ->add_option("-m,--mmcu", mmcu, "specifies target microcontroller (when --target == avr)");
 
+    bool emitIR;
     build_cmd
         ->add_flag("--ir,--emit-ir", emitIR, "enables emitting of the llvm intermediate representation");
 
+    bool givePermissions;
     build_cmd
         ->add_flag("--np,--no-perm", givePermissions, "allows the compiler to give permissions to the binary file");
 

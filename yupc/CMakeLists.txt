@@ -33,7 +33,6 @@ llvm_map_components_to_libnames(llvm_libs support core)
 
 set (SRCS
     src/ast_visitor/code_block.cc
-    src/ast_visitor/compiler_flag.cc
     src/ast_visitor/constant.cc
     src/ast_visitor/data.cc
     src/ast_visitor/function.cc
