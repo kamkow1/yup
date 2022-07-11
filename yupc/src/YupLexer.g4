@@ -6,6 +6,7 @@ ASSIGN              :   '=';
 TERMINATOR          :   ';';
 RETURN              :   'return';
 COMPILER_FLAG_SYM   :   '@';
+CONST               :   'const';
 
 LPAREN              :   '(';
 RPAREN              :   ')';

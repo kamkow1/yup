@@ -11,7 +11,7 @@ statement           :   expr                    TERMINATOR
                     |   assignment              TERMINATOR
                     |   func_return             TERMINATOR;
 
-assignment          :   IDENTIFIER ASSIGN expr;
+assignment          :   CONST? IDENTIFIER ASSIGN expr;
 
 func_def            :   func_signature code_block;
 

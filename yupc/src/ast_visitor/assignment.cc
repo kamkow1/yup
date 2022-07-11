@@ -14,6 +14,15 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     // assert type
     if (symbolTable.find(name) != symbolTable.end())
     {
+        bool isConst = ctx->CONST() == nullptr;
+        if (isConst)
+        {
+            std::string errorMessage 
+                = "cannot reassign a constant \"" + name + "\"";
+            logCompilerError(errorMessage);
+            exit(1);
+        }
+
         std::string exprType;
         llvm::raw_string_ostream rso(exprType);
         val->getType()->print(rso);

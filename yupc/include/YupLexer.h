@@ -13,9 +13,9 @@ class  YupLexer : public antlr4::Lexer {
 public:
   enum {
     FUNCTION = 1, TYPE_ANNOTATION = 2, ASSIGN = 3, TERMINATOR = 4, RETURN = 5, 
-    COMPILER_FLAG_SYM = 6, LPAREN = 7, RPAREN = 8, LSQBR = 9, RSQBR = 10, 
-    V_STRING = 11, V_INT = 12, V_FLOAT = 13, V_BOOL = 14, V_NULL = 15, IDENTIFIER = 16, 
-    WHITESPACE = 17, COMMENT = 18, LINE_COMMENT = 19
+    COMPILER_FLAG_SYM = 6, CONST = 7, LPAREN = 8, RPAREN = 9, LSQBR = 10, 
+    RSQBR = 11, V_STRING = 12, V_INT = 13, V_FLOAT = 14, V_BOOL = 15, V_NULL = 16, 
+    IDENTIFIER = 17, WHITESPACE = 18, COMMENT = 19, LINE_COMMENT = 20
   };
 
   explicit YupLexer(antlr4::CharStream *input);
