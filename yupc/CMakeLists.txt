@@ -38,6 +38,7 @@ set (SRCS
     src/ast_visitor/function.cc
     src/ast_visitor/type.cc
     src/ast_visitor/visitor.cc
+    src/ast_visitor/assignment.cc
     src/lexer/YupLexer.cc
     src/messaging/errors.cc
     src/messaging/information.cc
@@ -46,6 +47,7 @@ set (SRCS
     src/parser/YupParserVisitor.cpp
     src/main.cc
     src/parser_error_listener.cc
+    src/util.cc
 )
 
 
