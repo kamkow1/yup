@@ -15,20 +15,25 @@ assignment          :   CONST? IDENTIFIER ASSIGN expr;
 
 func_def            :   func_signature code_block;
 
-func_signature      :   FUNCTION IDENTIFIER LPAREN (func_param*)? RPAREN type_annot;
+func_signature      :   FUNCTION IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
 
 func_return         :   RETURN expr;
 
-code_block          :   LSQBR statement* RSQBR;
+code_block          :   LBRACE statement* RBRACE;
 
 func_param          :   IDENTIFIER type_annot;
 
-type_annot          :   TYPE_ANNOTATION IDENTIFIER;
+type_annot          :   TYPE_ANNOTATION array_type? IDENTIFIER;
+
+array_type          :   LSQBR RSQBR;
 
 expr                :   constant                #ConstantExpr
                     |   func_call               #FuncCallExpr
-                    |   IDENTIFIER              #IdentifierExpr;
+                    |   IDENTIFIER              #IdentifierExpr
+                    |   array                   #ArrayExpr;
 
-constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_NULL;
+array               :   LSQBR (expr (COMMA expr))? RSQBR;
 
-func_call           :   IDENTIFIER LPAREN (expr*)? RPAREN;
+constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_NULL | V_CHAR;
+
+func_call           :   IDENTIFIER LPAREN (expr (COMMA expr)*)? RPAREN;

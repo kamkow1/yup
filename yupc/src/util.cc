@@ -5,7 +5,7 @@ constexpr unsigned int strToInt(const char* str, int h)
     return !str[h] ? 5381 : (strToInt(str, h+1) * 33) ^ str[h];
 }
 
-llvm::Type* matchType(std::string typeName)
+llvm::Type* matchBasicType(std::string typeName)
 {
     switch (strToInt(typeName.c_str())) {
         case strToInt("i32"): return llvm::Type::getInt32Ty(codegenCtx);
@@ -13,6 +13,8 @@ llvm::Type* matchType(std::string typeName)
         case strToInt("float"): return llvm::Type::getFloatTy(codegenCtx);
         case strToInt("bool"): return llvm::Type::getInt8Ty(codegenCtx);
         case strToInt("void"): return llvm::Type::getVoidTy(codegenCtx);
+        case strToInt("char"): return llvm::Type::getInt8Ty(codegenCtx);
+        //case strToInt("string"): return llvm::Type::getArrayElementType();
             // TODO: string type
     }
 

@@ -30,6 +30,24 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         return nullptr;
     }
 
+    if (ctx->V_CHAR() != nullptr)
+    {
+        std::string text = ctx->V_CHAR()->getText();
+        char *cstr = new char[text.length() + 1];
+        strcpy(cstr, &text.c_str()[1]);
+        llvm::Value* constant = llvm::ConstantInt::get(llvm::Type::getInt8Ty(codegenCtx), *cstr);
+        valueStack.push(constant);
+
+        delete []cstr;
+        return nullptr;
+    }
+
+    /*if (ctx->V_STRING() != nullptr)
+    {
+        std::string text = ctx->V_STRING()->getText();
+        std::cout << text << "\n";
+    }*/
+
     std::string errorMessage = "couldn't match type and create a constant";
     logCompilerError(errorMessage);
     exit(1);

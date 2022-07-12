@@ -41,7 +41,6 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     {
         int blockStatementCount = ctx->code_block()->statement().size();
         this->visit(ctx->code_block()->statement()[blockStatementCount - 1]);
-
         llvm::Value* retValue = valueStack.top();
         irBuilder.CreateRet(retValue);
         valueStack.pop();
@@ -74,7 +73,7 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
     std::string name = ctx->IDENTIFIER()->getText();
     std::any typeAnnot = this->visit(ctx->type_annot());
     std::string retTypeName = std::any_cast<std::string>(typeAnnot);
-    llvm::Type* returnType = matchType(retTypeName);
+    llvm::Type* returnType = matchBasicType(retTypeName);
 
     std::vector<FuncParam*> params;
     for (const auto p : ctx->func_param())
@@ -113,7 +112,7 @@ std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
 {
     std::any typeAnnot = this->visit(ctx->type_annot());
     std::string typeName = std::any_cast<std::string>(typeAnnot);
-    llvm::Type* type = matchType(typeName);
+    llvm::Type* type = matchBasicType(typeName);
 
     FuncParam* funcParam = new FuncParam(type, typeName);
     return funcParam;

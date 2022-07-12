@@ -10,9 +10,13 @@ CONST               :   'const';
 
 LPAREN              :   '(';
 RPAREN              :   ')';
-LSQBR               :   '{';
-RSQBR               :   '}';
+LBRACE              :   '{';
+RBRACE              :   '}';
+LSQBR               :   '[';  
+RSQBR               :   ']';
+COMMA               :   ',';
 
+V_CHAR              :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 V_STRING            :   '"' (~[\\"\r\n])* '"';
 V_INT               :   '-'? '0'..'9'+;
 V_FLOAT             :   '-'? ('0'..'9')+ '.' ('0'..'9')*;

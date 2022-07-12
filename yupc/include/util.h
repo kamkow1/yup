@@ -11,7 +11,7 @@
 
 constexpr unsigned int strToInt(const char* str, int h = 0);
 
-llvm::Type* matchType(std::string typeName);
+llvm::Type* matchBasicType(std::string typeName);
 
 std::string fileToString(const std::string& path);
 
