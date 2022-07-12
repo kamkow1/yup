@@ -69,6 +69,16 @@ int main(int argc, char *argv[])
         moduleName = getIRFileName(abs_src_path);
         visitor.visit(ctx);
 
+        // dump module to .ll
+        llvm::verifyModule(*module, &llvm::outs());
+        std::error_code ec;
+        llvm::raw_fd_ostream os(moduleName, ec, llvm::sys::fs::OF_None);
+        module->print(os, nullptr);
+        os.flush();
+
+        std::string info = "dumped module " + moduleName;
+        logCommandInformation(info);
+
         // -3 is .ll
         std::string binaryName = moduleName.substr(0, moduleName.size() - 3);
 
@@ -101,15 +111,6 @@ int main(int argc, char *argv[])
             std::system(permCommand.c_str());
             logCommandInformation(permCommand);
         }
-
-        llvm::verifyModule(*module, &llvm::outs());
-        std::error_code ec;
-        llvm::raw_fd_ostream os(moduleName, ec, llvm::sys::fs::OF_None);
-        module->print(os, nullptr);
-        os.flush();
-
-        std::string info = "dumped module " + moduleName;
-        logCommandInformation(info);
     });
 
     CLI11_PARSE(cli, argc, argv);
