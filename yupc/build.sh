@@ -1,9 +1,5 @@
 debug=$1
 
-if [[ -d build ]]; then
-  rm -r build
-fi
-
 if [[ ! -d build ]]; then
   mkdir build
 fi

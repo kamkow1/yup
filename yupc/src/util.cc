@@ -9,7 +9,7 @@ llvm::Type* matchBasicType(std::string typeName)
 {
     switch (strToInt(typeName.c_str())) {
         case strToInt("i32"): return llvm::Type::getInt32Ty(codegenCtx);
-        case strToInt("i64"): return llvm::Type::getInt32Ty(codegenCtx);
+        case strToInt("i64"): return llvm::Type::getInt64Ty(codegenCtx);
         case strToInt("float"): return llvm::Type::getFloatTy(codegenCtx);
         case strToInt("bool"): return llvm::Type::getInt8Ty(codegenCtx);
         case strToInt("void"): return llvm::Type::getVoidTy(codegenCtx);

@@ -1,13 +1,17 @@
 #include <visitor.h>
 #include <messaging/errors.h>
+#include <boost/lexical_cast.hpp>
 
 std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
 {
     if (ctx->V_INT() != nullptr)
     {
         std::string text = ctx->V_INT()->getText();
-        int value = std::atoi(text.c_str());
-        llvm::ConstantInt* constant = llvm::ConstantInt::get(llvm::Type::getInt32Ty(codegenCtx), value);
+        int64_t value = boost::lexical_cast<uint64_t>(text.c_str());
+        
+        llvm::ConstantInt* constant = value > INT32_MAX || value < INT32_MIN
+            ? llvm::ConstantInt::get(llvm::Type::getInt64Ty(codegenCtx), value)
+            : llvm::ConstantInt::get(llvm::Type::getInt32Ty(codegenCtx), value);
         valueStack.push(constant);
         return nullptr;
     }
