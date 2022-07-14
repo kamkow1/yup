@@ -1,29 +1,5 @@
 #include <util.h>
 
-constexpr unsigned int strToInt(const char* str, int h)
-{
-    return !str[h] ? 5381 : (strToInt(str, h+1) * 33) ^ str[h];
-}
-
-llvm::Type* matchBasicType(std::string typeName)
-{
-    switch (strToInt(typeName.c_str())) {
-        case strToInt("i32"): return llvm::Type::getInt32Ty(codegenCtx);
-        case strToInt("i64"): return llvm::Type::getInt64Ty(codegenCtx);
-        case strToInt("float"): return llvm::Type::getFloatTy(codegenCtx);
-        case strToInt("bool"): return llvm::Type::getInt8Ty(codegenCtx);
-        case strToInt("void"): return llvm::Type::getVoidTy(codegenCtx);
-        case strToInt("char"): return llvm::Type::getInt8Ty(codegenCtx);
-        //case strToInt("string"): return llvm::Type::getArrayElementType();
-            // TODO: string type
-    }
-
-    std::string errorMessage = "couldn't match type \"" + typeName + "\"";
-    logCompilerError(errorMessage);
-
-    exit(1);
-}
-
 std::string fileToString(const std::string& path)
 {
     std::ifstream input_file(path);
@@ -63,15 +39,11 @@ std::string getIRFileName(std::string path)
 
 std::string getReadableTypeName(std::string typeName)
 {
-    // match type string
-    switch (strToInt(typeName.c_str()))
+    if (typeName == "i8")
     {
-    case strToInt("i8"): return "bool";
-    
-    default: return typeName;
-        // TODO: add more cases
+        return "bool";
     }
-
+    
     std::string errorMessage 
         = "couldn't \"pretty-print\" type name \"" 
         + typeName + "\"";

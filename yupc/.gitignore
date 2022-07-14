@@ -11,3 +11,4 @@ cmake-build-release/
 CMakeFiles/
 include/YupParser.h
 include/YupLexer.h
+debug/
