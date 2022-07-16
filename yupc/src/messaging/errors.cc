@@ -2,7 +2,7 @@
 #include <termcolor/termcolor.hpp>
 #include <iostream>
 
-void logCompilerError(std::string &detail)
+void logCompilerError(std::string detail)
 {
     std::cout
         << termcolor::red
@@ -18,7 +18,7 @@ void logCompilerError(std::string &detail)
         << "\n";
 }
 
-void logInputError(std::string &detail)
+void logInputError(std::string detail)
 {
     std::cout
         << termcolor::magenta
@@ -34,7 +34,7 @@ void logInputError(std::string &detail)
         << "\n";
 }
 
-void logParsingError(std::string &detail)
+void logParsingError(std::string detail)
 {
     std::cout
         << termcolor::yellow

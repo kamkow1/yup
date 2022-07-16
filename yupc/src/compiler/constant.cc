@@ -7,7 +7,7 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
     if (ctx->V_INT() != nullptr)
     {
         std::string text = ctx->V_INT()->getText();
-        int64_t value = boost::lexical_cast<uint64_t>(text.c_str());
+        int value = boost::lexical_cast<int>(text.c_str());
         
         llvm::ConstantInt* constant = value > INT32_MAX || value < INT32_MIN
             ? llvm::ConstantInt::get(llvm::Type::getInt64Ty(codegenCtx), value)
@@ -45,12 +45,6 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         delete []cstr;
         return nullptr;
     }
-
-    /*if (ctx->V_STRING() != nullptr)
-    {
-        std::string text = ctx->V_STRING()->getText();
-        std::cout << text << "\n";
-    }*/
 
     std::string errorMessage = "couldn't match type and create a constant";
     logCompilerError(errorMessage);

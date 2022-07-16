@@ -25,7 +25,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
             ->getText();
 
     llvm::Function* function = std::any_cast<llvm::Function*>(this->visit(ctx->func_signature()));
-
+    
     if (!function)
     {
         std::string errorMessage = "cannot resolve the signature for function " + funcName;
@@ -43,19 +43,18 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
         symbolTable[arg.getName().str()] = &arg;
     }
 
-    // descend the parse tree before return
-    this->visit(ctx->code_block());
 
     if (!function->getFunctionType()->getReturnType()->isVoidTy())
     {
-        int blockStatementCount = ctx->code_block()->statement().size();
-        this->visit(ctx->code_block()->statement()[blockStatementCount - 1]);
+        this->visit(ctx->code_block());
+
         llvm::Value* retValue = valueStack.top();
         irBuilder.CreateRet(retValue);
         valueStack.pop();
     }
     else
     {
+        this->visit(ctx->code_block());
         irBuilder.CreateRetVoid();
     }
 
@@ -67,15 +66,16 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
 std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
-    std::any typeAnnot = this->visit(ctx->type_annot());
-    std::string retTypeName = std::any_cast<std::string>(typeAnnot);
-    llvm::Type* returnType = matchBasicType(retTypeName);
+    TypeAnnotation* typeAnnot = 
+        std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
+    llvm::Type* returnType = resolveType(typeAnnot->typeName, typeAnnot->arrayLen);
 
     std::vector<FuncParam*> params;
     for (const auto p : ctx->func_param())
     {
         FuncParam* fp = std::any_cast<FuncParam*>(this->visit(p));
         params.push_back(fp);
+        delete fp;
     }
 
     std::vector<llvm::Type*> paramTypes;
@@ -106,11 +106,10 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 
 std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
 {
-    std::any typeAnnot = this->visit(ctx->type_annot());
-    std::string typeName = std::any_cast<std::string>(typeAnnot);
-    llvm::Type* type = matchBasicType(typeName);
+    auto typeAnnot = std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
+    llvm::Type* resolvedType = resolveType(typeAnnot->typeName, typeAnnot->arrayLen);
 
-    FuncParam* funcParam = new FuncParam(type, typeName);
+    FuncParam* funcParam = new FuncParam(resolvedType, typeAnnot->typeName);
     return funcParam;
 }
 
@@ -149,5 +148,7 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
 
     std::string callLabel = std::string("call") + "_" + funcName;
 
-    return irBuilder.CreateCall(fnCallee, args, callLabel);
+    auto result = irBuilder.CreateCall(fnCallee, args, callLabel);
+    valueStack.push(result);
+    return nullptr;
 }

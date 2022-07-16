@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(yupc)
 
+set (CONAN_DISABLE_CHECK_COMPILER True CACHE BOOL "" FORCE)
+
 set (CMAKE_CXX_STANDARD 20)
 set (GCC_COVERAGE_LINK_FLAGS "--libs")
 
@@ -32,13 +34,14 @@ add_definitions (${LLVM_DEFINITIONS})
 llvm_map_components_to_libnames(llvm_libs support core)
 
 set (SRCS
-    src/ast_visitor/code_block.cc
-    src/ast_visitor/constant.cc
-    src/ast_visitor/data.cc
-    src/ast_visitor/function.cc
-    src/ast_visitor/type.cc
-    src/ast_visitor/visitor.cc
-    src/ast_visitor/variable.cc
+    src/compiler/code_block.cc
+    src/compiler/constant.cc
+    src/compiler/data.cc
+    src/compiler/function.cc
+    src/compiler/type.cc
+    src/compiler/visitor.cc
+    src/compiler/variable.cc
+    src/compiler/array.cc
     src/lexer/YupLexer.cc
     src/messaging/errors.cc
     src/messaging/information.cc
@@ -51,6 +54,6 @@ set (SRCS
 )
 
 
-add_executable(${CMAKE_PROJECT_NAME} ${SRCS})
+add_executable(yupc ${SRCS})
 
 target_link_libraries(${CMAKE_PROJECT_NAME} ${ANTLR_BUILD_PATH} ${CONAN_LIBS} ${llvm_libs} Threads::Threads)

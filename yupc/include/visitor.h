@@ -31,6 +31,7 @@ public:
     std::any visitCode_block(YupParser::Code_blockContext *ctx) override;
     std::any visitAssignment(YupParser::AssignmentContext *ctx) override;
     std::any visitIdentifierExpr(YupParser::IdentifierExprContext *ctx) override;
+    std::any visitArray(YupParser::ArrayContext *ctx) override;
 };
 
 extern std::string moduleName;

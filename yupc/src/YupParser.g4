@@ -25,14 +25,14 @@ func_param          :   IDENTIFIER type_annot;
 
 type_annot          :   TYPE_ANNOTATION array_type? IDENTIFIER;
 
-array_type          :   LSQBR RSQBR;
+array_type          :   LSQBR V_INT RSQBR;
 
 expr                :   constant                #ConstantExpr
                     |   func_call               #FuncCallExpr
                     |   IDENTIFIER              #IdentifierExpr
                     |   array                   #ArrayExpr;
 
-array               :   LSQBR (expr (COMMA expr))? RSQBR;
+array               :   LSQBR (expr (COMMA expr)*)? RSQBR type_annot;
 
 constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_NULL | V_CHAR;
 

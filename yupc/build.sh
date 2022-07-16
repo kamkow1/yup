@@ -5,7 +5,10 @@ if [[ ! -d build ]]; then
 fi
 
 if [ "$debug" = "debug" ]; then
-  cd build/ &&
+  if [[ ! -d debug ]]; then
+    mkdir debug
+  fi
+  cd debug/ &&
   conan install .. &&
   cmake .. -DCMAKE_BUILD_TYPE=Debug &&
   make
