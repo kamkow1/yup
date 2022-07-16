@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 {
     CLI::App cli{"a compiler for the yup programming language"};
 
-    auto build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
+    CLI::App* build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
 
     std::string src_path;
     build_cmd

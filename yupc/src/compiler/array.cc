@@ -4,18 +4,18 @@
 
 std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
 {
-    auto typeAnnot = 
+    TypeAnnotation* typeAnnot = 
         std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
-    auto typeName = typeAnnot->typeName;
+    std::string typeName = typeAnnot->typeName;
     size_t len = ctx->expr().size();
-    auto type = (llvm::ArrayType*) resolveType(typeName, len);
+    llvm::ArrayType* type = (llvm::ArrayType*) resolveType(typeName, len);
 
     std::vector<llvm::Constant*> elems;
     for (size_t i = 0; i < len; i++)
     {
-        auto expr = ctx->expr(i);
+        YupParser::ExprContext* expr = ctx->expr(i);
         this->visit(expr);
-        auto value = (llvm::Constant*) valueStack.top();
+        llvm::Constant* value = (llvm::Constant*) valueStack.top();
 
         // type check
         std::string valType;

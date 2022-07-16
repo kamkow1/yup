@@ -71,7 +71,7 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
     llvm::Type* returnType = resolveType(typeAnnot->typeName, typeAnnot->arrayLen);
 
     std::vector<FuncParam*> params;
-    for (const auto p : ctx->func_param())
+    for (YupParser::Func_paramContext* const p : ctx->func_param())
     {
         FuncParam* fp = std::any_cast<FuncParam*>(this->visit(p));
         params.push_back(fp);
@@ -79,7 +79,7 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
     }
 
     std::vector<llvm::Type*> paramTypes;
-    for (const auto pt : params)
+    for (const FuncParam* pt : params)
     {
         paramTypes.push_back(pt->paramType);
     }
@@ -106,7 +106,7 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 
 std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
 {
-    auto typeAnnot = std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
+    TypeAnnotation* typeAnnot = std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
     llvm::Type* resolvedType = resolveType(typeAnnot->typeName, typeAnnot->arrayLen);
 
     FuncParam* funcParam = new FuncParam(resolvedType, typeAnnot->typeName);

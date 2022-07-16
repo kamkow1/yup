@@ -10,8 +10,10 @@ std::string fileToString(const std::string& path)
         exit(1);
     }
 
-    auto beg = (std::istreambuf_iterator<char>(input_file));
-    auto end = std::istreambuf_iterator<char>();
+    std::istreambuf_iterator<char, std::char_traits<char>> beg 
+        = std::istreambuf_iterator<char>(input_file);
+    std::istreambuf_iterator<char, std::char_traits<char>> end 
+        = std::istreambuf_iterator<char>();
     return std::string(beg, end);
 }
 

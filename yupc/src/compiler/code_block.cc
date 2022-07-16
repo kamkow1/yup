@@ -2,7 +2,7 @@
 
 std::any Visitor::visitCode_block(YupParser::Code_blockContext *ctx)
 {
-    for (const auto &statement : ctx->statement())
+    for (YupParser::StatementContext* const statement : ctx->statement())
     {
         this->visit(statement);
     }
