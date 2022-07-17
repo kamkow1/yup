@@ -10,8 +10,8 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         int value = boost::lexical_cast<int>(text.c_str());
         
         llvm::ConstantInt* constant = value > INT32_MAX || value < INT32_MIN
-            ? llvm::ConstantInt::get(llvm::Type::getInt64Ty(codegenCtx), value)
-            : llvm::ConstantInt::get(llvm::Type::getInt32Ty(codegenCtx), value);
+            ? llvm::ConstantInt::get(llvm::Type::getInt64Ty(context), value)
+            : llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), value);
         valueStack.push(constant);
         return nullptr;
     }
@@ -20,7 +20,7 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
     {
         std::string text = ctx->V_FLOAT()->getText();
         float value = std::atof(text.c_str());
-        llvm::Value* constant = llvm::ConstantFP::get(codegenCtx, llvm::APFloat(value));
+        llvm::Value* constant = llvm::ConstantFP::get(context, llvm::APFloat(value));
         valueStack.push(constant);
         return nullptr;
     }
@@ -29,7 +29,7 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
     {
         std::string text = ctx->V_BOOL()->getText();
         bool value = text == "True";
-        llvm::Value* constant = llvm::ConstantInt::get(llvm::Type::getInt8Ty(codegenCtx), value);
+        llvm::Value* constant = llvm::ConstantInt::get(llvm::Type::getInt8Ty(context), value);
         valueStack.push(constant);
         return nullptr;
     }
@@ -39,7 +39,7 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         std::string text = ctx->V_CHAR()->getText();
         char *cstr = new char[text.length() + 1];
         strcpy(cstr, &text.c_str()[1]);
-        llvm::Value* constant = llvm::ConstantInt::get(llvm::Type::getInt8Ty(codegenCtx), *cstr);
+        llvm::Value* constant = llvm::ConstantInt::get(llvm::Type::getInt8Ty(context), *cstr);
         valueStack.push(constant);
 
         delete []cstr;

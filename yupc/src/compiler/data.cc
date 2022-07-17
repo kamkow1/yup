@@ -5,11 +5,13 @@
 #include <map>
 #include <stack>
 
+using namespace llvm;
+
 std::string moduleName;
 
-llvm::LLVMContext codegenCtx;
-llvm::IRBuilder<> irBuilder(codegenCtx);
-std::unique_ptr<llvm::Module> module = std::make_unique<llvm::Module>(moduleName, codegenCtx);
-std::map<std::string, llvm::Value*> symbolTable;
+LLVMContext context;
+IRBuilder<> irBuilder(context);
+std::unique_ptr<Module> module = std::make_unique<Module>(moduleName, context);
+std::map<std::string, AllocaInst*> symbolTable;
 
-std::stack<llvm::Value*> valueStack;
+std::stack<Value*> valueStack;

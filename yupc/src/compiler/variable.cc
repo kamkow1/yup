@@ -3,13 +3,15 @@
 #include <messaging/errors.h>
 #include <llvm/Support/TypeName.h>
 
+using namespace llvm;
+
 std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
     // push value to value stack
     this->visit(ctx->expr());
-    llvm::Value* val = valueStack.top();
+    Value* val = valueStack.top();
 
     // assert type
     if (symbolTable.find(name) != symbolTable.end())
@@ -24,13 +26,13 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
         }
 
         std::string exprType;
-        llvm::raw_string_ostream rso(exprType);
+        raw_string_ostream rso(exprType);
         val->getType()->print(rso);
         exprType = getReadableTypeName(rso.str());
 
-        llvm::Value* ogVal = symbolTable[name];
+        Value* ogVal = symbolTable[name];
         std::string ogType;
-        llvm::raw_string_ostream ogRso(ogType);
+        raw_string_ostream ogRso(ogType);
         ogVal->getType()->print(ogRso);
         ogType = getReadableTypeName(ogRso.str());
 
@@ -45,18 +47,43 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
         }
     }
 
-    if (ctx->ASTERISK() != nullptr) // pointer type
+    Type *type = val->getType();
+    AllocaInst *ptr = irBuilder.CreateAlloca(type, 0, name);
+    Type *allocType = ptr->getAllocatedType();
+    irBuilder.CreateStore(val, ptr);
+
+    std::string tn;
+    raw_string_ostream rso(tn);
+    ptr->getType()->print(rso);
+    std::cout << rso.str() << "\n";
+
+
+    // save
+    symbolTable[name] = ptr;
+
+    /*if (ctx->ASTERISK() != nullptr) // pointer type
     {
-        llvm::Constant* addr = llvm::ConstantInt::get(
-            llvm::Type::getInt64Ty(codegenCtx), (int64_t) &val);
-        llvm::Value* ptr = llvm::ConstantExpr::getIntToPtr(
-            addr, llvm::PointerType::getUnqual(llvm::Type::getInt64Ty(codegenCtx)));
-        symbolTable[name] = ptr;
+        // llvm::Constant* addr = llvm::ConstantInt::get(
+            // llvm::Type::getInt64Ty(context), (int64_t) &val);
+        // llvm::Value* ptr = llvm::ConstantExpr::getIntToPtr(
+            // addr, llvm::PointerType::getUnqual(llvm::Type::getInt64Ty(context)));
+
+        // Value *ptr = irBuilder.CreateIntToPtr(val, type, name);
+        // std::string ptrTypeName;
+        // raw_string_ostream rso(ptrTypeName);
+        // ptr->getType()->print(rso);
+        // std::cout << "roman" << rso.str() << "\n";
+    }
+    else if (ctx->AMPERSAND() != nullptr) // is ref type
+    {
+        // TODO: to implement refrerence types
+        logCompilerError("reference types are not implemented yet");
+        exit(1);
     }
     else
     {
         symbolTable[name] = val;
-    }
+    }*/
 
     valueStack.pop();
 
@@ -70,7 +97,7 @@ std::any Visitor::visitIdentifierExpr(YupParser::IdentifierExprContext *ctx)
     llvm::Value* val = symbolTable[name];
     valueStack.push(val);
 
-    return nullptr;
+    return irBuilder.CreateLoad(val->getType(), val, name);
 }
 
 std::any Visitor::visitRef_expr(YupParser::Ref_exprContext *ctx)
@@ -79,5 +106,25 @@ std::any Visitor::visitRef_expr(YupParser::Ref_exprContext *ctx)
     llvm::Value* value = valueStack.top();
     valueStack.pop();
     valueStack.push(value);
+    return nullptr;
+}
+
+std::any Visitor::visitDeref_expr(YupParser::Deref_exprContext *ctx)
+{
+    this->visit(ctx->expr());
+
+    llvm::Value* var = valueStack.top();
+    llvm::Constant* pointerAsInt = llvm::ConstantInt::get(
+        context, llvm::APInt(64, reinterpret_cast<uint64_t>(&var))); 
+
+    llvm::Value* pointer = irBuilder.CreateIntToPtr(
+        pointerAsInt, llvm::Type::getInt64Ty(context));
+
+    llvm::Value* value = irBuilder.CreateLoad(
+        llvm::Type::getInt64Ty(context), pointer);
+
+    valueStack.push(value);
+
+    valueStack.pop();
     return nullptr;
 }

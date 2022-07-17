@@ -4,6 +4,8 @@
 #include <compiler/function.h>
 #include <compiler/type.h>
 
+using namespace llvm;
+
 FuncParam::FuncParam(llvm::Type* type, std::string pn)
 {
     this->paramType = type;
@@ -33,15 +35,18 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
         exit(1);
     }
 
-    llvm::BasicBlock* block = llvm::BasicBlock::Create(codegenCtx, "entry", function);
+    llvm::BasicBlock* block = llvm::BasicBlock::Create(context, "entry", function);
     irBuilder.SetInsertPoint(block);
 
     symbolTable.clear();
 
     for (auto &arg : function->args())
     {
-        symbolTable[arg.getName().str()] = &arg;
+        AllocaInst *alloca = irBuilder.CreateAlloca(arg.getType(), nullptr, arg.getName());
+
+        symbolTable[arg.getName().str()];
     }
+
 
     if (!function->getFunctionType()->getReturnType()->isVoidTy())
     {
@@ -74,7 +79,6 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
     {
         FuncParam* fp = std::any_cast<FuncParam*>(this->visit(p));
         params.push_back(fp);
-        delete fp;
     }
 
     std::vector<llvm::Type*> paramTypes;
@@ -94,13 +98,12 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
             name,
             module.get());
 
-    // TODO: find out why segfaults ?
-    // int c = 0;
-    // for (auto &arg : function->args())
-    // {
-    //     arg.setName(params[c]->paramName);
-    //     c++;
-    // }
+    int argMax = function->arg_size();
+    for (int i = 0; i < argMax; ++i)
+    {
+        std::string pn = params[i]->paramName;
+        function->getArg(i)->setName(pn);
+    }
 
     return function;
 }
@@ -110,7 +113,15 @@ std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
     TypeAnnotation typeAnnot = std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
     llvm::Type* resolvedType = resolveType(typeAnnot.typeName);
 
-    FuncParam* funcParam = new FuncParam(resolvedType, typeAnnot.typeName);
+    // debug
+    std::string typeStr;
+    llvm::raw_string_ostream rso(typeStr);
+    resolvedType->print(rso);
+    std::cout << "type: " << rso.str() << "\n";
+
+    std::string name = ctx->IDENTIFIER()->getText();
+
+    FuncParam* funcParam = new FuncParam(resolvedType, name);
     return funcParam;
 }
 

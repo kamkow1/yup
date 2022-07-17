@@ -33,13 +33,14 @@ public:
     std::any visitIdentifierExpr(YupParser::IdentifierExprContext *ctx) override;
     std::any visitArray(YupParser::ArrayContext *ctx) override;
     std::any visitRef_expr(YupParser::Ref_exprContext *ctx) override;
+    std::any visitDeref_expr(YupParser::Deref_exprContext *ctx) override;
 };
 
 extern std::string moduleName;
 
-extern llvm::LLVMContext codegenCtx;
+extern llvm::LLVMContext context;
 extern llvm::IRBuilder<> irBuilder;
 extern std::unique_ptr<llvm::Module> module;
-extern std::map<std::string, llvm::Value*> symbolTable;
+extern std::map<std::string, llvm::AllocaInst*> symbolTable;
 
 extern std::stack<llvm::Value*> valueStack;

@@ -62,6 +62,8 @@ int main(int argc, char *argv[])
         parser.removeErrorListeners();
         parser.addErrorListener(&parserErrorListener);
 
+        context.setOpaquePointers(false);
+
         YupParser::FileContext* ctx = parser.file();
 
         Visitor visitor;

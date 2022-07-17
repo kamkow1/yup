@@ -57,30 +57,30 @@ llvm::Type* resolveType(std::string typeName)
     switch (resolveBasicType(typeName))
     {
     case I32:
-        return llvm::Type::getInt32Ty(codegenCtx);
+        return llvm::Type::getInt32Ty(context);
     case I64:
-        return llvm::Type::getInt64Ty(codegenCtx);
+        return llvm::Type::getInt64Ty(context);
     case FLOAT:
-        return llvm::Type::getFloatTy(codegenCtx);
+        return llvm::Type::getFloatTy(context);
     case BOOL:
-        return llvm::Type::getInt8Ty(codegenCtx);
+        return llvm::Type::getInt8Ty(context);
     case VOID:
-        return llvm::Type::getVoidTy(codegenCtx);
+        return llvm::Type::getVoidTy(context);
     case CHAR:
-        return llvm::Type::getInt8Ty(codegenCtx);
-
+        return llvm::Type::getInt8Ty(context);
+        
     case P_I32:
-        return llvm::Type::getInt32PtrTy(codegenCtx);
+        return llvm::Type::getInt32PtrTy(context);
     case P_I64:
-        return llvm::Type::getInt64PtrTy(codegenCtx);
+        return llvm::Type::getInt64PtrTy(context);
     case P_FLOAT:
-        return llvm::Type::getFloatPtrTy(codegenCtx);
+        return llvm::Type::getFloatPtrTy(context);
     case P_BOOL:
-        return llvm::Type::getInt8PtrTy(codegenCtx);
+        return llvm::Type::getInt8PtrTy(context);
     case P_VOID:
-        return llvm::Type::getInt8PtrTy(codegenCtx);
+        return llvm::Type::getInt8PtrTy(context);
     case P_CHAR:
-        return llvm::Type::getInt8PtrTy(codegenCtx);
+        return llvm::Type::getInt8PtrTy(context);
 
     default: {
         std::string errorMessage = "couldn't match type \"" + typeName + "\"";
