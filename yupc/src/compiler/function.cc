@@ -94,11 +94,17 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
             name,
             module.get());
 
-    unsigned idx = 0;
-    for (auto &arg : function->args())
-    {
-        arg.setName(params[idx++]->paramName);
-    }
+    std::cout << "before segfault\n";
+
+    // TODO: find out why segfaults ?
+    // int c = 0;
+    // for (auto &arg : function->args())
+    // {
+    //     arg.setName(params[c]->paramName);
+    //     c++;
+    // }
+
+    std::cout << "created function \n";
 
     return function;
 }
