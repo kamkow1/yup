@@ -19,7 +19,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
             ->IDENTIFIER()
             ->getText();
 
-    Function* function = std::any_cast<Function*>(this->visit(ctx->func_signature()));
+    Function *function = std::any_cast<Function*>(this->visit(ctx->func_signature()));
     
     if (!function)
     {
@@ -27,7 +27,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
         exit(1);
     }
 
-    BasicBlock* block = BasicBlock::Create(context, "entry", function);
+    BasicBlock *block = BasicBlock::Create(context, "entry", function);
     irBuilder.SetInsertPoint(block);
 
     symbolTable.clear();
@@ -36,7 +36,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     {
         AllocaInst *alloca = irBuilder.CreateAlloca(arg.getType(), nullptr, arg.getName());
 
-        symbolTable[arg.getName().str()];
+        //symbolTable[arg.getName().str()];
     }
 
 
@@ -44,7 +44,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     {
         this->visit(ctx->code_block());
 
-        Value* retValue = valueStack.top();
+        Value *retValue = valueStack.top();
         irBuilder.CreateRet(retValue);
         valueStack.pop();
     }
@@ -64,17 +64,17 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
     std::string name = ctx->IDENTIFIER()->getText();
     TypeAnnotation typeAnnot = 
         std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
-    Type* returnType = resolveType(typeAnnot.typeName);
+    Type *returnType = resolveType(typeAnnot.typeName);
 
     std::vector<FuncParam*> params;
-    for (YupParser::Func_paramContext* const p : ctx->func_param())
+    for (YupParser::Func_paramContext *const p : ctx->func_param())
     {
-        FuncParam* fp = std::any_cast<FuncParam*>(this->visit(p));
+        FuncParam *fp = std::any_cast<FuncParam*>(this->visit(p));
         params.push_back(fp);
     }
 
     std::vector<Type*> paramTypes;
-    for (const FuncParam* pt : params)
+    for (const FuncParam *pt : params)
     {
         paramTypes.push_back(pt->paramType);
     }
@@ -84,7 +84,7 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
             paramTypes,
             false);
 
-    Function* function = Function::Create(
+    Function *function = Function::Create(
             functionType,
             Function::ExternalLinkage,
             name,
@@ -103,11 +103,11 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
 {
     TypeAnnotation typeAnnot = std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
-    Type* resolvedType = resolveType(typeAnnot.typeName);
+    Type *resolvedType = resolveType(typeAnnot.typeName);
 
     std::string name = ctx->IDENTIFIER()->getText();
 
-    FuncParam* funcParam = new FuncParam{resolvedType, name};
+    FuncParam *funcParam = new FuncParam{resolvedType, name};
     return funcParam;
 }
 
@@ -128,12 +128,12 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
     {
         YupParser::ExprContext* expr = ctx->expr()[i];
         this->visit(expr);
-        Value* argVal = valueStack.top();
+        Value *argVal = valueStack.top();
         args.push_back(argVal);
         valueStack.pop();
     }
 
-    Function* fnCallee = module->getFunction(funcName);
+    Function *fnCallee = module->getFunction(funcName);
 
     if (args.size() != fnCallee->arg_size())
     {

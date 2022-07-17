@@ -59,7 +59,7 @@ std::any Visitor::visitIdentifierExpr(YupParser::IdentifierExprContext *ctx)
 {
     // push value
     std::string name = ctx->IDENTIFIER()->getText();
-    llvm::Value* val = symbolTable[name];
+    llvm::Value *val = symbolTable[name];
     valueStack.push(val);
 
     return irBuilder.CreateLoad(val->getType(), val, name);
@@ -68,7 +68,7 @@ std::any Visitor::visitIdentifierExpr(YupParser::IdentifierExprContext *ctx)
 std::any Visitor::visitRef_expr(YupParser::Ref_exprContext *ctx)
 {
     this->visit(ctx->expr());
-    llvm::Value* value = valueStack.top();
+    llvm::Value *value = valueStack.top();
     valueStack.pop();
     valueStack.push(value);
     return nullptr;
@@ -78,14 +78,14 @@ std::any Visitor::visitDeref_expr(YupParser::Deref_exprContext *ctx)
 {
     this->visit(ctx->expr());
 
-    llvm::Value* var = valueStack.top();
-    llvm::Constant* pointerAsInt = llvm::ConstantInt::get(
+    llvm::Value *var = valueStack.top();
+    llvm::Constant *pointerAsInt = llvm::ConstantInt::get(
         context, llvm::APInt(64, reinterpret_cast<uint64_t>(&var))); 
 
-    llvm::Value* pointer = irBuilder.CreateIntToPtr(
+    llvm::Value *pointer = irBuilder.CreateIntToPtr(
         pointerAsInt, llvm::Type::getInt64Ty(context));
 
-    llvm::Value* value = irBuilder.CreateLoad(
+    llvm::Value *value = irBuilder.CreateLoad(
         llvm::Type::getInt64Ty(context), pointer);
 
     valueStack.push(value);

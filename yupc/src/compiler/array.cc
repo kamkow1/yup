@@ -6,18 +6,18 @@ using namespace llvm;
 
 std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
 {
-    TypeAnnotation* typeAnnot = 
+    TypeAnnotation *typeAnnot = 
         std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
     std::string typeName = typeAnnot->typeName;
     size_t len = ctx->expr().size();
-    ArrayType* type = (ArrayType*) resolveType(typeName);
+    ArrayType *type = (ArrayType*) resolveType(typeName);
 
     std::vector<Constant*> elems;
     for (size_t i = 0; i < len; i++)
     {
-        YupParser::ExprContext* expr = ctx->expr(i);
+        YupParser::ExprContext *expr = ctx->expr(i);
         this->visit(expr);
-        Constant* value = (Constant*) valueStack.top();
+        Constant *value = (Constant*) valueStack.top();
 
         // type check
         std::string valType;
@@ -35,7 +35,7 @@ std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
         valueStack.pop();
     }
 
-    Constant* array = ConstantArray::get(type, makeArrayRef(elems));
+    Constant *array = ConstantArray::get(type, makeArrayRef(elems));
 
     valueStack.push(array);
     return nullptr;
