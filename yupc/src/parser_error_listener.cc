@@ -18,4 +18,5 @@ void ParserErrorListener::syntaxError(antlr4::Recognizer *recognizer,
             + std::to_string(charPositionInLine);
 
     logParsingError(errorMessage);
+    exit(1);
 }

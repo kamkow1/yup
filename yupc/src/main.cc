@@ -99,14 +99,24 @@ int main(int argc, char *argv[])
         if (!emitIR)
         {
             std::string cleanupCommand = "rm -f " + moduleName;
-            std::system(cleanupCommand.c_str());
+            int cleanResult = std::system(cleanupCommand.c_str());
+            if (cleanResult != 0)
+            {
+                logCommandError("failed to execute cmd: " + cleanupCommand);
+                exit(1);
+            }
             logCommandInformation(cleanupCommand);
         }
 
         if (!givePermissions)
         {
             std::string permCommand = "chmod +x " + binaryName;
-            std::system(permCommand.c_str());
+            int premResult = std::system(permCommand.c_str());
+            if (premResult != 0)
+            {
+                logCommandError("failed to give permissions to the binary: " + permCommand);
+                exit(1);
+            }
             logCommandInformation(permCommand);
         }
     });

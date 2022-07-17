@@ -49,3 +49,20 @@ void logParsingError(std::string detail)
         << termcolor::reset
         << "\n";
 }
+
+void logCommandError(std::string detail)
+{
+    std::cout
+    << termcolor::yellow
+    << "["
+    << termcolor::underline
+    << "CMD ERROR"
+    << termcolor::reset
+    << termcolor::yellow
+    << "]: "
+    << termcolor::reset
+    << detail
+    << termcolor::reset
+    << "\n";
+    
+}

@@ -15,6 +15,6 @@ if [ "$debug" = "debug" ]; then
 else
   cd build/ &&
   conan install .. &&
-  cmake .. &&
-  make
+  cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja &&
+  ninja
 fi
