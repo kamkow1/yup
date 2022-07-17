@@ -57,33 +57,8 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     ptr->getType()->print(rso);
     std::cout << rso.str() << "\n";
 
-
     // save
     symbolTable[name] = ptr;
-
-    /*if (ctx->ASTERISK() != nullptr) // pointer type
-    {
-        // llvm::Constant* addr = llvm::ConstantInt::get(
-            // llvm::Type::getInt64Ty(context), (int64_t) &val);
-        // llvm::Value* ptr = llvm::ConstantExpr::getIntToPtr(
-            // addr, llvm::PointerType::getUnqual(llvm::Type::getInt64Ty(context)));
-
-        // Value *ptr = irBuilder.CreateIntToPtr(val, type, name);
-        // std::string ptrTypeName;
-        // raw_string_ostream rso(ptrTypeName);
-        // ptr->getType()->print(rso);
-        // std::cout << "roman" << rso.str() << "\n";
-    }
-    else if (ctx->AMPERSAND() != nullptr) // is ref type
-    {
-        // TODO: to implement refrerence types
-        logCompilerError("reference types are not implemented yet");
-        exit(1);
-    }
-    else
-    {
-        symbolTable[name] = val;
-    }*/
 
     valueStack.pop();
 

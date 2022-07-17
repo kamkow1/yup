@@ -3,12 +3,9 @@
 #include <llvm/IR/Type.h>
 #include <string>
 
-class FuncParam
+struct FuncParam
 {
-public:
-    llvm::Type* paramType;
+    llvm::Type *paramType;
     std::string paramName;
-
-    FuncParam(llvm::Type* type, std::string pn);
 };
 

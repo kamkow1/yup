@@ -6,13 +6,6 @@
 
 using namespace llvm;
 
-FuncParam::FuncParam(Type* type, std::string pn)
-{
-    this->paramType = type;
-    this->paramName = std::move(pn);
-}
-
-
 std::any Visitor::visitFunc_return(YupParser::Func_returnContext *ctx)
 {
     std::any value = this->visit(ctx->expr());
@@ -121,7 +114,7 @@ std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
 
     std::string name = ctx->IDENTIFIER()->getText();
 
-    FuncParam* funcParam = new FuncParam(resolvedType, name);
+    FuncParam* funcParam = new FuncParam{resolvedType, name};
     return funcParam;
 }
 
