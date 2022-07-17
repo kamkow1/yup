@@ -11,8 +11,6 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     this->visit(ctx->expr());
     llvm::Value* val = valueStack.top();
 
-    std::cout << ctx->getText() << "\n";
-
     // assert type
     if (symbolTable.find(name) != symbolTable.end())
     {
@@ -49,7 +47,6 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
 
     if (ctx->ASTERISK() != nullptr) // pointer type
     {
-        std::cout << "pointer type\n";
         llvm::Constant* addr = llvm::ConstantInt::get(
             llvm::Type::getInt64Ty(codegenCtx), (int64_t) &val);
         llvm::Value* ptr = llvm::ConstantExpr::getIntToPtr(

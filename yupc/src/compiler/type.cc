@@ -83,8 +83,6 @@ llvm::Type* resolveType(std::string typeName)
         return llvm::Type::getInt8PtrTy(codegenCtx);
 
     default: {
-        std::cout << "def\n";
-
         std::string errorMessage = "couldn't match type \"" + typeName + "\"";
         logCompilerError(errorMessage);
         exit(1);
