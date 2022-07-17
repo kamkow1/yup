@@ -8,6 +8,7 @@
 #include <messaging/information.h>
 #include <parser_error_listener.h>
 
+using namespace llvm;
 namespace fs = std::filesystem;
 
 int main(int argc, char *argv[]) 
@@ -68,9 +69,9 @@ int main(int argc, char *argv[])
         visitor.visit(ctx);
 
         // dump module to .ll
-        llvm::verifyModule(*module, &llvm::outs());
+        verifyModule(*module, &outs());
         std::error_code ec;
-        llvm::raw_fd_ostream os(moduleName, ec, llvm::sys::fs::OF_None);
+        raw_fd_ostream os(moduleName, ec, sys::fs::OF_None);
         module->print(os, nullptr);
         os.flush();
 

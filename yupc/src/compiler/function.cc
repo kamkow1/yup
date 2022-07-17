@@ -6,7 +6,7 @@
 
 using namespace llvm;
 
-FuncParam::FuncParam(llvm::Type* type, std::string pn)
+FuncParam::FuncParam(Type* type, std::string pn)
 {
     this->paramType = type;
     this->paramName = std::move(pn);
@@ -26,7 +26,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
             ->IDENTIFIER()
             ->getText();
 
-    llvm::Function* function = std::any_cast<llvm::Function*>(this->visit(ctx->func_signature()));
+    Function* function = std::any_cast<Function*>(this->visit(ctx->func_signature()));
     
     if (!function)
     {
@@ -35,7 +35,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
         exit(1);
     }
 
-    llvm::BasicBlock* block = llvm::BasicBlock::Create(context, "entry", function);
+    BasicBlock* block = BasicBlock::Create(context, "entry", function);
     irBuilder.SetInsertPoint(block);
 
     symbolTable.clear();
@@ -52,7 +52,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     {
         this->visit(ctx->code_block());
 
-        llvm::Value* retValue = valueStack.top();
+        Value* retValue = valueStack.top();
         irBuilder.CreateRet(retValue);
         valueStack.pop();
     }
@@ -62,7 +62,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
         irBuilder.CreateRetVoid();
     }
 
-    llvm::verifyFunction(*function, &llvm::outs());
+    verifyFunction(*function, &outs());
 
     return function;
 }
@@ -72,7 +72,7 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
     std::string name = ctx->IDENTIFIER()->getText();
     TypeAnnotation typeAnnot = 
         std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
-    llvm::Type* returnType = resolveType(typeAnnot.typeName);
+    Type* returnType = resolveType(typeAnnot.typeName);
 
     std::vector<FuncParam*> params;
     for (YupParser::Func_paramContext* const p : ctx->func_param())
@@ -81,20 +81,20 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
         params.push_back(fp);
     }
 
-    std::vector<llvm::Type*> paramTypes;
+    std::vector<Type*> paramTypes;
     for (const FuncParam* pt : params)
     {
         paramTypes.push_back(pt->paramType);
     }
 
-    llvm::FunctionType *functionType = llvm::FunctionType::get(
+    FunctionType *functionType = FunctionType::get(
             returnType,
             paramTypes,
             false);
 
-    llvm::Function* function = llvm::Function::Create(
+    Function* function = Function::Create(
             functionType,
-            llvm::Function::ExternalLinkage,
+            Function::ExternalLinkage,
             name,
             module.get());
 
@@ -111,11 +111,11 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
 {
     TypeAnnotation typeAnnot = std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
-    llvm::Type* resolvedType = resolveType(typeAnnot.typeName);
+    Type* resolvedType = resolveType(typeAnnot.typeName);
 
     // debug
     std::string typeStr;
-    llvm::raw_string_ostream rso(typeStr);
+    raw_string_ostream rso(typeStr);
     resolvedType->print(rso);
     std::cout << "type: " << rso.str() << "\n";
 
@@ -137,18 +137,18 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
         exit(1);
     }
 
-    std::vector<llvm::Value*> args;
+    std::vector<Value*> args;
     int exprLength = ctx->expr().size();
     for (unsigned i = 0; i < exprLength; ++i)
     {
         YupParser::ExprContext* expr = ctx->expr()[i];
         this->visit(expr);
-        llvm::Value* argVal = valueStack.top();
+        Value* argVal = valueStack.top();
         args.push_back(argVal);
         valueStack.pop();
     }
 
-    llvm::Function* fnCallee = module->getFunction(funcName);
+    Function* fnCallee = module->getFunction(funcName);
 
     if (args.size() != fnCallee->arg_size())
     {

@@ -5,6 +5,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+using namespace llvm;
+
 enum BasicType : size_t {
     I32,
     I64,
@@ -52,35 +54,35 @@ BasicType resolveBasicType(std::string match)
     }
 }
 
-llvm::Type* resolveType(std::string typeName)
+Type* resolveType(std::string typeName)
 {
     switch (resolveBasicType(typeName))
     {
     case I32:
-        return llvm::Type::getInt32Ty(context);
+        return Type::getInt32Ty(context);
     case I64:
-        return llvm::Type::getInt64Ty(context);
+        return Type::getInt64Ty(context);
     case FLOAT:
-        return llvm::Type::getFloatTy(context);
+        return Type::getFloatTy(context);
     case BOOL:
-        return llvm::Type::getInt8Ty(context);
+        return Type::getInt8Ty(context);
     case VOID:
-        return llvm::Type::getVoidTy(context);
+        return Type::getVoidTy(context);
     case CHAR:
-        return llvm::Type::getInt8Ty(context);
+        return Type::getInt8Ty(context);
         
     case P_I32:
-        return llvm::Type::getInt32PtrTy(context);
+        return Type::getInt32PtrTy(context);
     case P_I64:
-        return llvm::Type::getInt64PtrTy(context);
+        return Type::getInt64PtrTy(context);
     case P_FLOAT:
-        return llvm::Type::getFloatPtrTy(context);
+        return Type::getFloatPtrTy(context);
     case P_BOOL:
-        return llvm::Type::getInt8PtrTy(context);
+        return Type::getInt8PtrTy(context);
     case P_VOID:
-        return llvm::Type::getInt8PtrTy(context);
+        return Type::getInt8PtrTy(context);
     case P_CHAR:
-        return llvm::Type::getInt8PtrTy(context);
+        return Type::getInt8PtrTy(context);
 
     default: {
         std::string errorMessage = "couldn't match type \"" + typeName + "\"";

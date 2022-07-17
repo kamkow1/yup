@@ -2,24 +2,26 @@
 #include <compiler/type.h>
 #include <messaging/errors.h>
 
+using namespace llvm;
+
 std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
 {
     TypeAnnotation* typeAnnot = 
         std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
     std::string typeName = typeAnnot->typeName;
     size_t len = ctx->expr().size();
-    llvm::ArrayType* type = (llvm::ArrayType*) resolveType(typeName);
+    ArrayType* type = (ArrayType*) resolveType(typeName);
 
-    std::vector<llvm::Constant*> elems;
+    std::vector<Constant*> elems;
     for (size_t i = 0; i < len; i++)
     {
         YupParser::ExprContext* expr = ctx->expr(i);
         this->visit(expr);
-        llvm::Constant* value = (llvm::Constant*) valueStack.top();
+        Constant* value = (Constant*) valueStack.top();
 
         // type check
         std::string valType;
-        llvm::raw_string_ostream valRSO(valType);
+        raw_string_ostream valRSO(valType);
         value->getType()->print(valRSO);
         if (valRSO.str() != typeName)
         {
@@ -33,7 +35,7 @@ std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
         valueStack.pop();
     }
 
-    llvm::Constant* array = llvm::ConstantArray::get(type, llvm::makeArrayRef(elems));
+    Constant* array = ConstantArray::get(type, makeArrayRef(elems));
 
     valueStack.push(array);
     return nullptr;
