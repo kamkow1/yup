@@ -11,7 +11,7 @@ statement           :   expr                    TERMINATOR
                     |   assignment              TERMINATOR
                     |   func_return             TERMINATOR;
 
-assignment          :   CONST? IDENTIFIER ASSIGN expr;
+assignment          :   CONST? IDENTIFIER (ASTERISK | AMPERSAND)? ASSIGN expr;
 
 func_def            :   func_signature code_block;
 
@@ -23,14 +23,20 @@ code_block          :   LBRACE statement* RBRACE;
 
 func_param          :   IDENTIFIER type_annot;
 
-type_annot          :   TYPE_ANNOTATION array_type? IDENTIFIER;
+type_annot          :   TYPE_ANNOTATION array_type? IDENTIFIER (ASTERISK | AMPERSAND)?;
 
-array_type          :   LSQBR V_INT RSQBR;
+array_type          :   LSQBR RSQBR;
+
+ref_expr            :   AMPERSAND expr;
+
+deref_expr          :   ASTERISK expr;
 
 expr                :   constant                #ConstantExpr
                     |   func_call               #FuncCallExpr
                     |   IDENTIFIER              #IdentifierExpr
-                    |   array                   #ArrayExpr;
+                    |   array                   #ArrayExpr
+                    |   ref_expr                #RefExpr
+                    |   deref_expr              #DerefExpr;
 
 array               :   LSQBR (expr (COMMA expr)*)? RSQBR type_annot;
 

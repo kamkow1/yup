@@ -8,7 +8,7 @@ std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
         std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
     std::string typeName = typeAnnot->typeName;
     size_t len = ctx->expr().size();
-    llvm::ArrayType* type = (llvm::ArrayType*) resolveType(typeName, len);
+    llvm::ArrayType* type = (llvm::ArrayType*) resolveType(typeName);
 
     std::vector<llvm::Constant*> elems;
     for (size_t i = 0; i < len; i++)

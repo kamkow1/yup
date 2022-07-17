@@ -11,6 +11,8 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     this->visit(ctx->expr());
     llvm::Value* val = valueStack.top();
 
+    std::cout << ctx->getText() << "\n";
+
     // assert type
     if (symbolTable.find(name) != symbolTable.end())
     {
@@ -45,7 +47,20 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
         }
     }
 
-    symbolTable[name] = val;
+    if (ctx->ASTERISK() != nullptr) // pointer type
+    {
+        std::cout << "pointer type\n";
+        llvm::Constant* addr = llvm::ConstantInt::get(
+            llvm::Type::getInt64Ty(codegenCtx), (int64_t) &val);
+        llvm::Value* ptr = llvm::ConstantExpr::getIntToPtr(
+            addr, llvm::PointerType::getUnqual(llvm::Type::getInt64Ty(codegenCtx)));
+        symbolTable[name] = ptr;
+    }
+    else
+    {
+        symbolTable[name] = val;
+    }
+
     valueStack.pop();
 
     return true;
@@ -58,5 +73,14 @@ std::any Visitor::visitIdentifierExpr(YupParser::IdentifierExprContext *ctx)
     llvm::Value* val = symbolTable[name];
     valueStack.push(val);
 
+    return nullptr;
+}
+
+std::any Visitor::visitRef_expr(YupParser::Ref_exprContext *ctx)
+{
+    this->visit(ctx->expr());
+    llvm::Value* value = valueStack.top();
+    valueStack.pop();
+    valueStack.push(value);
     return nullptr;
 }

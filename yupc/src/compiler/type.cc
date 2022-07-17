@@ -5,12 +5,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-TypeAnnotation::TypeAnnotation(std::string tn, uint64_t al)
-{
-    this->typeName = tn;
-    this->arrayLen = al;
-}
-
 enum BasicType : size_t {
     I32,
     I64,
@@ -18,6 +12,15 @@ enum BasicType : size_t {
     BOOL,
     VOID,
     CHAR,
+
+    // pointer types
+    P_I32,
+    P_I64,
+    P_FLOAT,
+    P_BOOL,
+    P_VOID,
+    P_CHAR,
+
     INVALID
 };
 
@@ -25,11 +28,17 @@ BasicType resolveBasicType(std::string match)
 {
     static const std::map<std::string, BasicType> types
     {
-        {"i32", I32},
-        {"i64", I64},
-        {"float", FLOAT},
-        {"void", VOID},
-        {"char", CHAR}
+        { "i32",        I32 },
+        { "i64",        I64 },
+        { "float",      FLOAT },
+        { "void",       VOID },
+        { "char",       CHAR },
+
+        {"i32*",        P_I32 },
+        {"i64*",        P_I64 },
+        {"float*",      P_FLOAT },
+        {"void*",       P_VOID },
+        {"char*",       P_CHAR }
     };
 
     auto itr = types.find(match);
@@ -43,7 +52,7 @@ BasicType resolveBasicType(std::string match)
     }
 }
 
-llvm::Type* resolveType(std::string typeName, size_t arraySize)
+llvm::Type* resolveType(std::string typeName)
 {
     switch (resolveBasicType(typeName))
     {
@@ -59,47 +68,44 @@ llvm::Type* resolveType(std::string typeName, size_t arraySize)
         return llvm::Type::getVoidTy(codegenCtx);
     case CHAR:
         return llvm::Type::getInt8Ty(codegenCtx);
-    default: {
-        if (boost::algorithm::contains(typeName, "[]")) // is array
-        {
-            boost::erase_all(typeName, "[]");
-            llvm::Type* primitive = resolveType(typeName);
-            BasicType basicType = resolveBasicType(typeName);
-            if (basicType != INVALID) // is array of primitives
-            {
-                return llvm::ArrayType::get(primitive, arraySize);
-            }
-            else // is array of structs
-            {
-                logCompilerError("struct arrays are not implemented yet!");
-                exit(1);
-                /* boost::erase_all(typeName, "[]");
-                llvm::StructType* str = (llvm::StructType*) resolveType(typeName);
-                return llvm::ArrayType::get(str, arraySize); */
-            }
-        }
-        else // is struct
-        {
-            logCompilerError("structs are not implemented yet!");
-            exit(1);
-            return nullptr;
-        }
-    }
-    }
 
-    std::string errorMessage = "couldn't match type \"" + typeName + "\"";
-    logCompilerError(errorMessage);
-    exit(1);
-    return nullptr;
+    case P_I32:
+        return llvm::Type::getInt32PtrTy(codegenCtx);
+    case P_I64:
+        return llvm::Type::getInt64PtrTy(codegenCtx);
+    case P_FLOAT:
+        return llvm::Type::getFloatPtrTy(codegenCtx);
+    case P_BOOL:
+        return llvm::Type::getInt8PtrTy(codegenCtx);
+    case P_VOID:
+        return llvm::Type::getInt8PtrTy(codegenCtx);
+    case P_CHAR:
+        return llvm::Type::getInt8PtrTy(codegenCtx);
+
+    default: {
+        std::cout << "def\n";
+
+        std::string errorMessage = "couldn't match type \"" + typeName + "\"";
+        logCompilerError(errorMessage);
+        exit(1);
+        return nullptr;
+    }
+    }
 }
 
 std::any Visitor::visitType_annot(YupParser::Type_annotContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
-    size_t arrSize = ctx->array_type() != nullptr 
-        ? boost::lexical_cast<size_t>(ctx->array_type()->V_INT()->getText())
-        : 0;
+    if (ctx->ASTERISK() != nullptr)
+    {
+        name += "*";
+    }
 
-    TypeAnnotation* p_ta = new TypeAnnotation(name, arrSize);
-    return p_ta;
+    if (ctx->AMPERSAND() != nullptr)
+    {
+        name += "&";
+    }
+
+    TypeAnnotation ta = TypeAnnotation{name};
+    return ta;
 }

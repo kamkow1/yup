@@ -15,6 +15,9 @@ RBRACE              :   '}';
 LSQBR               :   '[';  
 RSQBR               :   ']';
 COMMA               :   ',';
+QUEST_MARK          :   '?';
+ASTERISK            :   '*';
+AMPERSAND           :   '&';
 
 V_CHAR              :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 V_STRING            :   '"' (~[\\"\r\n])* '"';

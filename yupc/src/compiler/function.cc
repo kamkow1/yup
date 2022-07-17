@@ -43,7 +43,6 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
         symbolTable[arg.getName().str()] = &arg;
     }
 
-
     if (!function->getFunctionType()->getReturnType()->isVoidTy())
     {
         this->visit(ctx->code_block());
@@ -66,9 +65,9 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
 std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
-    TypeAnnotation* typeAnnot = 
-        std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
-    llvm::Type* returnType = resolveType(typeAnnot->typeName, typeAnnot->arrayLen);
+    TypeAnnotation typeAnnot = 
+        std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
+    llvm::Type* returnType = resolveType(typeAnnot.typeName);
 
     std::vector<FuncParam*> params;
     for (YupParser::Func_paramContext* const p : ctx->func_param())
@@ -106,10 +105,10 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 
 std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
 {
-    TypeAnnotation* typeAnnot = std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
-    llvm::Type* resolvedType = resolveType(typeAnnot->typeName, typeAnnot->arrayLen);
+    TypeAnnotation typeAnnot = std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
+    llvm::Type* resolvedType = resolveType(typeAnnot.typeName);
 
-    FuncParam* funcParam = new FuncParam(resolvedType, typeAnnot->typeName);
+    FuncParam* funcParam = new FuncParam(resolvedType, typeAnnot.typeName);
     return funcParam;
 }
 
