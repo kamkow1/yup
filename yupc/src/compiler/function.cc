@@ -23,8 +23,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     
     if (!function)
     {
-        std::string errorMessage = "cannot resolve the signature for function " + funcName;
-        logCompilerError(errorMessage);
+        logCompilerError("cannot resolve the signature for function " + funcName);
         exit(1);
     }
 
@@ -118,9 +117,8 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
 
     if (symbolTable.find(funcName) != symbolTable.end())
     {
-        std::string errorMessage
-            = "cannot call function \"" + funcName + "\" because it doesn't exist in the symbol table";
-        logCompilerError(errorMessage);
+        logCompilerError("cannot call function \"" + funcName 
+            + "\" because it doesn't exist in the symbol table");
         exit(1);
     }
 
@@ -139,9 +137,9 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
 
     if (args.size() != fnCallee->arg_size())
     {
-        std::string errorMessage= "found function \"" + funcName
-                + "\" but couldn't match given argument list length to the function signature";
-        logCompilerError(errorMessage);
+        logCompilerError("found function \"" + funcName
+            + "\" but couldn't match given argument" 
+            + " list length to the function signature");
         exit(1);
     }
 

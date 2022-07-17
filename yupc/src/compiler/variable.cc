@@ -19,9 +19,7 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
         bool isConst = ctx->CONST() == nullptr;
         if (isConst)
         {
-            std::string errorMessage 
-                = "cannot reassign a constant \"" + name + "\"";
-            logCompilerError(errorMessage);
+            logCompilerError("cannot reassign a constant \"" + name + "\"");
             exit(1);
         }
 
@@ -38,11 +36,8 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
 
         if (exprType != ogType)
         {
-            std::string errorMessage 
-                = "mismatch of types \"" + ogType 
-                + "\" and \"" + exprType + "\"";
-
-            logCompilerError(errorMessage);
+            logCompilerError("mismatch of types \"" + ogType 
+                + "\" and \"" + exprType + "\"");
             exit(1);
         }
     }

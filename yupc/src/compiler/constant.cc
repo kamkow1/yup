@@ -48,7 +48,6 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         return nullptr;
     }
 
-    std::string errorMessage = "couldn't match type and create a constant";
-    logCompilerError(errorMessage);
+    logCompilerError("couldn't match type and create a constant");
     exit(1);
 }
