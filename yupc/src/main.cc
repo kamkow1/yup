@@ -29,10 +29,6 @@ int main(int argc, char *argv[])
     build_cmd
         ->add_option("-t,--target", targetName, "specifies target for clang");
 
-    std::string mmcu;
-    build_cmd
-        ->add_option("-m,--mmcu", mmcu, "specifies target microcontroller (when --target == avr)");
-
     bool emitIR;
     build_cmd
         ->add_flag("--ir,--emit-ir", emitIR, "enables emitting of the llvm intermediate representation");
@@ -88,7 +84,6 @@ int main(int argc, char *argv[])
                 "clang --output " + binaryName + " " + moduleName
                 + " -march=" + archName
                 + (targetName.length() > 0 ? " --target=" + targetName : "")
-                + (mmcu.length() > 0 ? " -mmcu="+ mmcu : "")
                 // clang flags
                 + " -Wno-override-module"
                 + " -Wno-unused-command-line-argument";
