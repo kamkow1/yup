@@ -52,11 +52,6 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     Type *allocType = ptr->getAllocatedType();
     irBuilder.CreateStore(val, ptr);
 
-    std::string tn;
-    raw_string_ostream rso(tn);
-    ptr->getType()->print(rso);
-    std::cout << rso.str() << "\n";
-
     // save
     symbolTable[name] = ptr;
 

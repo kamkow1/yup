@@ -106,12 +106,6 @@ std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
     TypeAnnotation typeAnnot = std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
     Type* resolvedType = resolveType(typeAnnot.typeName);
 
-    // debug
-    std::string typeStr;
-    raw_string_ostream rso(typeStr);
-    resolvedType->print(rso);
-    std::cout << "type: " << rso.str() << "\n";
-
     std::string name = ctx->IDENTIFIER()->getText();
 
     FuncParam* funcParam = new FuncParam{resolvedType, name};
