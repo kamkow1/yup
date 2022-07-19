@@ -29,7 +29,6 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     {
         Variable var = variables[name];
         bool isConst = var.isConst;
-        std::cout << "is const " << isConst << "\n";
         if (isConst)
         {
             logCompilerError("cannot reassign a constant \"" + name + "\"");
@@ -96,11 +95,6 @@ std::any Visitor::visitIdentifierExpr(YupParser::IdentifierExprContext *ctx)
     valueStack.pop();
 
     valueStack.push(load);
-    // valueStack.push(val);
-    // Type *type = val->getType();
-
-    // LoadInst *load = irBuilder.CreateLoad(type, val, name);
-    // valueStack.push(load);
     return nullptr;
 }
 
