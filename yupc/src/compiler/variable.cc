@@ -6,6 +6,14 @@
 
 using namespace llvm;
 
+struct Variable
+{
+    std::string name;
+    bool        isConst;
+};
+
+static std::map<std::string, Variable> variables;
+
 std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
@@ -19,7 +27,10 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     // no let -> assume variable exists
     if (ctx->LET() == nullptr)
     {
-        if (ctx->CONST() != nullptr)
+        Variable var = variables[name];
+        bool isConst = var.isConst;
+        std::cout << "is const " << isConst << "\n";
+        if (isConst)
         {
             logCompilerError("cannot reassign a constant \"" + name + "\"");
             exit(1);
@@ -60,6 +71,15 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     symbolTable[name] = ptr;
 
     valueStack.pop();
+
+    bool isConst = ctx->CONST() != nullptr;
+
+    // init
+    Variable var = {
+        name,
+        isConst
+    };
+    variables[name] = var;
 
     return nullptr;
 }
