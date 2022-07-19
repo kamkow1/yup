@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
                 + " -march=" + archName
                 + (targetName.length() > 0 ? " --target=" + targetName : "")
                 // clang flags
+                + " -Wno-deprecated-declarations"
                 + " -Wno-override-module"
                 + " -Wno-unused-command-line-argument";
 

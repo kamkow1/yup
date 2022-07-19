@@ -46,9 +46,5 @@ std::string getReadableTypeName(std::string typeName)
         return "bool";
     }
     
-    std::string errorMessage 
-        = "couldn't \"pretty-print\" type name \"" 
-        + typeName + "\"";
-
-    exit(1);
+    return typeName;
 }

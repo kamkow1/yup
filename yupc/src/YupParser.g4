@@ -11,7 +11,7 @@ statement           :   expr                    TERMINATOR
                     |   assignment              TERMINATOR
                     |   func_return             TERMINATOR;
 
-assignment          :   CONST? IDENTIFIER (ASTERISK | AMPERSAND)? ASSIGN expr;
+assignment          :   CONST? LET? IDENTIFIER (ASTERISK | AMPERSAND)? ASSIGN expr;
 
 func_def            :   func_signature code_block;
 
