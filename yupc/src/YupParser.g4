@@ -9,9 +9,12 @@ file                :   statement*;
 statement           :   expr                    TERMINATOR
                     |   func_def
                     |   assignment              TERMINATOR
-                    |   func_return             TERMINATOR;
+                    |   func_return             TERMINATOR
+                    |   var_declare             TERMINATOR;
 
-assignment          :   CONST? LET? IDENTIFIER (ASTERISK | AMPERSAND)? ASSIGN expr;
+assignment          :   IDENTIFIER ASSIGN expr;
+
+var_declare         :   CONST? LET? IDENTIFIER (ASSIGN expr)?;
 
 func_def            :   func_signature code_block;
 

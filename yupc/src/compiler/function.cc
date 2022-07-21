@@ -34,9 +34,8 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
 
     for (auto &arg : function->args())
     {
-        AllocaInst *alloca = irBuilder.CreateAlloca(arg.getType(), nullptr, arg.getName());
-
-        //symbolTable[arg.getName().str()];
+        AllocaInst *alloca = irBuilder.CreateAlloca(arg.getType(), 0, arg.getName());
+        symbolTable[arg.getName().str()] = alloca;
     }
 
 
