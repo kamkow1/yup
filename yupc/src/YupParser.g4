@@ -27,16 +27,10 @@ type_annot          :   TYPE_ANNOTATION array_type? IDENTIFIER (ASTERISK | AMPER
 
 array_type          :   LSQBR RSQBR;
 
-ref_expr            :   AMPERSAND expr;
-
-deref_expr          :   ASTERISK expr;
-
 expr                :   constant                #ConstantExpr
                     |   func_call               #FuncCallExpr
                     |   IDENTIFIER              #IdentifierExpr
-                    |   array                   #ArrayExpr
-                    |   ref_expr                #RefExpr
-                    |   deref_expr              #DerefExpr;
+                    |   array                   #ArrayExpr;
 
 array               :   LSQBR (expr (COMMA expr)*)? RSQBR type_annot;
 
