@@ -1,8 +1,9 @@
-#include <visitor.h>
-#include <util.h>
-#include <messaging/errors.h>
-#include <llvm/Support/TypeName.h>
-#include <llvm/Support/Alignment.h>
+#include "visitor.h"
+#include "util.h"
+#include "messaging/errors.h"
+#include "llvm/Support/TypeName.h"
+#include "llvm/Support/Alignment.h"
+#include "compiler/type.h"
 
 using namespace llvm;
 
@@ -40,41 +41,17 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
 
     // push value to value stack
     this->visit(ctx->expr());
-    Value* val = valueStack.top();
+    Value *val = valueStack.top();
 
     Variable var = variables[name];
     bool isConst = var.isConst;
 
+    // check passes if program doesn't exit
+    checkValueType(val, name);
+
     if (isConst)
     {
         logCompilerError("cannot reassign a constant \"" + name + "\"");
-        exit(1);
-    }
-
-    std::string exprType;
-    raw_string_ostream rso(exprType);
-    val->getType()->print(rso);
-    exprType = getReadableTypeName(rso.str());
-
-    Value* ogVal = symbolTable[name];
-    std::string ogType;
-    raw_string_ostream ogRso(ogType);
-    ogVal->getType()->print(ogRso);
-    ogType = getReadableTypeName(ogRso.str());
-
-    if (ogType[ogType.length() - 1] == '*')
-    {
-        int pos = ogType.find('*');
-        if (pos != std::string::npos)
-        {
-            ogType.erase(pos);
-        }
-    }
-
-    if (exprType != ogType)
-    {
-        logCompilerError("mismatch of types \"" + ogType 
-            + "\" and \"" + exprType + "\"");
         exit(1);
     }
 

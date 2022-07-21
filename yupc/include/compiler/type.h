@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
-#include <llvm/IR/Type.h>
+#include "string.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Value.h"
 
 struct TypeAnnotation
 {
@@ -9,3 +10,7 @@ struct TypeAnnotation
 };
 
 llvm::Type* resolveType(std::string typeName);
+
+std::string getReadableTypeName(std::string typeName);
+
+void checkValueType(llvm::Value *val, std::string name);

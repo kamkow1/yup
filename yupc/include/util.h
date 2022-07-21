@@ -14,5 +14,3 @@ std::string fileToString(const std::string& path);
 std::string dirnameOf(const std::string& fname);
 
 std::string getIRFileName(std::string path);
-
-std::string getReadableTypeName(std::string typeName);

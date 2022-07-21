@@ -42,6 +42,7 @@ set (SRCS
     src/compiler/visitor.cc
     src/compiler/variable.cc
     src/compiler/array.cc
+    src/compiler/type_checking.cc
     src/lexer/YupLexer.cc
     src/messaging/errors.cc
     src/messaging/information.cc

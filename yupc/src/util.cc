@@ -38,13 +38,3 @@ std::string getIRFileName(std::string path)
     fs::path fullName = directory + "/" + noExt + ".ll";
     return fullName;
 }
-
-std::string getReadableTypeName(std::string typeName)
-{
-    if (typeName == "i8")
-    {
-        return "bool";
-    }
-    
-    return typeName;
-}
