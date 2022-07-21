@@ -1,6 +1,6 @@
 # yup programming language
 ## what is "yup"?
-yup is a programming language "challange" - implement a c/rust-like language.
+yup is a "challange" programming language - the goal is to implement a c/rust-like language.
 The yup compiler is developed using LLVM as backend.
 ## goal checklist
 * basics :x:
@@ -31,3 +31,29 @@ The yup compiler is developed using LLVM as backend.
     - :x: generics
     - :x: reflection
     - :x: built in yup interpreter
+
+## example code snippet
+
+```text
+fun hello(a :: i32) :: i32 {
+    return 74;
+}
+
+fun getChar(c :: char) :: char {
+    const let res = c;
+    return res;
+}
+
+fun main() :: void {
+    let x = 1;
+    let y = x;
+
+    y = 2;
+
+    let a = y;
+
+    let b = hello(a);
+
+    let c = getChar('s');
+}
+```
