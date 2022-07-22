@@ -67,12 +67,7 @@ Type* resolveType(std::string typeName)
 }
 
 std::string getReadableTypeName(std::string typeName)
-{
-    if (typeName == "i8")
-    {
-        return "bool";
-    }
-    
+{    
     return typeName;
 }
 
@@ -96,6 +91,11 @@ void checkValueType(Value *val, std::string name)
         {
             ogType.erase(pos);
         }
+    }
+
+    if ((ogType == "bool" || ogType == "char") || exprType == "i8")
+    {
+        return;
     }
 
     if (exprType != ogType)

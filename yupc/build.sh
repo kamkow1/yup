@@ -1,11 +1,11 @@
 debug=$1
 
-if [[ ! -d build ]]; then
+if [ ! -d build ]; then
   mkdir build
 fi
 
 if [ "$debug" = "debug" ]; then
-  if [[ ! -d debug ]]; then
+  if [ ! -d debug ]; then
     mkdir debug
   fi
   cd debug/ &&

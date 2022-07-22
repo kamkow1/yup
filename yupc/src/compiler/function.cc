@@ -33,14 +33,18 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     std::map<std::string, AllocaInst*> map;
     symbolTable.push(map);
 
-    for (auto &arg : function->args())
+    size_t len = function->arg_size();
+    for (size_t i = 0; i < len; ++i)
     {
+        Argument &arg = *function->getArg(i);
+
         AllocaInst *alloca = irBuilder.CreateAlloca(arg.getType(), 0, arg.getName());
         symbolTable.top()[arg.getName().str()] = alloca;
+        irBuilder.CreateStore(&arg, alloca);
     }
 
-
-    if (!function->getFunctionType()->getReturnType()->isVoidTy())
+    bool isVoid = function->getReturnType()->isVoidTy();
+    if (!isVoid)
     {
         this->visit(ctx->code_block());
 
@@ -123,6 +127,8 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
         exit(1);
     }
 
+    Function *fnCallee = module->getFunction(funcName);
+
     std::vector<Value*> args;
     int exprLength = ctx->expr().size();
     for (unsigned i = 0; i < exprLength; ++i)
@@ -134,7 +140,6 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
         valueStack.pop();
     }
 
-    Function *fnCallee = module->getFunction(funcName);
 
     if (args.size() != fnCallee->arg_size())
     {
@@ -144,9 +149,18 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
         exit(1);
     }
 
-    std::string callLabel = std::string("call") + "_" + funcName;
 
-    auto result = irBuilder.CreateCall(fnCallee, args, callLabel);
-    valueStack.push(result);
+    bool isVoid = fnCallee->getReturnType()->isVoidTy();
+    if (isVoid)
+    {
+        CallInst *result = irBuilder.CreateCall(fnCallee, args, "");
+        valueStack.push(result);
+    }
+    else
+    {
+        std::string callLabel = std::string("call") + "_" + funcName;
+        CallInst *result = irBuilder.CreateCall(fnCallee, args, callLabel);
+        valueStack.push(result);
+    }
     return nullptr;
 }
