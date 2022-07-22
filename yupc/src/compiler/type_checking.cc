@@ -25,7 +25,8 @@ BasicType resolveBasicType(std::string match)
         { "i64",        I64 },
         { "float",      FLOAT },
         { "void",       VOID },
-        { "char",       CHAR }
+        { "char",       CHAR },
+        { "bool",       BOOL}
     };
 
     auto itr = types.find(match);
