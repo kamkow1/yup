@@ -11,24 +11,14 @@
 #include "unistd.h"
 
 using namespace llvm;
+using namespace CLI;
 namespace fs = std::filesystem;
-
-template<typename F>
-F trunc_decs(const F& f, int decs)
-{
-    int i1 = floor(f);
-    F rmnd = f - i1;
-    int i2 = static_cast<int>(rmnd * pow(10, decs));
-    F f1 = i2 / pow(10, decs);
-
-    return i1 + f1;
-}
 
 int main(int argc, char *argv[]) 
 {
-    CLI::App cli{"a compiler for the yup programming language"};
+    App cli{"a compiler for the yup programming language"};
 
-    CLI::App* build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
+    App *build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
 
     std::string src_path;
     build_cmd

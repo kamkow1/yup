@@ -12,6 +12,6 @@ std::string moduleName;
 LLVMContext context;
 IRBuilder<> irBuilder(context);
 std::unique_ptr<Module> module = std::make_unique<Module>(moduleName, context);
-std::map<std::string, AllocaInst*> symbolTable;
+std::stack<std::map<std::string, llvm::AllocaInst*>> symbolTable;
 
 std::stack<Value*> valueStack;

@@ -82,7 +82,7 @@ void checkValueType(Value *val, std::string name)
     val->getType()->print(rso);
     exprType = getReadableTypeName(rso.str());
 
-    Value* ogVal = symbolTable[name];
+    Value* ogVal = symbolTable.top()[name];
     std::string ogType;
     raw_string_ostream ogRso(ogType);
     ogVal->getType()->print(ogRso);

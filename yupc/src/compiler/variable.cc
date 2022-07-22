@@ -24,7 +24,7 @@ std::any Visitor::visitVar_declare(YupParser::Var_declareContext *ctx)
     Type *type = val->getType();
     AllocaInst *ptr = irBuilder.CreateAlloca(type, 0, name);
     irBuilder.CreateStore(val, ptr, false);
-    symbolTable[name] = ptr;
+    symbolTable.top()[name] = ptr;
 
     valueStack.push(ptr);
 
@@ -56,7 +56,7 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     }
 
     Type *type = val->getType();
-    AllocaInst *stored = symbolTable[name];
+    AllocaInst *stored = symbolTable.top()[name];
     irBuilder.CreateStore(val, stored, false);
 
     valueStack.pop();
@@ -68,7 +68,7 @@ std::any Visitor::visitIdentifierExpr(YupParser::IdentifierExprContext *ctx)
 {
     // push value
     std::string name = ctx->IDENTIFIER()->getText();
-    AllocaInst *value = symbolTable[name];
+    AllocaInst *value = symbolTable.top()[name];
     Type *type = value->getAllocatedType();
 
     LoadInst *load = irBuilder.CreateLoad(type, value, name);

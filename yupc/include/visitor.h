@@ -39,6 +39,6 @@ extern std::string moduleName;
 extern llvm::LLVMContext context;
 extern llvm::IRBuilder<> irBuilder;
 extern std::unique_ptr<llvm::Module> module;
-extern std::map<std::string, llvm::AllocaInst*> symbolTable;
+extern std::stack<std::map<std::string, llvm::AllocaInst*>> symbolTable;
 
 extern std::stack<llvm::Value*> valueStack;

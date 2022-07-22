@@ -30,12 +30,13 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     BasicBlock *block = BasicBlock::Create(context, "entry", function);
     irBuilder.SetInsertPoint(block);
 
-    symbolTable.clear();
+    std::map<std::string, AllocaInst*> map;
+    symbolTable.push(map);
 
     for (auto &arg : function->args())
     {
         AllocaInst *alloca = irBuilder.CreateAlloca(arg.getType(), 0, arg.getName());
-        symbolTable[arg.getName().str()] = alloca;
+        symbolTable.top()[arg.getName().str()] = alloca;
     }
 
 
@@ -54,6 +55,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     }
 
     verifyFunction(*function, &outs());
+    symbolTable.pop();
 
     return function;
 }
@@ -114,7 +116,7 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
 {
     std::string funcName = ctx->IDENTIFIER()->getText();
 
-    if (symbolTable.find(funcName) != symbolTable.end())
+    if (symbolTable.top().find(funcName) != symbolTable.top().end())
     {
         logCompilerError("cannot call function \"" + funcName 
             + "\" because it doesn't exist in the symbol table");
