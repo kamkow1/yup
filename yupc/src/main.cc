@@ -7,9 +7,22 @@
 #include "util.h"
 #include "messaging/information.h"
 #include "parser_error_listener.h"
+#include "sys/ioctl.h"
+#include "unistd.h"
 
 using namespace llvm;
 namespace fs = std::filesystem;
+
+template<typename F>
+F trunc_decs(const F& f, int decs)
+{
+    int i1 = floor(f);
+    F rmnd = f - i1;
+    int i2 = static_cast<int>(rmnd * pow(10, decs));
+    F f1 = i2 / pow(10, decs);
+
+    return i1 + f1;
+}
 
 int main(int argc, char *argv[]) 
 {
@@ -38,16 +51,14 @@ int main(int argc, char *argv[])
     build_cmd
         ->add_flag("--np,--no-perm", givePermissions, "allows the compiler to give permissions to the binary file");
 
+    bool verbose;
+    build_cmd
+        ->add_flag("-v, --verbose", verbose, "enables verbose compiler output");
+
     build_cmd->callback([&]() 
     {
         std::string abs_src_path = fs::absolute(src_path);
         std::string src_content = fileToString(abs_src_path);
-
-        std::string targetInfo = "selected architecture " + archName;
-        logCommandInformation(targetInfo);
-
-        std::string commandInfo = "compiling source file " + abs_src_path;
-        logCommandInformation(commandInfo);
 
         antlr4::ANTLRInputStream input(src_content);
         YupLexer lexer(&input);
@@ -75,8 +86,11 @@ int main(int argc, char *argv[])
         module->print(os, nullptr);
         os.flush();
 
-        std::string info = "dumped module " + moduleName;
-        logCommandInformation(info);
+        if (verbose)
+        {
+            std::string info = "dumped module " + moduleName;
+            logCommandInformation(info);
+        }
 
         // -3 is .ll
         std::string binaryName = moduleName.substr(0, moduleName.size() - 3);
@@ -90,11 +104,19 @@ int main(int argc, char *argv[])
                 + " -Wno-override-module"
                 + " -Wno-unused-command-line-argument";
 
-        logCommandInformation(clangCommand);
+        if (verbose)
+        {
+            logCommandInformation(clangCommand);
+        }
+
         int result = std::system(clangCommand.c_str());
 
-        std::string resultInfo = "compiled to " + binaryName + " with status code " + std::to_string(result);
-        logCommandInformation(resultInfo);
+        if (verbose)
+        {
+            std::string resultInfo = "compiled to " + binaryName + " with status code " + std::to_string(result);
+            logCommandInformation(resultInfo);
+        }
+
 
         // remove the .ll file
         if (!emitIR)
@@ -106,7 +128,11 @@ int main(int argc, char *argv[])
                 logCommandError("failed to execute cmd: " + cleanupCommand);
                 exit(1);
             }
-            logCommandInformation(cleanupCommand);
+            
+            if (verbose)
+            {
+                logCommandInformation(cleanupCommand);
+            }
         }
 
         if (!givePermissions)
@@ -118,7 +144,11 @@ int main(int argc, char *argv[])
                 logCommandError("failed to give permissions to the binary: " + permCommand);
                 exit(1);
             }
-            logCommandInformation(permCommand);
+            
+            if (verbose)
+            {
+                logCommandInformation(permCommand);
+            }
         }
     });
 
