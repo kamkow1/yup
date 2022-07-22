@@ -1,21 +1,20 @@
 #pragma once
-#include <../src/parser/YupParserBaseVisitor.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/Constant.h>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Function.h>
-#include <llvm/IR/Type.h>
-#include <llvm/IR/Verifier.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/IR/Value.h>
-#include <vector>
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <vector>
-#include <iostream>
-#include <stack>
+#include "../src/parser/YupParserBaseVisitor.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Constant.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/IR/Value.h"
+#include "vector"
+#include "iostream"
+#include "map"
+#include "sstream"
+#include "iostream"
+#include "stack"
 
 class Visitor : public YupParserBaseVisitor
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <antlr4-runtime.h>
-#include <YupParser.h>
+#include "antlr4-runtime.h"
+#include "YupParser.h"
 
 class ParserErrorListener : public antlr4::BaseErrorListener
 {
