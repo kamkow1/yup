@@ -22,28 +22,34 @@ int main(int argc, char *argv[])
 
     std::string src_path;
     build_cmd
-        ->add_option("-s,--source", src_path, "path to a .yup file")
+        ->add_option("-s,--source", 
+                src_path, 
+                "path to a .yup file")
         ->required();
-
-    std::string archName;
-    build_cmd
-        ->add_option("-a,--arch", archName, "specifies targeted cpu's assembly for clang");
-
-    std::string targetName;
-    build_cmd
-        ->add_option("-t,--target", targetName, "specifies target for clang");
 
     bool emitIR;
     build_cmd
-        ->add_flag("--ir,--emit-ir", emitIR, "enables emitting of the llvm intermediate representation");
+        ->add_flag("--ir,--emit-ir", 
+                emitIR, 
+                "enables emitting of the llvm intermediate representation");
 
     bool givePermissions;
     build_cmd
-        ->add_flag("--np,--no-perm", givePermissions, "allows the compiler to give permissions to the binary file");
+        ->add_flag("--np,--no-perm", 
+                givePermissions, 
+                "allows the compiler to give permissions to the binary file");
 
     bool verbose;
     build_cmd
-        ->add_flag("-v, --verbose", verbose, "enables verbose compiler output");
+        ->add_flag("-v,--verbose", 
+                verbose, 
+                "enables verbose compiler output");
+
+    bool outputObj;
+    build_cmd
+        ->add_flag("-o, --object", 
+                outputObj, 
+                "outputs .o object file instead of an executable ~ doesn't require main()");
 
     build_cmd->callback([&]() 
     {
@@ -85,28 +91,73 @@ int main(int argc, char *argv[])
         // -3 is .ll
         std::string binaryName = moduleName.substr(0, moduleName.size() - 3);
 
-        std::string clangCommand =
-                "clang --output " + binaryName + " " + moduleName
-                + " -march=" + archName
-                + (targetName.length() > 0 ? " --target=" + targetName : "")
-                // clang flags
-                + " -Wno-deprecated-declarations"
-                + " -Wno-override-module"
-                + " -Wno-unused-command-line-argument";
+        std::string llcCommand = "llc " + moduleName;
 
         if (verbose)
         {
-            logCommandInformation(clangCommand);
+            logCommandInformation(llcCommand);
         }
 
-        int result = std::system(clangCommand.c_str());
+        int llcResult = std::system(llcCommand.c_str());
+        if (llcResult != 0)
+        {
+            logCommandError("failed " + llcCommand);
+            exit(1);
+        }
 
         if (verbose)
         {
-            std::string resultInfo = "compiled to " + binaryName + " with status code " + std::to_string(result);
+            std::string resultInfo = "compiled to " + binaryName 
+                + ".o" + " with status code " + std::to_string(llcResult);
             logCommandInformation(resultInfo);
         }
 
+        if (outputObj) // output .o
+        {
+            std::string gccCommand = "gcc -c " + binaryName + ".s" + " -o " + binaryName + ".o";
+
+            int gccResult = std::system(gccCommand.c_str());
+            if (gccResult != 0)
+            {
+                logCommandError("failed " + gccCommand);
+                exit(1);
+            }
+
+            if (verbose)
+            {
+                logCommandInformation(gccCommand);
+            }
+        }
+        else // output executable
+        {
+            std::string gccCommand = "gcc " + binaryName 
+            + ".s" + " -o " + binaryName;
+
+            int gccResult = std::system(gccCommand.c_str());
+            if (gccResult != 0)
+            {
+                logCommandError("failed " + gccCommand);
+                exit(1);
+            }
+
+            if (verbose)
+            {
+                logCommandInformation(gccCommand);
+            }
+        }
+
+        std::string cleanupCommand = "rm -f " + binaryName + ".s";
+        if (verbose)
+        {
+            logCommandInformation(cleanupCommand);
+        }
+
+        int cleanupResult = std::system(cleanupCommand.c_str());
+        if (cleanupResult != 0)
+        {
+            logCommandError("failed " + cleanupCommand);
+            exit(1);
+        }
 
         // remove the .ll file
         if (!emitIR)
@@ -115,7 +166,7 @@ int main(int argc, char *argv[])
             int cleanResult = std::system(cleanupCommand.c_str());
             if (cleanResult != 0)
             {
-                logCommandError("failed to execute cmd: " + cleanupCommand);
+                logCommandError("failed " + cleanupCommand);
                 exit(1);
             }
             
@@ -125,13 +176,13 @@ int main(int argc, char *argv[])
             }
         }
 
-        if (!givePermissions)
+        if (!givePermissions && !outputObj)
         {
             std::string permCommand = "chmod +x " + binaryName;
             int premResult = std::system(permCommand.c_str());
             if (premResult != 0)
             {
-                logCommandError("failed to give permissions to the binary: " + permCommand);
+                logCommandError("failed " + permCommand);
                 exit(1);
             }
             
