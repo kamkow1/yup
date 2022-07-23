@@ -1,8 +1,8 @@
 cmd="./build/bin/yupc build --source demo_proj/main.yup"
 
-while getopts ":ir:v:o:" arg; do
+while getopts ":r:v:o:" arg; do
   case $arg in
-    ir) showIR=$OPTARG;;
+    r) showIR=$OPTARG;;
     v) verbose=$OPTARG;;
     o) obj=$OPTARG;;
   esac

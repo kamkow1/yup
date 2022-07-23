@@ -26,7 +26,7 @@ code_block          :   LBRACE statement* RBRACE;
 
 func_param          :   IDENTIFIER type_annot;
 
-type_annot          :   TYPE_ANNOTATION array_type? IDENTIFIER (ASTERISK | AMPERSAND)?;
+type_annot          :   TYPE_ANNOTATION array_type? IDENTIFIER (ASTERISK+ | AMPERSAND)?;
 
 array_type          :   LSQBR RSQBR;
 

@@ -9,7 +9,9 @@ struct TypeAnnotation
     std::string typeName;
 };
 
-llvm::Type* resolveType(std::string typeName);
+llvm::Type *resolvePointerType(llvm::Type *base);
+
+llvm::Type *resolveType(std::string typeName);
 
 std::string getReadableTypeName(std::string typeName);
 
