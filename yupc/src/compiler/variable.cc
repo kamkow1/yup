@@ -39,15 +39,8 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
-    // push value to value stack
-    this->visit(ctx->expr());
-    Value *val = valueStack.top();
-
     Variable var = variables[name];
     bool isConst = var.isConst;
-
-    // check passes if program doesn't exit
-    checkValueType(val, name);
 
     if (isConst)
     {
@@ -55,8 +48,13 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
         exit(1);
     }
 
-    Type *type = val->getType();
+    //Type *type = val->getType();
     AllocaInst *stored = symbolTable.top()[name];
+
+    this->visit(ctx->expr());
+    Value *val = valueStack.top();
+    checkValueType(val, name);
+
     irBuilder.CreateStore(val, stored, false);
 
     valueStack.pop();

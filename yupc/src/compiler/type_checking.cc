@@ -80,10 +80,10 @@ Type* resolveType(std::string typeName)
             }
         );
 
-        Type *type;
+        Type *type = baseType;
         for (int i = 0; i < asterCount; i++)
         {
-            type = resolvePointerType(baseType);
+            type = resolvePointerType(type);
         }
 
         return type;
