@@ -18,11 +18,15 @@ static std::map<std::string, Variable> variables;
 std::any Visitor::visitVar_declare(YupParser::Var_declareContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
+    TypeAnnotation type = 
+        std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
+
+    Type *resolvedType = resolveType(type.typeName);
+    AllocaInst *ptr = irBuilder.CreateAlloca(resolvedType, 0, name);
+
     this->visit(ctx->expr());
     Value* val = valueStack.top();
 
-    Type *type = val->getType();
-    AllocaInst *ptr = irBuilder.CreateAlloca(type, 0, name);
     irBuilder.CreateStore(val, ptr, false);
     symbolTable.top()[name] = ptr;
 
@@ -48,7 +52,6 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
         exit(1);
     }
 
-    //Type *type = val->getType();
     AllocaInst *stored = symbolTable.top()[name];
 
     this->visit(ctx->expr());

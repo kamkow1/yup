@@ -12,9 +12,9 @@ statement           :   expr                    TERMINATOR
                     |   func_return             TERMINATOR
                     |   var_declare             TERMINATOR;
 
-assignment          :   IDENTIFIER ASSIGN expr;
+assignment          :   IDENTIFIER type_annot ASSIGN expr;
 
-var_declare         :   CONST? LET? IDENTIFIER (ASSIGN expr)?;
+var_declare         :   CONST? LET? IDENTIFIER type_annot (ASSIGN expr)?;
 
 func_def            :   func_signature code_block;
 

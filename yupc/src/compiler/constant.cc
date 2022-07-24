@@ -49,6 +49,15 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         return nullptr;
     }
 
+    if (ctx->V_STRING() != nullptr)
+    {
+        std::string text = ctx->V_CHAR()->getText();
+        text.erase(0);
+        text.erase(text.size() - 1);
+
+        return nullptr;
+    }
+
     logCompilerError("couldn't match type and create a constant");
     exit(1);
 }
