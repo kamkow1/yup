@@ -26,14 +26,17 @@ code_block          :   LBRACE statement* RBRACE;
 
 func_param          :   IDENTIFIER type_annot;
 
-type_annot          :   TYPE_ANNOTATION array_type? IDENTIFIER (ASTERISK+ | AMPERSAND)?;
+type_annot          :   TYPE_ANNOTATION (array_type+)? IDENTIFIER (ASTERISK+ | AMPERSAND)?;
 
 array_type          :   LSQBR RSQBR;
 
 expr                :   constant                #ConstantExpr
                     |   func_call               #FuncCallExpr
                     |   IDENTIFIER              #IdentifierExpr
-                    |   array                   #ArrayExpr;
+                    |   array                   #ArrayExpr
+                    |   addr_of                 #AddrOfExpr;
+
+addr_of             :   AMPERSAND expr;
 
 array               :   LSQBR (expr (COMMA expr)*)? RSQBR type_annot;
 

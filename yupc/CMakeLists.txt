@@ -43,6 +43,7 @@ set (SRCS
     src/compiler/variable.cc
     src/compiler/array.cc
     src/compiler/type_checking.cc
+    src/compiler/addr_of.cc
     src/lexer/YupLexer.cc
     src/messaging/errors.cc
     src/messaging/information.cc
