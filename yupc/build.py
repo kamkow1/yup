@@ -4,6 +4,9 @@ import sys
 from shutil import which
 import subprocess
 
+# USAGE: python3 ./build.py -m <mode name>
+# modes: Release, Debug
+
 parser = argparse.ArgumentParser(
     description="build script for the yup compiler project")
 

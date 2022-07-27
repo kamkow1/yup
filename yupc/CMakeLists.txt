@@ -48,8 +48,8 @@ set (SRCS
     src/messaging/errors.cc
     src/messaging/information.cc
     src/parser/YupParser.cc
-    src/parser/YupParserBaseVisitor.cpp
-    src/parser/YupParserVisitor.cpp
+    src/parser/YupParserBaseVisitor.cc
+    src/parser/YupParserVisitor.cc
     src/main.cc
     src/parser_error_listener.cc
     src/util.cc
