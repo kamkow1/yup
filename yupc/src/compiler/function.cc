@@ -1,10 +1,17 @@
 #include "visitor.h"
 #include "util.h"
+#include "llvm/IR/Type.h"
+#include "string.h"
 #include "messaging/errors.h"
-#include "compiler/function.h"
 #include "compiler/type.h"
 
 using namespace llvm;
+
+typedef struct
+{
+    Type *paramType;
+    std::string paramName;
+} FuncParam;
 
 std::any Visitor::visitFunc_return(YupParser::Func_returnContext *ctx)
 {
