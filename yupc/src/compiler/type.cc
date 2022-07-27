@@ -79,19 +79,11 @@ Type* resolveType(std::string typeName)
             for (size_t i = 0; i < suffixes.size(); i++)
             {
                 char c = suffixes[i];
-                std::cout << c << "\n";
                 switch (c)
                 {
                     case '*':
-                    {
                         base = resolvePointerType(base);
-                        std::string t;
-                        raw_string_ostream rso(t);
-                        base->print(rso);
-                        std::cout << "CURRENT BASE : " << rso.str() << "\n";
-
                         break;
-                    }
                     case '[':
                         base = resolveArrayType(base);
                         break;
@@ -126,9 +118,6 @@ void checkValueType(Value *val, std::string name)
     raw_string_ostream ogRso(ogType);
     ogVal->getType()->print(ogRso);
     ogType = getReadableTypeName(ogRso.str());
-
-    std::cout << "og: " << ogType << "\n";
-    std::cout << "expr: " << exprType << "\n";
 
     if ((ogType == "bool" || ogType == "char") || exprType == "i8")
     {

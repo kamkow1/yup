@@ -13,12 +13,5 @@ std::any Visitor::visitAddr_of(YupParser::Addr_ofContext *ctx)
     AllocaInst *val = symbolTable.top()[text];
 
     valueStack.push(val);
-
-    std::string t;
-    raw_string_ostream rso(t);
-    val->getType()->print(rso);
-
-    std::cout << "ID TYPE: " << rso.str() << "\n";
-
     return nullptr;
 }
