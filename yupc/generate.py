@@ -1,5 +1,3 @@
-from asyncio.subprocess import PIPE
-from cgi import print_form
 import sys
 import os
 import subprocess
@@ -89,7 +87,7 @@ parser_rename_cmds = [
 
 for prc in parser_rename_cmds:
     proc = subprocess.Popen(prc, 
-        shell=True, stdout=PIPE)
+        shell=True, stdout=subprocess.PIPE)
     
     for line in proc.stdout:
         text = line.decode()
@@ -114,7 +112,7 @@ mv_h_cmds = [
 
 for mv_h in mv_h_cmds:
     proc = subprocess.Popen(mv_h,
-        shell=True, stdout=PIPE)
+        shell=True, stdout=subprocess.PIPE)
 
     for line in proc.stdout:
         text = line.decode()
