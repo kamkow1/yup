@@ -2,18 +2,14 @@
 #include "util.h"
 #include "compiler/type.h"
 
+static std::string createTypeName(std::string base)
+{
+
+}
+
 std::any Visitor::visitType_annot(YupParser::Type_annotContext *ctx)
 {
-    std::string name = ctx->IDENTIFIER()->getText();
-    for (int i = 0; i < ctx->ASTERISK().size(); i++)
-    {
-        name += "*";
-    }
-
-    if (ctx->AMPERSAND() != nullptr)
-    {
-        name += "&";
-    }
+    std::string name = ctx->type_name()->getText();
 
     TypeAnnotation ta = TypeAnnotation{name};
     return ta;

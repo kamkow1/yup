@@ -7,95 +7,103 @@
 using namespace llvm;
 using namespace boost;
 
-enum BasicType : size_t {
-    I32,
-    I64,
-    FLOAT,
-    BOOL,
-    VOID,
-    CHAR,
-    PTR,
-    INVALID
-};
+static Type *resolveArrayType(Type *base)
+{
+    return ArrayType::get(base, 3);
+}
 
-Type *resolvePointerType(Type *base)
+static Type *resolvePointerType(Type *base)
 {
     return PointerType::get(base, 0);
 }
 
-BasicType resolveBasicType(std::string match)
+static std::map<std::string, size_t> types
 {
-    static const std::map<std::string, BasicType> types
-    {
-        { "i32",        I32 },
-        { "i64",        I64 },
-        { "float",      FLOAT },
-        { "void",       VOID },
-        { "char",       CHAR },
-        { "bool",       BOOL}
-    };
+    { "i32",    1 },
+    { "i64",    2 },
+    { "float",  3 },
+    { "bool",   4 },
+    { "void",   5 },
+    { "char",   6 },
+};
 
+static size_t resolveBasicType(std::string match)
+{
     auto itr = types.find(match);
     if (itr != types.end())
     {
         return itr->second;
     }
-    else if (algorithm::contains(match, "*")) // pointer type
-    {
-        return PTR;
-    }
     else
     {
-        return INVALID;
+        return SIZE_MAX;
     }
 }
 
-Type* resolveType(std::string typeName)
+void appendTypeID(size_t n, std::string idStr)
+{
+    types[idStr] = n;
+}
+
+Type* resolveType(std::string typeName) 
 {
     switch (resolveBasicType(typeName))
     {
-    case I32:
-        return Type::getInt32Ty(context);
-    case I64:
-        return Type::getInt64Ty(context);
-    case FLOAT:
-        return Type::getFloatTy(context);
-    case BOOL:
-        return Type::getInt8Ty(context);
-    case VOID:
-        return Type::getVoidTy(context);
-    case CHAR:
-        return Type::getInt8Ty(context);
-    case PTR: {
-        std::string originalType = typeName;
-        erase_all(originalType, "*");
-        Type *baseType = resolveType(originalType);
+        case 1: // i32
+            return Type::getInt32Ty(context);
+        case 2: // i64
+            return Type::getInt64Ty(context);
+        case 3: // float
+            return Type::getFloatTy(context);
+        case 4: // bool
+            return Type::getInt8Ty(context);
+        case 5: // void
+            return Type::getVoidTy(context);
+        case 6: // char
+            return Type::getInt8Ty(context);
 
-        int asterCount =  std::count_if(
-            typeName.begin(), 
-            typeName.end(), 
-            []( char c )
-            {
-                return c == '*';
-            }
-        );
-
-        Type *type = baseType;
-        for (int i = 0; i < asterCount; i++)
+        case SIZE_MAX:
         {
-            type = resolvePointerType(type);
+            std::string baseStr = typeName;
+            algorithm::erase_all(baseStr, "[");
+            algorithm::erase_all(baseStr, "]");
+            algorithm::erase_all(baseStr, "*");
+
+            Type *base = resolveType(baseStr);
+
+            std::string suffixes = typeName;
+            algorithm::erase_all(suffixes, baseStr);
+            algorithm::erase_all(suffixes, "]"); // * - pointer type, [ - array type
+
+            for (size_t i = 0; i < suffixes.size(); i++)
+            {
+                char c = suffixes[i];
+                std::cout << c << "\n";
+                switch (c)
+                {
+                    case '*':
+                    {
+                        base = resolvePointerType(base);
+                        std::string t;
+                        raw_string_ostream rso(t);
+                        base->print(rso);
+                        std::cout << "CURRENT BASE : " << rso.str() << "\n";
+
+                        break;
+                    }
+                    case '[':
+                        base = resolveArrayType(base);
+                        break;
+                }
+            }
+
+            return base;
         }
-
-        return type;
     }
 
-    case INVALID: {
-        std::string errorMessage = "couldn't match type \"" + typeName + "\"";
-        logCompilerError(errorMessage);
-        exit(1);
-        return nullptr;
-    }
-    }
+    std::string errorMessage = "couldn't match type \"" + typeName + "\"";
+    logCompilerError(errorMessage);
+    exit(1);
 
     return nullptr;
 }
@@ -117,6 +125,9 @@ void checkValueType(Value *val, std::string name)
     raw_string_ostream ogRso(ogType);
     ogVal->getType()->print(ogRso);
     ogType = getReadableTypeName(ogRso.str());
+
+    std::cout << "og: " << ogType << "\n";
+    std::cout << "expr: " << exprType << "\n";
 
     if ((ogType == "bool" || ogType == "char") || exprType == "i8")
     {

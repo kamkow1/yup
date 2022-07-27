@@ -12,9 +12,11 @@ statement           :   expr                    TERMINATOR
                     |   func_return             TERMINATOR
                     |   var_declare             TERMINATOR;
 
-assignment          :   IDENTIFIER type_annot ASSIGN expr;
+assignment          :   IDENTIFIER var_value;
 
-var_declare         :   CONST? LET? IDENTIFIER type_annot (ASSIGN expr)?;
+var_declare         :   CONST? LET? IDENTIFIER type_annot var_value?;
+
+var_value           :   ASSIGN expr;
 
 func_def            :   func_signature code_block;
 
@@ -26,7 +28,11 @@ code_block          :   LBRACE statement* RBRACE;
 
 func_param          :   IDENTIFIER type_annot;
 
-type_annot          :   TYPE_ANNOTATION (array_type+)? IDENTIFIER (ASTERISK+ | AMPERSAND)?;
+type_annot          :   TYPE_ANNOTATION type_name;
+
+type_name           :   IDENTIFIER (type_ext*)?;
+
+type_ext            :   array_type | ASTERISK | AMPERSAND;
 
 array_type          :   LSQBR RSQBR;
 
@@ -34,11 +40,12 @@ expr                :   constant                #ConstantExpr
                     |   func_call               #FuncCallExpr
                     |   IDENTIFIER              #IdentifierExpr
                     |   array                   #ArrayExpr
-                    |   addr_of                 #AddrOfExpr;
+                    |   addr_of                 #AddrOfExpr
+                    |   expr LSQBR expr RSQBR   #IndexedAccessExpr;
 
 addr_of             :   AMPERSAND expr;
 
-array               :   LSQBR (expr (COMMA expr)*)? RSQBR type_annot;
+array               :   LSQBR (expr (COMMA expr)*)? RSQBR;
 
 constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_NULL | V_CHAR;
 

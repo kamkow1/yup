@@ -4,39 +4,47 @@
 
 using namespace llvm;
 
+std::any Visitor::visitIndexedAccessExpr(YupParser::IndexedAccessExprContext *ctx)
+{
+    this->visit(ctx->expr(0)); // expr that holds the array
+    Value *array = valueStack.top();
+    //unsigned index = ctx->expr(0)-
+
+    this->visit(ctx->expr(1));
+    Value *index = valueStack.top();
+
+    Value *idxList[2] = 
+    {
+        ConstantInt::get(index->getType(), 0),
+        index
+    };
+
+    std::string lbl = "idx_of_" + array->getName().str();
+    Value *elem = irBuilder.CreateGEP(array->getType(), array, idxList, lbl);
+
+    valueStack.push(elem);
+
+    return nullptr;
+}
+
 std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
 {
-    TypeAnnotation *typeAnnot = 
-        std::any_cast<TypeAnnotation*>(this->visit(ctx->type_annot()));
-    std::string typeName = typeAnnot->typeName;
-    size_t len = ctx->expr().size();
-    ArrayType *type = (ArrayType*) resolveType(typeName);
-
     std::vector<Constant*> elems;
-    for (size_t i = 0; i < len; i++)
+    size_t elemCount = ctx->expr().size();
+    for (int i = 0; i < elemCount; i++)
     {
-        YupParser::ExprContext *expr = ctx->expr(i);
-        this->visit(expr);
-        Constant *value = (Constant*) valueStack.top();
-
-        // type check
-        std::string valType;
-        raw_string_ostream valRSO(valType);
-        value->getType()->print(valRSO);
-        if (valRSO.str() != typeName)
-        {
-            logCompilerError(
-                    "type mismatch. array was declared as \"" 
-                    + typeName + "[]\" but contains an element of type " 
-                    + valType);
-        }
-
-        elems.push_back(value);
-        valueStack.pop();
+        this->visit(ctx->expr(i));
+        Constant *elem = (Constant*) valueStack.top();
+        elems.push_back(elem);
     }
 
-    Constant *array = ConstantArray::get(type, makeArrayRef(elems));
+    Type *type = elems[0]->getType();
+    Type *arrayType = PointerType::getUnqual(ArrayType::get(type, elemCount));
+    Constant* array = ConstantArray::get(
+        ArrayType::get(arrayType, elemCount), 
+        makeArrayRef(elems));
 
     valueStack.push(array);
+
     return nullptr;
 }
