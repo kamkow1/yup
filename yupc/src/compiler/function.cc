@@ -7,11 +7,11 @@
 
 using namespace llvm;
 
-typedef struct
+struct FuncParam
 {
     Type *paramType;
     std::string paramName;
-} FuncParam;
+};
 
 std::any Visitor::visitFunc_return(YupParser::Func_returnContext *ctx)
 {

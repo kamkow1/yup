@@ -1,71 +1,44 @@
 #include "visitor.h"
+#include "compiler/array.h"
 #include "compiler/type.h"
 #include "messaging/errors.h"
 
 using namespace llvm;
 
-std::any Visitor::visitIndexedAccessExpr(YupParser::IndexedAccessExprContext *ctx)
+void indexedAccessExpr_codegen(Value *array, Value *idxVal)
 {
-    this->visit(ctx->expr(0));
-    Value *array = valueStack.top();
-
-    this->visit(ctx->expr(1));
-    Value *idxVal = valueStack.top();
-
     Value *idxGep = irBuilder.CreateGEP(
         array->getType()->getPointerElementType(), array, idxVal);
 
     valueStack.push(idxGep);
-
-    return nullptr;
 }
 
-std::any Visitor::visitArr_elem_assignment(YupParser::Arr_elem_assignmentContext *ctx)
+void arrElemAssignment_codegen(std::string arrName, size_t idxNestingLvl, 
+                                std::vector<Value*> idxVals)
 {
-    std::string name = ctx->IDENTIFIER()->getText();
-
-    AllocaInst *stored = symbolTable.top()[name];
+    AllocaInst *stored = symbolTable.top()[arrName];
     LoadInst *array = irBuilder.CreateLoad(
         stored->getAllocatedType(), stored);
 
     Value *valToOverride;
-
-    size_t idxNestingLvl = ctx->arr_index().size();
     for (size_t i = 0; i < idxNestingLvl; i++)
-    {
-        YupParser::Arr_indexContext *idx 
-            = ctx->arr_index(i);
-
-        this->visit(idx->expr());
-        Value *idxVal = valueStack.top();
-        
+    { 
         Value *idxGep = irBuilder.CreateGEP(
             array->getType()->getPointerElementType(), 
-            array, idxVal);
+            array, idxVals[i]);
 
         valToOverride = idxGep;
     }
 
-    this->visit(ctx->var_value()->expr());
+    //this->visit(ctx->var_value()->expr());
     Value *val = valueStack.top();
 
     irBuilder.CreateStore(val, valToOverride, false);
     valueStack.pop();
-
-    return nullptr;
 }
 
-std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
+void array_codegen(std::vector<Value*> elems, size_t elemCount)
 {
-    std::vector<Value*> elems;
-    size_t elemCount = ctx->expr().size();
-    for (size_t i = 0; i < elemCount; i++)
-    {
-        this->visit(ctx->expr(i));
-        Value *elem = valueStack.top();
-        elems.push_back(elem);
-    }
-
     Type *elemType = elems[0]->getType();
 
     Type *i32 = Type::getInt32Ty(context);
@@ -98,6 +71,51 @@ std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
     }
 
     valueStack.push(arrayMalloc);
+}
+
+std::any Visitor::visitIndexedAccessExpr(YupParser::IndexedAccessExprContext *ctx)
+{
+    this->visit(ctx->expr(0));
+    Value *array = valueStack.top();
+
+    this->visit(ctx->expr(1));
+    Value *idxVal = valueStack.top();
+
+    indexedAccessExpr_codegen(array, idxVal);
+
+    return nullptr;
+}
+
+std::any Visitor::visitArr_elem_assignment(YupParser::Arr_elem_assignmentContext *ctx)
+{
+    std::string name = ctx->IDENTIFIER()->getText();
+
+    size_t idxNestingLvl = ctx->arr_index().size();
+    std::vector<Value*> idxVals;
+
+    for (size_t i = 0; i < idxNestingLvl; i++)
+    {
+        this->visit(ctx->arr_index(i)->expr());
+        idxVals.push_back(valueStack.top());
+    }
+
+    arrElemAssignment_codegen(name, idxNestingLvl, idxVals);
+
+    return nullptr;
+}
+
+std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
+{
+    std::vector<Value*> elems;
+    size_t elemCount = ctx->expr().size();
+    for (size_t i = 0; i < elemCount; i++)
+    {
+        this->visit(ctx->expr(i));
+        Value *elem = valueStack.top();
+        elems.push_back(elem);
+    }
+
+    array_codegen(elems, elemCount);
 
     return nullptr;
 }
