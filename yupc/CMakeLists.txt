@@ -36,7 +36,6 @@ llvm_map_components_to_libnames(llvm_libs support core)
 set (SRCS
     src/compiler/code_block.cc
     src/compiler/constant.cc
-    src/compiler/data.cc
     src/compiler/function.cc
     src/compiler/type.cc
     src/compiler/visitor.cc

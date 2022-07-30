@@ -6,7 +6,8 @@
 
 struct TypeAnnotation
 {
-    std::string typeName;
+    std::string typeString;
+    llvm::Value *arraySize;
 };
 
 llvm::Type *resolveType(std::string typeName);

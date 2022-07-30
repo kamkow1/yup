@@ -73,10 +73,8 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
 
 std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 {
-    std::string name = ctx->IDENTIFIER()->getText();
-    TypeAnnotation typeAnnot = 
-        std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
-    Type *returnType = resolveType(typeAnnot.typeName);
+    std::string name = ctx->IDENTIFIER()->getText();        
+    Type *returnType = std::any_cast<Type*>(this->visit(ctx->type_annot()));
 
     std::vector<FuncParam*> params;
     for (YupParser::Func_paramContext *const p : ctx->func_param())
@@ -114,8 +112,8 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 
 std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
 {
-    TypeAnnotation typeAnnot = std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
-    Type *resolvedType = resolveType(typeAnnot.typeName);
+    Type *resolvedType 
+        = std::any_cast<Type*>(this->visit(ctx->type_annot()));
 
     std::string name = ctx->IDENTIFIER()->getText();
 

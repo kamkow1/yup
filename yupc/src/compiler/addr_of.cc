@@ -7,9 +7,7 @@ using namespace boost;
 std::any Visitor::visitAddr_of(YupParser::Addr_ofContext *ctx)
 {
 
-    std::string text = ctx->expr()->getText();
-    algorithm::erase_all(text, "&");
-
+    std::string text = ctx->IDENTIFIER()->getText();
     AllocaInst *val = symbolTable.top()[text];
 
     valueStack.push(val);

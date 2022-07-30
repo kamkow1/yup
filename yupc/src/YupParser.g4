@@ -10,9 +10,14 @@ statement           :   expr                    TERMINATOR
                     |   func_def
                     |   assignment              TERMINATOR
                     |   func_return             TERMINATOR
-                    |   var_declare             TERMINATOR;
+                    |   var_declare             TERMINATOR
+                    |   arr_elem_assignment     TERMINATOR;
 
 assignment          :   IDENTIFIER var_value;
+
+arr_elem_assignment :   IDENTIFIER arr_index* var_value;
+
+arr_index           :   LSQBR expr RSQBR;
 
 var_declare         :   CONST? LET? IDENTIFIER type_annot var_value?;
 
@@ -32,18 +37,16 @@ type_annot          :   TYPE_ANNOTATION type_name;
 
 type_name           :   IDENTIFIER (type_ext*)?;
 
-type_ext            :   array_type | ASTERISK | AMPERSAND;
+type_ext            :   ASTERISK | AMPERSAND;
 
-array_type          :   LSQBR RSQBR;
+expr                :   constant                        #ConstantExpr
+                    |   func_call                       #FuncCallExpr
+                    |   IDENTIFIER                      #IdentifierExpr
+                    |   array                           #ArrayExpr
+                    |   addr_of                         #AddrOfExpr
+                    |   expr LSQBR expr RSQBR           #IndexedAccessExpr;
 
-expr                :   constant                #ConstantExpr
-                    |   func_call               #FuncCallExpr
-                    |   IDENTIFIER              #IdentifierExpr
-                    |   array                   #ArrayExpr
-                    |   addr_of                 #AddrOfExpr
-                    |   expr LSQBR expr RSQBR   #IndexedAccessExpr;
-
-addr_of             :   AMPERSAND expr;
+addr_of             :   AMPERSAND IDENTIFIER;
 
 array               :   LSQBR (expr (COMMA expr)*)? RSQBR;
 

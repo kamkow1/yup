@@ -18,11 +18,13 @@ static std::map<std::string, Variable> variables;
 std::any Visitor::visitVar_declare(YupParser::Var_declareContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
-    TypeAnnotation type = 
-        std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
+    // TypeAnnotation type = 
+    //     std::any_cast<TypeAnnotation>(this->visit(ctx->type_annot()));
 
-    Type *resolvedType = resolveType(type.typeName);
-    AllocaInst *ptr = irBuilder.CreateAlloca(resolvedType, 0, name);
+    Type *resolvedType 
+        = std::any_cast<Type*>(this->visit(ctx->type_annot()));
+    AllocaInst *ptr 
+        = irBuilder.CreateAlloca(resolvedType, 0, "");
 
     if (ctx->var_value() != nullptr)
     {

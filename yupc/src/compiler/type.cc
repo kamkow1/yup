@@ -8,7 +8,7 @@
 using namespace llvm;
 using namespace boost;
 
-static Type *resolveArrayType(Type *base)
+static Type *resolveArrayType(Type *base, Value *len)
 {
     return ArrayType::get(base, 3);
 }
@@ -66,27 +66,22 @@ Type* resolveType(std::string typeName)
         case SIZE_MAX:
         {
             std::string baseStr = typeName;
-            algorithm::erase_all(baseStr, "[");
-            algorithm::erase_all(baseStr, "]");
             algorithm::erase_all(baseStr, "*");
 
             Type *base = resolveType(baseStr);
 
             std::string suffixes = typeName;
             algorithm::erase_all(suffixes, baseStr);
-            algorithm::erase_all(suffixes, "]"); // * - pointer type, [ - array type
-
+            
             for (size_t i = 0; i < suffixes.size(); i++)
             {
                 char c = suffixes[i];
+
                 switch (c)
                 {
                     case '*':
                         base = resolvePointerType(base);
-                        break;
-                    case '[':
-                        base = resolveArrayType(base);
-                        break;
+                        break;                  
                 }
             }
 
@@ -134,8 +129,21 @@ void checkValueType(Value *val, std::string name)
 
 std::any Visitor::visitType_annot(YupParser::Type_annotContext *ctx)
 {
-    std::string name = ctx->type_name()->getText();
+    std::string base = ctx->type_name()->IDENTIFIER()->getText();
+    Type *typeBase = resolveType(base);
 
-    TypeAnnotation ta = TypeAnnotation{name};
-    return ta;
+    size_t extLen = ctx->type_name()->type_ext().size();
+    for (size_t i = 0; i < extLen; i++)
+    {
+        YupParser::Type_extContext *ext 
+            = ctx->type_name()->type_ext(i);
+
+        if (ext->ASTERISK() != nullptr)
+        {
+            base += "*";
+            typeBase = resolveType(base);
+        } 
+    }
+
+    return typeBase;
 }
