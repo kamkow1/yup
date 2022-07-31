@@ -11,7 +11,8 @@ statement           :   expr                    TERMINATOR
                     |   assignment              TERMINATOR
                     |   func_return             TERMINATOR
                     |   var_declare             TERMINATOR
-                    |   arr_elem_assignment     TERMINATOR;
+                    |   arr_elem_assignment     TERMINATOR
+                    |   func_signature          TERMINATOR;
 
 assignment          :   IDENTIFIER var_value;
 
@@ -25,7 +26,7 @@ var_value           :   ASSIGN expr;
 
 func_def            :   func_signature code_block;
 
-func_signature      :   FUNCTION IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
+func_signature      :   EXTERNAL? FUNCTION IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
 
 func_return         :   RETURN expr;
 

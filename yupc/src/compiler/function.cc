@@ -36,6 +36,11 @@ void funcCall_codegen(std::string funcName,
 {
     Function *fnCallee = module->getFunction(funcName);
 
+    if (fnCallee == nullptr)
+    {
+        logCompilerError("tried to call function " + funcName + " but it isn't declared");
+        exit(1);
+    }
 
     if (args.size() != fnCallee->arg_size())
     {
@@ -60,19 +65,23 @@ void funcCall_codegen(std::string funcName,
     }
 }
 
-void funcSig_codegen(std::string name, Type *returnType, 
-    std::vector<Type*> paramTypes, std::vector<FuncParam*> params)
+void funcSig_codegen(bool isExternal, std::string name, Type *returnType, 
+    std::vector<FuncParam*> params, std::vector<Type*> *paramTypes)
 {
     FunctionType *functionType = FunctionType::get(
             returnType,
-            paramTypes,
+            *paramTypes,
             false);
 
     Function *function = Function::Create(
             functionType,
-            Function::ExternalLinkage,
+            isExternal 
+                ? GlobalValue::ExternalLinkage 
+                : GlobalValue::PrivateLinkage,
             name,
             module.get());
+
+    function->setDSOLocal(!isExternal);
 
     int argMax = function->arg_size();
     for (int i = 0; i < argMax; ++i)
@@ -109,7 +118,9 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
         paramTypes.push_back(pt->paramType);
     }
 
-    funcSig_codegen(name, returnType, paramTypes, params);
+    bool isExternal = ctx->EXTERNAL() != nullptr;
+
+    funcSig_codegen(isExternal, name, returnType, params, &paramTypes);
 
     return nullptr;
 }

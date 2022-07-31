@@ -16,5 +16,5 @@ void funcDef_codegen(llvm::Function *function);
 void funcCall_codegen(std::string funcName, 
                     size_t exprLength, std::vector<llvm::Value*> args);
 
-void funcSig_codegen(std::string name, llvm::Type *returnType, 
+void funcSig_codegen(bool isExternal, std::string name, llvm::Type *returnType, 
     std::vector<llvm::Type*> paramTypes, std::vector<FuncParam*> params);

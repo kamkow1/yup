@@ -7,6 +7,7 @@ TERMINATOR          :   ';';
 RETURN              :   'return';
 COMPILER_FLAG_SYM   :   '@';
 CONST               :   'const';
+EXTERNAL            :   'ext';
 
 LPAREN              :   '(';
 RPAREN              :   ')';
@@ -20,7 +21,8 @@ ASTERISK            :   '*';
 AMPERSAND           :   '&';
 
 V_CHAR              :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
-V_STRING            :   '"' (~[\\"\r\n])* '"';
+V_STRING            :   '"' ( Escape | ~('\'' | '\\' | '\n' | '\r') ) + '"';
+fragment Escape     :   '\\' ( '\'' | '\\' );
 V_INT               :   '-'? '0'..'9'+;
 V_FLOAT             :   '-'? ('0'..'9')+ '.' ('0'..'9')*;
 V_BOOL              :   ('True' | 'False');
