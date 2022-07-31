@@ -15,11 +15,14 @@ The yup compiler is developed using LLVM as backend.
         * :heavy_check_mark: boolean type
         * :heavy_check_mark: float type
         * :x: null
-        * :x: array type
-        * :x: string type
+        * :heavy_check_mark: array type
+        * :heavy_check_mark: string type
+    - :x: global variables
+    - :x: external symbols
     - :x: for loop
     - :x: while loop
     - :x: conditional statements ( if + elif + else )
+    - :x: basic module system
 * OOP :x:
     - :x: structs
     - :x: classes
@@ -35,25 +38,12 @@ The yup compiler is developed using LLVM as backend.
 ## example code snippet
 
 ```text
-fun hello(a :: i32) :: i32 {
-    return 74;
-}
 
-fun getChar(c :: char) :: char {
-    const let res = c;
-    return res;
-}
 
-fun main() :: void {
-    let x = 1;
-    let y = x;
+Fn main() :: i32 {
+    
+    const let str :: char* = "hello!!";
 
-    y = 2;
-
-    let a = y;
-
-    let b = hello(a);
-
-    let c = getChar('s');
+    return 0;
 }
 ```
