@@ -12,6 +12,8 @@ set (THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/third_party)
 
 set (ANTLR_SRC ${THIRD_PARTY_DIR}/antlr4-runtime)
 
+set (LLVM_SRC ${THIRD_PARTY_DIR}/llvm)
+
 # change this to your own path
 set (ANTLR_INCLUDE_PATH
         ${ANTLR_SRC}/runtime/src
@@ -22,9 +24,9 @@ set (ANTLR_INCLUDE_PATH
         ${ANTLR_SRC}/runtime/src/support
         )
 
-set (LLVM_INCLUDE_PATH /archive/ARCHIVE/llvm-project/llvm/build/include)
+set (LLVM_INCLUDE_PATH ${LLVM_SRC}/build/include)
 
-set (ANTLR_BUILD_PATH ${THIRD_PARTY_DIR}/antlr4-runtime/dist/libantlr4-runtime.a)
+set (ANTLR_BUILD_PATH ${ANTLR_SRC}/dist/libantlr4-runtime.a)
 
 include_directories (${ANTLR_INCLUDE_PATH} ${LLVM_INCLUDE_PATH} ${CMAKE_SOURCE_DIR}/include)
 
