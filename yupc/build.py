@@ -59,7 +59,7 @@ else:
 
 # generate build files
 cmake_cmd = "cmake .."
-cmake_build_type = f" -DCMAKE_BUILD_TYPE={build_mode} -GNinja"
+cmake_build_type = f" -DCMAKE_BUILD_TYPE={build_mode}"
 
 cmake_cmd += cmake_build_type
 proc = subprocess.Popen(cmake_cmd, 
@@ -79,16 +79,16 @@ if (cmake_res != 0):
 else:
     print("successfully generated build files")
 
-# build with ninja
+# build with make
 
-is_ninja_available = which("ninja")
+is_ninja_available = which("make")
 
 if (is_ninja_available is None):
-    print("ninja is not installed on your system!")
-    print("install ninja with sudo apt-get install ninja-build")
+    print("make is not installed on your system!")
+    print("install ninja with sudo apt-get install build-essential")
     sys.exit(1)
 
-proc = subprocess.Popen("ninja", 
+proc = subprocess.Popen("make", 
     shell=True, stdout=subprocess.PIPE)
 
 for line in proc.stdout:
@@ -100,7 +100,7 @@ ninja_res = proc.returncode
 del proc
 
 if (ninja_res != 0):
-    print("building with ninja failed!")
+    print("building with make failed!")
     sys.exit(1)
 
 print("finished building successfully!")

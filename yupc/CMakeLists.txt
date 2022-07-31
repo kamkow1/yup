@@ -8,19 +8,23 @@ set (GCC_COVERAGE_LINK_FLAGS "--libs")
 
 include (${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
+set (THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/third_party)
+
+set (ANTLR_SRC ${THIRD_PARTY_DIR}/antlr4-runtime)
+
 # change this to your own path
 set (ANTLR_INCLUDE_PATH
-        /archive/ARCHIVE/antlr4-cpp-runtime/runtime/src
-        /archive/ARCHIVE/antlr4-cpp-runtime/runtime/src/misc
-        /archive/ARCHIVE/antlr4-cpp-runtime/runtime/src/atn
-        /archive/ARCHIVE/antlr4-cpp-runtime/runtime/src/dfa
-        /archive/ARCHIVE/antlr4-cpp-runtime/runtime/src/tree
-        /archive/ARCHIVE/antlr4-cpp-runtime/runtime/src/support
+        ${ANTLR_SRC}/runtime/src
+        ${ANTLR_SRC}/runtime/src/misc
+        ${ANTLR_SRC}/runtime/src/atn
+        ${ANTLR_SRC}/runtime/src/dfa
+        ${ANTLR_SRC}/runtime/src/tree
+        ${ANTLR_SRC}/runtime/src/support
         )
 
 set (LLVM_INCLUDE_PATH /archive/ARCHIVE/llvm-project/llvm/build/include)
 
-set (ANTLR_BUILD_PATH /archive/ARCHIVE/antlr4-cpp-runtime/dist/libantlr4-runtime.so)
+set (ANTLR_BUILD_PATH ${THIRD_PARTY_DIR}/antlr4-runtime/dist/libantlr4-runtime.a)
 
 include_directories (${ANTLR_INCLUDE_PATH} ${LLVM_INCLUDE_PATH} ${CMAKE_SOURCE_DIR}/include)
 
