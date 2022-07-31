@@ -1,4 +1,4 @@
-#include "visitor.h"
+#include "compiler/visitor.h"
 #include "messaging/errors.h"
 #include "boost/lexical_cast.hpp"
 

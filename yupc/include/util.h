@@ -7,7 +7,7 @@
 #include "string"
 #include "fstream"
 #include "filesystem"
-#include "visitor.h"
+#include "compiler/visitor.h"
 
 std::string fileToString(const std::string& path);
 

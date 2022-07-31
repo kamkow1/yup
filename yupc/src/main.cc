@@ -3,7 +3,7 @@
 #include "YupParser.h"
 #include "string.h"
 #include "filesystem"
-#include "visitor.h"
+#include "compiler/visitor.h"
 #include "util.h"
 #include "messaging/information.h"
 #include "parser_error_listener.h"

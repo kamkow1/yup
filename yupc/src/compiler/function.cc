@@ -1,4 +1,4 @@
-#include "visitor.h"
+#include "compiler/visitor.h"
 #include "util.h"
 #include "llvm/IR/Type.h"
 #include "string.h"

@@ -1,4 +1,4 @@
-#include "visitor.h"
+#include "compiler/visitor.h"
 #include "util.h"
 #include "messaging/errors.h"
 #include "llvm/Support/TypeName.h"

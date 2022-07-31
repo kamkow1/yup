@@ -1,4 +1,4 @@
-#include "visitor.h"
+#include "compiler/visitor.h"
 #include "compiler/array.h"
 #include "compiler/type.h"
 #include "messaging/errors.h"

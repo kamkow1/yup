@@ -1,4 +1,4 @@
-#include "visitor.h"
+#include "compiler/visitor.h"
 #include "compiler/addr_of.h"
 #include "boost/algorithm/string.hpp"
 
