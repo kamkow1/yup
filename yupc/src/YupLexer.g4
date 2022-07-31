@@ -7,7 +7,6 @@ TERMINATOR          :   ';';
 RETURN              :   'return';
 COMPILER_FLAG_SYM   :   '@';
 CONST               :   'const';
-LET                 :   'let';
 
 LPAREN              :   '(';
 RPAREN              :   ')';

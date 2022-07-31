@@ -19,7 +19,7 @@ arr_elem_assignment :   IDENTIFIER arr_index* var_value;
 
 arr_index           :   LSQBR expr RSQBR;
 
-var_declare         :   CONST? LET? IDENTIFIER type_annot var_value?;
+var_declare         :   CONST? IDENTIFIER type_annot var_value?;
 
 var_value           :   ASSIGN expr;
 
