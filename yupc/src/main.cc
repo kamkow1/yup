@@ -14,46 +14,53 @@ using namespace llvm;
 using namespace CLI;
 namespace fs = std::filesystem;
 
+struct CompilerOpts
+{
+    bool emitIR;
+    bool givePerms;
+    bool verbose;
+    bool outputObj;
+
+    std::string srcPath;
+};
+
 int main(int argc, char *argv[]) 
 {
     App cli{"a compiler for the yup programming language"};
 
     App *build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
 
-    std::string src_path;
+    CompilerOpts compilerOpts;
+
     build_cmd
         ->add_option("-s,--source", 
-                src_path, 
+                compilerOpts.srcPath, 
                 "path to a .yup file")
         ->required();
 
-    bool emitIR;
     build_cmd
         ->add_flag("--ir,--emit-ir", 
-                emitIR, 
+                compilerOpts.emitIR, 
                 "enables emitting of the llvm intermediate representation");
 
-    bool givePermissions;
     build_cmd
         ->add_flag("--np,--no-perm", 
-                givePermissions, 
+                compilerOpts.givePerms, 
                 "allows the compiler to give permissions to the binary file");
 
-    bool verbose;
     build_cmd
         ->add_flag("-v,--verbose", 
-                verbose, 
+                compilerOpts.verbose, 
                 "enables verbose compiler output");
 
-    bool outputObj;
     build_cmd
         ->add_flag("-o, --object", 
-                outputObj, 
+                compilerOpts.outputObj, 
                 "outputs .o object file instead of an executable ~ doesn't require main()");
 
     build_cmd->callback([&]() 
     {
-        std::string abs_src_path = fs::absolute(src_path);
+        std::string abs_src_path = fs::absolute(compilerOpts.srcPath);
         std::string src_content = fileToString(abs_src_path);
 
         antlr4::ANTLRInputStream input(src_content);
@@ -82,7 +89,7 @@ int main(int argc, char *argv[])
         module->print(os, nullptr);
         os.flush();
 
-        if (verbose)
+        if (compilerOpts.verbose)
         {
             std::string info = "dumped module " + moduleName;
             logCommandInformation(info);
@@ -93,7 +100,7 @@ int main(int argc, char *argv[])
 
         std::string llcCommand = "llc " + moduleName;
 
-        if (verbose)
+        if (compilerOpts.verbose)
         {
             logCommandInformation(llcCommand);
         }
@@ -105,14 +112,14 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        if (verbose)
+        if (compilerOpts.verbose)
         {
             std::string resultInfo = "compiled to " + binaryName 
                 + ".o" + " with status code " + std::to_string(llcResult);
             logCommandInformation(resultInfo);
         }
 
-        if (outputObj) // output .o
+        if (compilerOpts.verbose) // output .o
         {
             std::string gccCommand = "gcc -c " + binaryName + ".s" + " -o " + binaryName + ".o";
 
@@ -123,7 +130,7 @@ int main(int argc, char *argv[])
                 exit(1);
             }
 
-            if (verbose)
+            if (compilerOpts.verbose)
             {
                 logCommandInformation(gccCommand);
             }
@@ -140,14 +147,14 @@ int main(int argc, char *argv[])
                 exit(1);
             }
 
-            if (verbose)
+            if (compilerOpts.verbose)
             {
                 logCommandInformation(gccCommand);
             }
         }
 
         std::string cleanupCommand = "rm -f " + binaryName + ".s";
-        if (verbose)
+        if (compilerOpts.verbose)
         {
             logCommandInformation(cleanupCommand);
         }
@@ -160,7 +167,7 @@ int main(int argc, char *argv[])
         }
 
         // remove the .ll file
-        if (!emitIR)
+        if (!compilerOpts.emitIR)
         {
             std::string cleanupCommand = "rm -f " + moduleName;
             int cleanResult = std::system(cleanupCommand.c_str());
@@ -170,13 +177,13 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             
-            if (verbose)
+            if (compilerOpts.verbose)
             {
                 logCommandInformation(cleanupCommand);
             }
         }
 
-        if (!givePermissions && !outputObj)
+        if (!compilerOpts.givePerms && !compilerOpts.outputObj)
         {
             std::string permCommand = "chmod +x " + binaryName;
             int premResult = std::system(permCommand.c_str());
@@ -186,7 +193,7 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             
-            if (verbose)
+            if (compilerOpts.verbose)
             {
                 logCommandInformation(permCommand);
             }
