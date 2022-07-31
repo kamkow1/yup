@@ -29,10 +29,18 @@ void char_codegen(std::string text)
 {
     char *cstr = new char[text.length() + 1];
     strcpy(cstr, &text.c_str()[1]);
-    Value *constant = ConstantInt::get(Type::getInt8Ty(context), *cstr);
+
+    Value *constant = ConstantInt::get(
+        Type::getInt8Ty(context), *cstr);
     valueStack.push(constant);
 
     delete []cstr;
+}
+
+void string_codegen(std::string text)
+{
+    Constant *gstrptr = irBuilder.CreateGlobalStringPtr(StringRef(text));
+    valueStack.push(gstrptr);
 }
 
 std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
@@ -78,9 +86,14 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
 
     if (ctx->V_STRING() != nullptr)
     {
-        std::string text = ctx->V_CHAR()->getText();
-        text.erase(0);
-        text.erase(text.size() - 1);
+        std::string text = ctx->V_STRING()->getText();
+        //text.erase(0);
+        //text.erase(text.length() - 1);
+
+        std::cout << text << "\n"
+;
+        string_codegen(text);
+
         return nullptr;
     }
 
