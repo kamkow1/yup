@@ -4,14 +4,9 @@
 #include "string.h"
 #include "messaging/errors.h"
 #include "compiler/type.h"
+#include "compiler/function.h"
 
 using namespace llvm;
-
-struct FuncParam
-{
-    Type *paramType;
-    std::string paramName;
-};
 
 static std::map<std::string, Function*> functionTable;
 

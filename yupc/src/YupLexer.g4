@@ -1,6 +1,6 @@
 lexer grammar YupLexer;
 
-FUNCTION            :   'fun';
+FUNCTION            :   'Fn';
 TYPE_ANNOTATION     :   '::';
 ASSIGN              :   '=';
 TERMINATOR          :   ';';
