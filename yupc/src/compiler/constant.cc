@@ -87,10 +87,8 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
     if (ctx->V_STRING() != nullptr)
     {
         std::string text = ctx->V_STRING()->getText();
-        //text.erase(0);
-        //text.erase(text.length() - 1);
-
-        std::cout << text << "\n"
+        text.erase(0, 1);
+        text.erase(text.size() - 1);
 ;
         string_codegen(text);
 
