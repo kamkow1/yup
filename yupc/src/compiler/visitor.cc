@@ -9,31 +9,33 @@
 #include "stack"
 
 using namespace llvm;
-using namespace YupCompiler;
+using namespace yupc;
 
-std::string module_name;
+namespace cv = compiler::visitor;
 
-LLVMContext context;
-IRBuilder<> ir_builder(context);
-std::unique_ptr<Module> module = std::make_unique<Module>(module_name, context);
-std::stack<std::map<std::string, llvm::AllocaInst*>> symbol_table;
+std::string cv::module_name;
 
-std::stack<Value*> value_stack;
+LLVMContext cv::context;
+IRBuilder<> cv::ir_builder(context);
+std::unique_ptr<Module> cv::module = std::make_unique<Module>(module_name, context);
+std::stack<std::map<std::string, llvm::AllocaInst*>> cv::symbol_table;
+
+std::stack<Value*> cv::value_stack;
 
 // visitor entry point
-std::any Visitor::visitFile(Parser::YupParser::FileContext *ctx)
+std::any compiler::visitor::Visitor::visitFile(parser::YupParser::FileContext *ctx)
 {
-    std::vector<Parser::YupParser::StatementContext*> statements = ctx->statement();
+    std::vector<parser::YupParser::StatementContext*> statements = ctx->statement();
     for (int i = 0; i < statements.size(); ++i)
     {
-        Parser::YupParser::StatementContext* statement = statements[i];
+        parser::YupParser::StatementContext* statement = statements[i];
         this->visit(statement);
     }
 
     return ctx;
 }
 
-std::any Visitor::visitEmphExpr(Parser::YupParser::EmphExprContext *ctx)
+std::any compiler::visitor::Visitor::visitEmphExpr(parser::YupParser::EmphExprContext *ctx)
 {
     return this->visit(ctx->expr());
 }

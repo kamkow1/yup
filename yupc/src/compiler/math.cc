@@ -8,9 +8,12 @@
 #include "limits.h"
 
 using namespace llvm;
-using namespace YupCompiler;
+using namespace yupc;
 
-void math_oper_expr_codegen(Value *lhs, Value *rhs, std::string op)
+namespace cv = compiler::visitor;
+namespace cm = compiler::math;
+
+void cm::math_oper_expr_codegen(Value *lhs, Value *rhs, std::string op)
 {
     Value *math_inst;
 
@@ -20,28 +23,28 @@ void math_oper_expr_codegen(Value *lhs, Value *rhs, std::string op)
     switch (*cstr) 
     {
         case '+': 
-            math_inst = ir_builder.CreateAdd(lhs, rhs);
+            math_inst = cv::ir_builder.CreateAdd(lhs, rhs);
             break;
 
         case '-':
-            math_inst = ir_builder.CreateSub(lhs, rhs);
+            math_inst = cv::ir_builder.CreateSub(lhs, rhs);
             break;
 
         case '*':
-            math_inst = ir_builder.CreateMul(lhs, rhs);
+            math_inst = cv::ir_builder.CreateMul(lhs, rhs);
             break;
 
         case '/': 
-            math_inst = ir_builder.CreateFDiv(lhs, rhs);
+            math_inst = cv::ir_builder.CreateFDiv(lhs, rhs);
             break;
     }
 
     delete []cstr;
     
-    value_stack.push(math_inst);
+    cv::value_stack.push(math_inst);
 }
 
-std::any Visitor::visitMathOperExpr(Parser::YupParser::MathOperExprContext *ctx)
+std::any cv::Visitor::visitMathOperExpr(parser::YupParser::MathOperExprContext *ctx)
 {
     std::string op = ctx->binop()->getText();
 
@@ -51,7 +54,7 @@ std::any Visitor::visitMathOperExpr(Parser::YupParser::MathOperExprContext *ctx)
     this->visit(ctx->expr(1));
     Value *rhs = value_stack.top();
 
-    math_oper_expr_codegen(lhs, rhs, op);
+    cm::math_oper_expr_codegen(lhs, rhs, op);
 
     return nullptr;
 }

@@ -5,20 +5,23 @@
 
 using namespace llvm;
 using namespace boost;
-using namespace YupCompiler;
+using namespace yupc;
 
-void addr_of_expr_codegen(std::string id)
+namespace cv = compiler::visitor;
+namespace cao = compiler::addr_of;
+
+void cao::addr_of_expr_codegen(std::string id)
 {
-    AllocaInst *val = symbol_table.top()[id];
+    AllocaInst *val = cv::symbol_table.top()[id];
 
-    value_stack.push(val);
+    cv::value_stack.push(val);
 }
 
-std::any Visitor::visitAddr_of(Parser::YupParser::Addr_ofContext *ctx)
+std::any cv::Visitor::visitAddr_of(parser::YupParser::Addr_ofContext *ctx)
 {
 
     std::string text = ctx->IDENTIFIER()->getText();
-    addr_of_expr_codegen(text);
+    cao::addr_of_expr_codegen(text);
     
     return nullptr;
 }

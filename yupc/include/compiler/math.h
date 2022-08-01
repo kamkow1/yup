@@ -2,5 +2,8 @@
 
 #include "llvm/IR/Value.h"
 
-void math_oper_expr_codegen(llvm::Value *lhs, 
-    llvm::Value *rhs, std::string op);
+namespace yupc::compiler::math
+{
+    void math_oper_expr_codegen(llvm::Value *lhs, 
+        llvm::Value *rhs, std::string op);
+}

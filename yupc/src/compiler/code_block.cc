@@ -1,10 +1,12 @@
 #include "compiler/visitor.h"
 
-using namespace YupCompiler;
+using namespace yupc;
 
-std::any Visitor::visitCode_block(Parser::YupParser::Code_blockContext *ctx)
+namespace cv = compiler::visitor;
+
+std::any cv::Visitor::visitCode_block(parser::YupParser::Code_blockContext *ctx)
 {
-    for (Parser::YupParser::StatementContext *const statement : ctx->statement())
+    for (parser::YupParser::StatementContext *const statement : ctx->statement())
     {
         this->visit(statement);
     }

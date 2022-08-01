@@ -17,10 +17,10 @@
 
 using namespace llvm;
 using namespace CLI;
-using namespace YupCompiler::Parser;
-using namespace YupCompiler::Lexer;
+using namespace yupc;
 
 namespace fs = std::filesystem;
+namespace cv = compiler::visitor;
 
 struct CompilerOpts
 {
@@ -72,41 +72,41 @@ int main(int argc, char *argv[])
         std::string src_content = file_to_str(abs_src_path);
 
         antlr4::ANTLRInputStream input(src_content);
-        YupLexer lexer(&input);
+        lexer::YupLexer lexer(&input);
         antlr4::CommonTokenStream tokens(&lexer);
-        YupParser parser(&tokens);
+        parser::YupParser parser(&tokens);
 
         // add error listener
         ParserErrorListener parserErrorListener;
         parser.removeErrorListeners();
         parser.addErrorListener(&parserErrorListener);
 
-        context.setOpaquePointers(false);
+        cv::context.setOpaquePointers(false);
 
-        YupParser::FileContext* ctx = parser.file();
+        parser::YupParser::FileContext* ctx = parser.file();
 
-        Visitor visitor;
+        cv::Visitor visitor;
 
-        module_name = get_ir_fname(abs_src_path);
+        cv::module_name = get_ir_fname(abs_src_path);
         visitor.visit(ctx);
 
         // dump module to .ll
-        verifyModule(*module, &outs());
+        verifyModule(*cv::module, &outs());
         std::error_code ec;
-        raw_fd_ostream os(module_name, ec, sys::fs::OF_None);
-        module->print(os, nullptr);
+        raw_fd_ostream os(cv::module_name, ec, sys::fs::OF_None);
+        cv::module->print(os, nullptr);
         os.flush();
 
         if (compilerOpts.verbose)
         {
-            std::string info = "dumped module " + module_name;
+            std::string info = "dumped module " + cv::module_name;
             log_cmd_info(info);
         }
 
         // -3 is .ll
-        std::string binaryName = module_name.substr(0, module_name.size() - 3);
+        std::string binaryName = cv::module_name.substr(0, cv::module_name.size() - 3);
 
-        std::string llcCommand = "llc " + module_name;
+        std::string llcCommand = "llc " + cv::module_name;
 
         if (compilerOpts.verbose)
         {
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
         // remove the .ll file
         if (!compilerOpts.emitIR)
         {
-            std::string cleanupCommand = "rm -f " + module_name;
+            std::string cleanupCommand = "rm -f " + cv::module_name;
             int cleanResult = std::system(cleanupCommand.c_str());
             if (cleanResult != 0)
             {

@@ -8,7 +8,11 @@
 #include "llvm/Support/Alignment.h"
 
 using namespace llvm;
-using namespace YupCompiler;
+using namespace yupc;
+
+namespace cv = compiler::visitor;
+namespace cvar = compiler::variable;
+namespace ct = compiler::type;
 
 struct Variable
 {
@@ -18,15 +22,15 @@ struct Variable
 
 static std::map<std::string, Variable> variables;
 
-void ident_expr_codegen(std::string id)
+void cvar::ident_expr_codegen(std::string id)
 {
-    AllocaInst *value = symbol_table.top()[id];
+    AllocaInst *value = cv::symbol_table.top()[id];
     Type *type = value->getAllocatedType();
-    LoadInst *load = ir_builder.CreateLoad(type, value);
-    value_stack.push(load);
+    LoadInst *load = cv::ir_builder.CreateLoad(type, value);
+    cv::value_stack.push(load);
 }
 
-void assignment_codegen(std::string name, Value *val)
+void cvar::assignment_codegen(std::string name, Value *val)
 {
     Variable var = variables[name];
 
@@ -36,34 +40,34 @@ void assignment_codegen(std::string name, Value *val)
         exit(1);
     }
 
-    AllocaInst *stored = symbol_table.top()[name];
+    AllocaInst *stored = cv::symbol_table.top()[name];
 
-    check_value_type(val, name);
+    ct::check_value_type(val, name);
 
-    ir_builder.CreateStore(val, stored, false);
+    cv::ir_builder.CreateStore(val, stored, false);
 
-    value_stack.pop();
+    cv::value_stack.pop();
 }
 
-void var_declare_codegen(std::string name, Type *resolved_type, 
+void cvar::var_declare_codegen(std::string name, Type *resolved_type, 
                         bool is_const, Value *val)
 {
-    AllocaInst *ptr = ir_builder.CreateAlloca(resolved_type, 0, "");
+    AllocaInst *ptr = cv::ir_builder.CreateAlloca(resolved_type, 0, "");
 
     if (val != nullptr)
     {
-        ir_builder.CreateStore(val, ptr, false);
+        cv::ir_builder.CreateStore(val, ptr, false);
     }
 
-    symbol_table.top()[name] = ptr;
+    cv::symbol_table.top()[name] = ptr;
 
-    value_stack.push(ptr);
+    cv::value_stack.push(ptr);
 
     Variable var{name, is_const};
     variables[name] = var;
 }
 
-std::any Visitor::visitVar_declare(Parser::YupParser::Var_declareContext *ctx)
+std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
@@ -79,28 +83,28 @@ std::any Visitor::visitVar_declare(Parser::YupParser::Var_declareContext *ctx)
         val = value_stack.top();
     }
 
-    var_declare_codegen(name, resolved_type, is_const, val);
+    cvar::var_declare_codegen(name, resolved_type, is_const, val);
 
     return nullptr;
 }
 
-std::any Visitor::visitAssignment(Parser::YupParser::AssignmentContext *ctx)
+std::any cv::Visitor::visitAssignment(parser::YupParser::AssignmentContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
     this->visit(ctx->var_value()->expr());
     Value *val = value_stack.top();
 
-    assignment_codegen(name, val);
+    cvar::assignment_codegen(name, val);
     
     return nullptr;
 }
 
-std::any Visitor::visitIdentifierExpr(Parser::YupParser::IdentifierExprContext *ctx)
+std::any cv::Visitor::visitIdentifierExpr(parser::YupParser::IdentifierExprContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
-    ident_expr_codegen(name);
+    cvar::ident_expr_codegen(name);
     
     return nullptr;
 }

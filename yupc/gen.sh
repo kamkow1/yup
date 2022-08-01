@@ -32,8 +32,8 @@ echo "$antlr_jar_path"
 
 cd src/
 
-java -jar "$antlr_jar_path" ./YupLexer.g4 -Dlanguage=Cpp -o ./lexer -package YupCompiler::Lexer
-java -jar "$antlr_jar_path" ./YupParser.g4 -Dlanguage=Cpp -o ./parser -no-listener -visitor -package YupCompiler::Parser
+java -jar "$antlr_jar_path" ./YupLexer.g4 -Dlanguage=Cpp -o ./lexer -package yupc::lexer
+java -jar "$antlr_jar_path" ./YupParser.g4 -Dlanguage=Cpp -o ./parser -no-listener -visitor -package yupc::parser
 
 mv lexer/YupLexer.cpp lexer/YupLexer.cc
 

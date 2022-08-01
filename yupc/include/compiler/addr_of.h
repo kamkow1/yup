@@ -2,4 +2,7 @@
 
 #include "string.h"
 
-void addr_of_expr_codegen(std::string id);
+namespace yupc::compiler::addr_of
+{
+    void addr_of_expr_codegen(std::string id);
+}
