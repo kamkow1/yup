@@ -4,6 +4,7 @@
 #include "messaging/errors.h"
 
 using namespace llvm;
+using namespace YupCompiler;
 
 void indexed_access_expr_codegen(Value *array, Value *idxVal)
 {
@@ -74,7 +75,7 @@ void array_codegen(std::vector<Value*> elems, size_t elemCount)
     value_stack.push(array_malloc);
 }
 
-std::any Visitor::visitIndexedAccessExpr(YupParser::IndexedAccessExprContext *ctx)
+std::any Visitor::visitIndexedAccessExpr(Parser::YupParser::IndexedAccessExprContext *ctx)
 {
     this->visit(ctx->expr(0));
     Value *array = value_stack.top();
@@ -87,7 +88,7 @@ std::any Visitor::visitIndexedAccessExpr(YupParser::IndexedAccessExprContext *ct
     return nullptr;
 }
 
-std::any Visitor::visitArr_elem_assignment(YupParser::Arr_elem_assignmentContext *ctx)
+std::any Visitor::visitArr_elem_assignment(Parser::YupParser::Arr_elem_assignmentContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
@@ -105,7 +106,7 @@ std::any Visitor::visitArr_elem_assignment(YupParser::Arr_elem_assignmentContext
     return nullptr;
 }
 
-std::any Visitor::visitArray(YupParser::ArrayContext *ctx)
+std::any Visitor::visitArray(Parser::YupParser::ArrayContext *ctx)
 {
     std::vector<Value*> elems;
     size_t elem_count = ctx->expr().size();

@@ -1,12 +1,16 @@
 #include "compiler/visitor.h"
-#include "util.h"
-#include "llvm/IR/Type.h"
-#include "string.h"
-#include "messaging/errors.h"
 #include "compiler/type.h"
 #include "compiler/function.h"
+#include "messaging/errors.h"
+#include "util.h"
+
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Verifier.h"
+
+#include "string.h"
 
 using namespace llvm;
+using namespace YupCompiler;
 
 static std::map<std::string, Function*> function_table;
 
@@ -93,20 +97,20 @@ void func_sig_codegen(bool is_external, std::string name, Type *return_type,
     function_table[name] = function;
 }
 
-std::any Visitor::visitFunc_return(YupParser::Func_returnContext *ctx)
+std::any Visitor::visitFunc_return(Parser::YupParser::Func_returnContext *ctx)
 {
     std::any value = this->visit(ctx->expr());
     return value;
 }
 
-std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
+std::any Visitor::visitFunc_signature(Parser::YupParser::Func_signatureContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();        
     Type *return_type = std::any_cast<Type*>(
         this->visit(ctx->type_annot()));
 
     std::vector<FuncParam*> params;
-    for (YupParser::Func_paramContext *const p : ctx->func_param())
+    for (Parser::YupParser::Func_paramContext *const p : ctx->func_param())
     {
         FuncParam *fp = std::any_cast<FuncParam*>(this->visit(p));
         params.push_back(fp);
@@ -129,7 +133,7 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
     return nullptr;
 }
 
-std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
+std::any Visitor::visitFunc_param(Parser::YupParser::Func_paramContext *ctx)
 {
     Type *resolved_type = std::any_cast<Type*>(
         this->visit(ctx->type_annot()));
@@ -140,7 +144,7 @@ std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
     return func_param;
 }
 
-std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
+std::any Visitor::visitFunc_def(parser::YupParser::Func_defContext *ctx)
 {
     std::string func_name = ctx
             ->func_signature()
@@ -179,7 +183,7 @@ std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
     return nullptr;
 }
 
-std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
+std::any Visitor::visitFunc_call(Parser::YupParser::Func_callContext *ctx)
 {
     std::string func_name = ctx->IDENTIFIER()->getText();
 
@@ -194,7 +198,7 @@ std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
     size_t expr_length = ctx->expr().size();
     for (size_t i = 0; i < expr_length; ++i)
     {
-        YupParser::ExprContext* expr = ctx->expr()[i];
+        Parser::YupParser::ExprContext* expr = ctx->expr()[i];
         this->visit(expr);
         Value *arg_val = value_stack.top();
         args.push_back(arg_val);

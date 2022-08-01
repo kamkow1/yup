@@ -1,5 +1,5 @@
-#include "parser_error_listener.h"
 #include "messaging/errors.h"
+#include "parser_error_listener.h"
 #include "string.h"
 
 void ParserErrorListener::syntaxError(antlr4::Recognizer *recognizer,

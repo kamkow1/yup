@@ -1,17 +1,24 @@
-#include "CLI/CLI.hpp"
-#include "YupLexer.h"
-#include "YupParser.h"
-#include "string.h"
-#include "filesystem"
 #include "compiler/visitor.h"
-#include "util.h"
+#include "lexer/YupLexer.h"
+#include "parser/YupParser.h"
 #include "messaging/information.h"
 #include "parser_error_listener.h"
+
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/FileSystem.h"
+
+#include "CLI/CLI.hpp"
+#include "string.h"
+#include "filesystem"
+#include "util.h"
 #include "sys/ioctl.h"
 #include "unistd.h"
 
 using namespace llvm;
 using namespace CLI;
+using namespace YupCompiler::Parser;
+using namespace YupCompiler::Lexer;
+
 namespace fs = std::filesystem;
 
 struct CompilerOpts

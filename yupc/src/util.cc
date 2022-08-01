@@ -1,4 +1,17 @@
+#include "compiler/visitor.h"
+#include "messaging/errors.h"
+
 #include "util.h"
+
+#include "llvm/IR/Type.h"
+
+#include "map"
+#include "filesystem"
+#include "iostream"
+#include "fstream"
+#include "filesystem"
+
+
 
 std::string file_to_str(const std::string& path)
 {

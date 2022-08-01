@@ -1,12 +1,14 @@
 #include "compiler/visitor.h"
-#include "util.h"
-#include "messaging/errors.h"
-#include "llvm/Support/TypeName.h"
-#include "llvm/Support/Alignment.h"
 #include "compiler/type.h"
 #include "compiler/variable.h"
+#include "messaging/errors.h"
+#include "util.h"
+
+#include "llvm/Support/TypeName.h"
+#include "llvm/Support/Alignment.h"
 
 using namespace llvm;
+using namespace YupCompiler;
 
 struct Variable
 {
@@ -61,7 +63,7 @@ void var_declare_codegen(std::string name, Type *resolved_type,
     variables[name] = var;
 }
 
-std::any Visitor::visitVar_declare(YupParser::Var_declareContext *ctx)
+std::any Visitor::visitVar_declare(Parser::YupParser::Var_declareContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
@@ -82,7 +84,7 @@ std::any Visitor::visitVar_declare(YupParser::Var_declareContext *ctx)
     return nullptr;
 }
 
-std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
+std::any Visitor::visitAssignment(Parser::YupParser::AssignmentContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
@@ -94,7 +96,7 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     return nullptr;
 }
 
-std::any Visitor::visitIdentifierExpr(YupParser::IdentifierExprContext *ctx)
+std::any Visitor::visitIdentifierExpr(Parser::YupParser::IdentifierExprContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 

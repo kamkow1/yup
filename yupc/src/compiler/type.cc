@@ -1,12 +1,15 @@
 #include "compiler/visitor.h"
-#include "util.h"
 #include "compiler/type.h"
 #include "messaging/errors.h"
+#include "util.h"
+
 #include "boost/algorithm/string.hpp"
+
 #include "string.h"
 
 using namespace llvm;
 using namespace boost;
+using namespace YupCompiler;
 
 static Type *resolve_ptr_type(Type *base)
 {
@@ -121,7 +124,7 @@ void check_value_type(Value *val, std::string name)
     }
 }
 
-std::any Visitor::visitType_annot(YupParser::Type_annotContext *ctx)
+std::any Visitor::visitType_annot(Parser::YupParser::Type_annotContext *ctx)
 {
     std::string base = ctx->type_name()->IDENTIFIER()->getText();
     Type *type_base = resolve_type(base);
@@ -129,7 +132,7 @@ std::any Visitor::visitType_annot(YupParser::Type_annotContext *ctx)
     size_t ext_len = ctx->type_name()->type_ext().size();
     for (size_t i = 0; i < ext_len; i++)
     {
-        YupParser::Type_extContext *ext 
+        Parser::YupParser::Type_extContext *ext 
             = ctx->type_name()->type_ext(i);
 
         if (ext->ASTERISK() != nullptr)

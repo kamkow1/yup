@@ -1,11 +1,14 @@
 #include "compiler/visitor.h"
 #include "compiler/math.h"
-#include "cstring"
+
 #include "llvm/IR/Constants.h"
-#include <cfloat>
+
+#include "cstring"
+#include "cfloat"
 #include "limits.h"
 
 using namespace llvm;
+using namespace YupCompiler;
 
 void math_oper_expr_codegen(Value *lhs, Value *rhs, std::string op)
 {
@@ -38,7 +41,7 @@ void math_oper_expr_codegen(Value *lhs, Value *rhs, std::string op)
     value_stack.push(math_inst);
 }
 
-std::any Visitor::visitMathOperExpr(YupParser::MathOperExprContext *ctx)
+std::any Visitor::visitMathOperExpr(Parser::YupParser::MathOperExprContext *ctx)
 {
     std::string op = ctx->binop()->getText();
 

@@ -1,13 +1,6 @@
 #pragma once
-#include "map"
-#include "filesystem"
-#include "messaging/errors.h"
-#include "iostream"
-#include "llvm/IR/Type.h"
-#include "string"
-#include "fstream"
-#include "filesystem"
-#include "compiler/visitor.h"
+
+#include "string.h"
 
 std::string file_to_str(const std::string& path);
 

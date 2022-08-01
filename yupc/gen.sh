@@ -32,8 +32,8 @@ echo "$antlr_jar_path"
 
 cd src/
 
-java -jar "$antlr_jar_path" ./YupLexer.g4 -Dlanguage=Cpp -o ./lexer
-java -jar "$antlr_jar_path" ./YupParser.g4 -Dlanguage=Cpp -o ./parser -no-listener -visitor
+java -jar "$antlr_jar_path" ./YupLexer.g4 -Dlanguage=Cpp -o ./lexer -package YupCompiler::Lexer
+java -jar "$antlr_jar_path" ./YupParser.g4 -Dlanguage=Cpp -o ./parser -no-listener -visitor -package YupCompiler::Parser
 
 mv lexer/YupLexer.cpp lexer/YupLexer.cc
 
@@ -43,7 +43,18 @@ mv parser/YupParserVisitor.cpp parser/YupParserVisitor.cc
 
 cd ..
 
-mv src/lexer/YupLexer.h include/YupLexer.h
-mv src/parser/YupParser.h include/YupParser.h
+if [[ ! -d include/lexer ]]; then
+    mkdir include/lexer
+fi
+
+if [[ ! -d include/parser ]]; then
+    mkdir include/parser
+fi
+
+mv src/lexer/YupLexer.h include/lexer/YupLexer.h
+
+mv src/parser/YupParser.h include/parser/YupParser.h
+mv src/parser/YupParserBaseVisitor.h include/parser/YupParserBaseVisitor.h
+mv src/parser/YupParserVisitor.h include/parser/YupParserVisitor.h
 
 echo "finished generating lexer & parser"

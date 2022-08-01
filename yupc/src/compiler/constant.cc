@@ -1,9 +1,11 @@
 #include "compiler/visitor.h"
 #include "messaging/errors.h"
+
 #include "boost/lexical_cast.hpp"
 
 using namespace llvm;
 using namespace boost;
+using namespace YupCompiler;
 
 void int_codegen(int64_t value)
 {
@@ -43,7 +45,7 @@ void string_codegen(std::string text)
     value_stack.push(gstrptr);
 }
 
-std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
+std::any Visitor::visitConstant(Parser::YupParser::ConstantContext *ctx)
 {
     if (ctx->V_INT() != nullptr)
     {
