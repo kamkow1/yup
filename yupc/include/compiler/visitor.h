@@ -39,11 +39,11 @@ public:
     std::any visitEmphExpr(YupParser::EmphExprContext *ctx) override;
 };
 
-extern std::string moduleName;
+extern std::string module_name;
 
 extern llvm::LLVMContext context;
-extern llvm::IRBuilder<> irBuilder;
+extern llvm::IRBuilder<> ir_builder;
 extern std::unique_ptr<llvm::Module> module;
-extern std::stack<std::map<std::string, llvm::AllocaInst*>> symbolTable;
+extern std::stack<std::map<std::string, llvm::AllocaInst*>> symbol_table;
 
-extern std::stack<llvm::Value*> valueStack;
+extern std::stack<llvm::Value*> value_stack;

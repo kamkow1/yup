@@ -2,4 +2,4 @@
 
 #include "string.h"
 
-void addrOfExpr_codegen(std::string id);
+void addr_of_expr_codegen(std::string id);

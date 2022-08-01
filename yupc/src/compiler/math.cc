@@ -7,9 +7,9 @@
 
 using namespace llvm;
 
-void mathOperExpr_codegen(Value *lhs, Value *rhs, std::string op)
+void math_oper_expr_codegen(Value *lhs, Value *rhs, std::string op)
 {
-    Value *mathInst;
+    Value *math_inst;
 
     char *cstr = new char[op.length() - 1];
     strcpy(cstr, op.c_str());
@@ -17,25 +17,25 @@ void mathOperExpr_codegen(Value *lhs, Value *rhs, std::string op)
     switch (*cstr) 
     {
         case '+': 
-            mathInst = irBuilder.CreateAdd(lhs, rhs);
+            math_inst = ir_builder.CreateAdd(lhs, rhs);
             break;
 
         case '-':
-            mathInst = irBuilder.CreateSub(lhs, rhs);
+            math_inst = ir_builder.CreateSub(lhs, rhs);
             break;
 
         case '*':
-            mathInst = irBuilder.CreateMul(lhs, rhs);
+            math_inst = ir_builder.CreateMul(lhs, rhs);
             break;
 
         case '/': 
-            mathInst = irBuilder.CreateFDiv(lhs, rhs);
+            math_inst = ir_builder.CreateFDiv(lhs, rhs);
             break;
     }
 
     delete []cstr;
     
-    valueStack.push(mathInst);
+    value_stack.push(math_inst);
 }
 
 std::any Visitor::visitMathOperExpr(YupParser::MathOperExprContext *ctx)
@@ -43,12 +43,12 @@ std::any Visitor::visitMathOperExpr(YupParser::MathOperExprContext *ctx)
     std::string op = ctx->binop()->getText();
 
     this->visit(ctx->expr(0));
-    Value *lhs = valueStack.top();
+    Value *lhs = value_stack.top();
 
     this->visit(ctx->expr(1));
-    Value *rhs = valueStack.top();
+    Value *rhs = value_stack.top();
 
-    mathOperExpr_codegen(lhs, rhs, op);
+    math_oper_expr_codegen(lhs, rhs, op);
 
     return nullptr;
 }

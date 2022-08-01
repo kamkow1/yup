@@ -5,18 +5,18 @@
 using namespace llvm;
 using namespace boost;
 
-void addrOfExpr_codegen(std::string id)
+void addr_of_expr_codegen(std::string id)
 {
-    AllocaInst *val = symbolTable.top()[id];
+    AllocaInst *val = symbol_table.top()[id];
 
-    valueStack.push(val);
+    value_stack.push(val);
 }
 
 std::any Visitor::visitAddr_of(YupParser::Addr_ofContext *ctx)
 {
 
     std::string text = ctx->IDENTIFIER()->getText();
-    addrOfExpr_codegen(text);
+    addr_of_expr_codegen(text);
     
     return nullptr;
 }

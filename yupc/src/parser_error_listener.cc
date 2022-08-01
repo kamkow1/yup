@@ -17,6 +17,6 @@ void ParserErrorListener::syntaxError(antlr4::Recognizer *recognizer,
             + " at position "
             + std::to_string(charPositionInLine);
 
-    logParsingError(errorMessage);
+    log_parsing_err(errorMessage);
     exit(1);
 }

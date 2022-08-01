@@ -8,14 +8,14 @@
 
 using namespace llvm;
 
-std::string moduleName;
+std::string module_name;
 
 LLVMContext context;
-IRBuilder<> irBuilder(context);
-std::unique_ptr<Module> module = std::make_unique<Module>(moduleName, context);
-std::stack<std::map<std::string, llvm::AllocaInst*>> symbolTable;
+IRBuilder<> ir_builder(context);
+std::unique_ptr<Module> module = std::make_unique<Module>(module_name, context);
+std::stack<std::map<std::string, llvm::AllocaInst*>> symbol_table;
 
-std::stack<Value*> valueStack;
+std::stack<Value*> value_stack;
 
 // visitor entry point
 std::any Visitor::visitFile(YupParser::FileContext *ctx)

@@ -9,8 +9,8 @@
 #include "filesystem"
 #include "compiler/visitor.h"
 
-std::string fileToString(const std::string& path);
+std::string file_to_str(const std::string& path);
 
-std::string dirnameOf(const std::string& fname);
+std::string get_dir_name(const std::string& fname);
 
-std::string getIRFileName(std::string path);
+std::string get_ir_fname(std::string path);

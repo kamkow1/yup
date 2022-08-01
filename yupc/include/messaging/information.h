@@ -2,4 +2,4 @@
 
 #include "string"
 
-void logCommandInformation(std::string detail);
+void log_cmd_info(std::string detail);

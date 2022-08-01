@@ -8,12 +8,7 @@
 using namespace llvm;
 using namespace boost;
 
-static Type *resolveArrayType(Type *base, Value *len)
-{
-    return ArrayType::get(base, 3);
-}
-
-static Type *resolvePointerType(Type *base)
+static Type *resolve_ptr_type(Type *base)
 {
     return PointerType::get(base, 0);
 }
@@ -28,7 +23,7 @@ static std::map<std::string, size_t> types
     { "char",   6 },
 };
 
-static size_t resolveBasicType(std::string match)
+static size_t resolve_basic_type(std::string match)
 {
     auto itr = types.find(match);
     if (itr != types.end())
@@ -41,14 +36,14 @@ static size_t resolveBasicType(std::string match)
     }
 }
 
-void appendTypeID(size_t n, std::string idStr)
+void appendTypeID(size_t n, std::string id_str)
 {
-    types[idStr] = n;
+    types[id_str] = n;
 }
 
-Type* resolveType(std::string typeName) 
+Type* resolve_type(std::string type_name) 
 {
-    switch (resolveBasicType(typeName))
+    switch (resolve_basic_type(type_name))
     {
         case 1: // i32
             return Type::getInt32Ty(context);
@@ -65,13 +60,13 @@ Type* resolveType(std::string typeName)
 
         case SIZE_MAX:
         {
-            std::string baseStr = typeName;
-            algorithm::erase_all(baseStr, "*");
+            std::string base_str = type_name;
+            algorithm::erase_all(base_str, "*");
 
-            Type *base = resolveType(baseStr);
+            Type *base = resolve_type(base_str);
 
-            std::string suffixes = typeName;
-            algorithm::erase_all(suffixes, baseStr);
+            std::string suffixes = type_name;
+            algorithm::erase_all(suffixes, base_str);
             
             for (size_t i = 0; i < suffixes.size(); i++)
             {
@@ -80,7 +75,7 @@ Type* resolveType(std::string typeName)
                 switch (c)
                 {
                     case '*':
-                        base = resolvePointerType(base);
+                        base = resolve_ptr_type(base);
                         break;                  
                 }
             }
@@ -89,40 +84,39 @@ Type* resolveType(std::string typeName)
         }
     }
 
-    std::string errorMessage = "couldn't match type \"" + typeName + "\"";
-    logCompilerError(errorMessage);
+    log_compiler_err("couldn't match type \"" + type_name + "\"");
     exit(1);
 
     return nullptr;
 }
 
-std::string getReadableTypeName(std::string typeName)
+std::string get_readable_type_name(std::string type_name)
 {    
-    return typeName;
+    return type_name;
 }
 
-void checkValueType(Value *val, std::string name)
+void check_value_type(Value *val, std::string name)
 {
-    std::string exprType;
-    raw_string_ostream rso(exprType);
+    std::string expr_type;
+    raw_string_ostream rso(expr_type);
     val->getType()->print(rso);
-    exprType = getReadableTypeName(rso.str());
+    expr_type = get_readable_type_name(rso.str());
 
-    Value *ogVal = symbolTable.top()[name];
-    std::string ogType;
-    raw_string_ostream ogRso(ogType);
-    ogVal->getType()->print(ogRso);
-    ogType = getReadableTypeName(ogRso.str());
+    Value *og_val = symbol_table.top()[name];
+    std::string og_type;
+    raw_string_ostream og_rso(og_type);
+    og_val->getType()->print(og_rso);
+    og_type = get_readable_type_name(og_rso.str());
 
-    if ((ogType == "bool" || ogType == "char") || exprType == "i8")
+    if ((og_type == "bool" || og_type == "char") || expr_type == "i8")
     {
         return;
     }
 
-    if (exprType != ogType)
+    if (expr_type != og_type)
     {
-        logCompilerError("mismatch of types \"" + ogType 
-            + "\" and \"" + exprType + "\"");
+        log_compiler_err("mismatch of types \"" + og_type 
+            + "\" and \"" + expr_type + "\"");
         exit(1);
     }
 }
@@ -130,10 +124,10 @@ void checkValueType(Value *val, std::string name)
 std::any Visitor::visitType_annot(YupParser::Type_annotContext *ctx)
 {
     std::string base = ctx->type_name()->IDENTIFIER()->getText();
-    Type *typeBase = resolveType(base);
+    Type *type_base = resolve_type(base);
 
-    size_t extLen = ctx->type_name()->type_ext().size();
-    for (size_t i = 0; i < extLen; i++)
+    size_t ext_len = ctx->type_name()->type_ext().size();
+    for (size_t i = 0; i < ext_len; i++)
     {
         YupParser::Type_extContext *ext 
             = ctx->type_name()->type_ext(i);
@@ -141,9 +135,9 @@ std::any Visitor::visitType_annot(YupParser::Type_annotContext *ctx)
         if (ext->ASTERISK() != nullptr)
         {
             base += "*";
-            typeBase = resolveType(base);
+            type_base = resolve_type(base);
         } 
     }
 
-    return typeBase;
+    return type_base;
 }

@@ -8,89 +8,89 @@
 
 using namespace llvm;
 
-static std::map<std::string, Function*> functionTable;
+static std::map<std::string, Function*> function_table;
 
-void funcDef_codegen(Function *function)
+void func_def_codegen(Function *function)
 {
     BasicBlock *block = BasicBlock::Create(context, "entry", function);
-    irBuilder.SetInsertPoint(block);
+    ir_builder.SetInsertPoint(block);
 
     std::map<std::string, AllocaInst*> map;
-    symbolTable.push(map);
+    symbol_table.push(map);
 
     size_t len = function->arg_size();
     for (size_t i = 0; i < len; ++i)
     {
         Argument &arg = *function->getArg(i);
 
-        AllocaInst *alloca = irBuilder.CreateAlloca(
+        AllocaInst *alloca = ir_builder.CreateAlloca(
             arg.getType(), 0, arg.getName());
 
-        symbolTable.top()[arg.getName().str()] = alloca;
-        irBuilder.CreateStore(&arg, alloca);
+        symbol_table.top()[arg.getName().str()] = alloca;
+        ir_builder.CreateStore(&arg, alloca);
     }
 }
 
-void funcCall_codegen(std::string funcName, 
-                    size_t exprLength, std::vector<Value*> args)
+void func_call_codegen(std::string func_name, 
+                    size_t expr_length, std::vector<Value*> args)
 {
-    Function *fnCallee = module->getFunction(funcName);
+    Function *fn_callee = module->getFunction(func_name);
 
-    if (fnCallee == nullptr)
+    if (fn_callee == nullptr)
     {
-        logCompilerError("tried to call function " + funcName + " but it isn't declared");
+        log_compiler_err("tried to call function " + func_name + " but it isn't declared");
         exit(1);
     }
 
-    if (args.size() != fnCallee->arg_size())
+    if (args.size() != fn_callee->arg_size())
     {
-        logCompilerError("found function \"" + funcName
+        log_compiler_err("found function \"" + func_name
             + "\" but couldn't match given argument" 
             + " list length to the function signature");
         exit(1);
     }
 
 
-    bool isVoid = fnCallee->getReturnType()->isVoidTy();
-    if (isVoid)
+    bool is_void = fn_callee->getReturnType()->isVoidTy();
+    if (is_void)
     {
-        CallInst *result = irBuilder.CreateCall(fnCallee, args, "");
-        valueStack.push(result);
+        CallInst *result = ir_builder.CreateCall(fn_callee, args, "");
+        value_stack.push(result);
     }
     else
     {
-        std::string callLabel = std::string("call") + "_" + funcName;
-        CallInst *result = irBuilder.CreateCall(fnCallee, args, callLabel);
-        valueStack.push(result);
+        std::string call_label = std::string("call") + "_" + func_name;
+        CallInst *result = ir_builder.CreateCall(fn_callee, args, call_label);
+        value_stack.push(result);
     }
 }
 
-void funcSig_codegen(bool isExternal, std::string name, Type *returnType, 
-    std::vector<FuncParam*> params, std::vector<Type*> *paramTypes)
+void func_sig_codegen(bool is_external, std::string name, Type *return_type, 
+    std::vector<llvm::Type*> param_types, std::vector<FuncParam*> params)
 {
-    FunctionType *functionType = FunctionType::get(
-            returnType,
-            *paramTypes,
+    FunctionType *fn_type = FunctionType::get(
+            return_type,
+            param_types,
             false);
 
     Function *function = Function::Create(
-            functionType,
-            isExternal 
+            fn_type,
+            is_external
                 ? GlobalValue::ExternalLinkage 
                 : GlobalValue::PrivateLinkage,
             name,
             module.get());
 
-    function->setDSOLocal(!isExternal);
+    function->setDSOLocal(!is_external);
 
-    int argMax = function->arg_size();
-    for (int i = 0; i < argMax; ++i)
+    int arg_max = function->arg_size();
+    for (int i = 0; i < arg_max; ++i)
     {
-        std::string pn = params[i]->paramName;
+        std::string pn = params[i]->param_name;
         function->getArg(i)->setName(pn);
     }
 
-    functionTable[name] = function;
+    function_table[name] = function;
 }
 
 std::any Visitor::visitFunc_return(YupParser::Func_returnContext *ctx)
@@ -102,7 +102,7 @@ std::any Visitor::visitFunc_return(YupParser::Func_returnContext *ctx)
 std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();        
-    Type *returnType = std::any_cast<Type*>(
+    Type *return_type = std::any_cast<Type*>(
         this->visit(ctx->type_annot()));
 
     std::vector<FuncParam*> params;
@@ -112,92 +112,96 @@ std::any Visitor::visitFunc_signature(YupParser::Func_signatureContext *ctx)
         params.push_back(fp);
     }
 
-    std::vector<Type*> paramTypes;
+    std::vector<Type*> param_types;
     for (const FuncParam *pt : params)
     {
-        paramTypes.push_back(pt->paramType);
+        param_types.push_back(pt->param_type);
     }
 
-    bool isExternal = ctx->EXTERNAL() != nullptr;
+    bool is_external = ctx->EXTERNAL() != nullptr;
 
-    funcSig_codegen(isExternal, name, returnType, params, &paramTypes);
+    func_sig_codegen(is_external, 
+                    name, 
+                    return_type, 
+                    param_types, 
+                    params);
 
     return nullptr;
 }
 
 std::any Visitor::visitFunc_param(YupParser::Func_paramContext *ctx)
 {
-    Type *resolvedType 
-        = std::any_cast<Type*>(this->visit(ctx->type_annot()));
+    Type *resolved_type = std::any_cast<Type*>(
+        this->visit(ctx->type_annot()));
 
     std::string name = ctx->IDENTIFIER()->getText();
 
-    FuncParam *funcParam = new FuncParam{resolvedType, name};
-    return funcParam;
+    FuncParam *func_param = new FuncParam{resolved_type, name};
+    return func_param;
 }
 
 std::any Visitor::visitFunc_def(YupParser::Func_defContext *ctx)
 {
-    std::string funcName = ctx
+    std::string func_name = ctx
             ->func_signature()
             ->IDENTIFIER()
             ->getText();
 
     this->visit(ctx->func_signature());
-    Function *function = functionTable[funcName];
+    Function *function = function_table[func_name];
     
     if (!function)
     {
-        logCompilerError("cannot resolve the signature for function " + funcName);
+        log_compiler_err("cannot resolve the signature for function " + func_name);
         exit(1);
     }
 
-    funcDef_codegen(function);
+    func_def_codegen(function);
 
-    bool isVoid = function->getReturnType()->isVoidTy();
-    if (!isVoid)
+    bool is_void = function->getReturnType()->isVoidTy();
+    if (!is_void)
     {
         this->visit(ctx->code_block());
 
-        Value *retValue = valueStack.top();
-        irBuilder.CreateRet(retValue);
-        valueStack.pop();
+        Value *ret_value = value_stack.top();
+        ir_builder.CreateRet(ret_value);
+        value_stack.pop();
     }
     else
     {
         this->visit(ctx->code_block());
-        irBuilder.CreateRetVoid();
+        ir_builder.CreateRetVoid();
     }
 
     verifyFunction(*function, &outs());
-    symbolTable.pop();
+    symbol_table.pop();
 
     return nullptr;
 }
 
 std::any Visitor::visitFunc_call(YupParser::Func_callContext *ctx)
 {
-    std::string funcName = ctx->IDENTIFIER()->getText();
+    std::string func_name = ctx->IDENTIFIER()->getText();
 
-    if (symbolTable.top().find(funcName) != symbolTable.top().end())
+    if (symbol_table.top().find(func_name) != symbol_table.top().end())
     {
-        logCompilerError("cannot call function \"" + funcName 
+        log_compiler_err("cannot call function \"" + func_name 
             + "\" because it doesn't exist in the symbol table");
         exit(1);
     }
 
     std::vector<Value*> args;
-    size_t exprLength = ctx->expr().size();
-    for (size_t i = 0; i < exprLength; ++i)
+    size_t expr_length = ctx->expr().size();
+    for (size_t i = 0; i < expr_length; ++i)
     {
         YupParser::ExprContext* expr = ctx->expr()[i];
         this->visit(expr);
-        Value *argVal = valueStack.top();
-        args.push_back(argVal);
-        valueStack.pop();
+        Value *arg_val = value_stack.top();
+        args.push_back(arg_val);
+        value_stack.pop();
     }
 
-    funcCall_codegen(funcName, exprLength, args);
+    func_call_codegen(func_name, expr_length, args);
     
     return nullptr;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "string.h"
+#include "cstdint"
 
 void int_codegen(int64_t value);
 

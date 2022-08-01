@@ -2,7 +2,7 @@
 #include "termcolor/termcolor.hpp"
 #include "iostream"
 
-void logCommandInformation(std::string detail)
+void log_cmd_info(std::string detail)
 {
     std::cout
         << termcolor::bright_blue

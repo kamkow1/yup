@@ -10,19 +10,19 @@ void int_codegen(int64_t value)
     ConstantInt *constant = value > INT32_MAX || value < INT32_MIN
             ? ConstantInt::get(Type::getInt64Ty(context), value)
             : ConstantInt::get(Type::getInt32Ty(context), value);
-    valueStack.push(constant);
+    value_stack.push(constant);
 }
 
 void float_codegen(float value)
 {
     Value *constant = ConstantFP::get(context, APFloat(value));
-    valueStack.push(constant);
+    value_stack.push(constant);
 }
 
 void bool_codegen(bool value)
 {
     Value *constant = ConstantInt::get(Type::getInt8Ty(context), value);
-    valueStack.push(constant);
+    value_stack.push(constant);
 }
 
 void char_codegen(std::string text)
@@ -32,15 +32,15 @@ void char_codegen(std::string text)
 
     Value *constant = ConstantInt::get(
         Type::getInt8Ty(context), *cstr);
-    valueStack.push(constant);
+    value_stack.push(constant);
 
     delete []cstr;
 }
 
 void string_codegen(std::string text)
 {
-    Constant *gstrptr = irBuilder.CreateGlobalStringPtr(StringRef(text));
-    valueStack.push(gstrptr);
+    Constant *gstrptr = ir_builder.CreateGlobalStringPtr(StringRef(text));
+    value_stack.push(gstrptr);
 }
 
 std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
@@ -95,6 +95,6 @@ std::any Visitor::visitConstant(YupParser::ConstantContext *ctx)
         return nullptr;
     }
 
-    logCompilerError("couldn't match type and create a constant");
+    log_compiler_err("couldn't match type and create a constant");
     exit(1);
 }

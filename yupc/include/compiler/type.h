@@ -6,12 +6,12 @@
 
 struct TypeAnnotation
 {
-    std::string typeString;
-    llvm::Value *arraySize;
+    std::string type_str;
+    llvm::Value *array_size;
 };
 
-llvm::Type *resolveType(std::string typeName);
+llvm::Type *resolve_type(std::string type_name);
 
-std::string getReadableTypeName(std::string typeName);
+std::string get_readable_type_name(std::string type_name);
 
-void checkValueType(llvm::Value *val, std::string name);
+void check_value_type(llvm::Value *val, std::string name);

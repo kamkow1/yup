@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     build_cmd->callback([&]() 
     {
         std::string abs_src_path = fs::absolute(compilerOpts.srcPath);
-        std::string src_content = fileToString(abs_src_path);
+        std::string src_content = file_to_str(abs_src_path);
 
         antlr4::ANTLRInputStream input(src_content);
         YupLexer lexer(&input);
@@ -79,36 +79,36 @@ int main(int argc, char *argv[])
 
         Visitor visitor;
 
-        moduleName = getIRFileName(abs_src_path);
+        module_name = get_ir_fname(abs_src_path);
         visitor.visit(ctx);
 
         // dump module to .ll
         verifyModule(*module, &outs());
         std::error_code ec;
-        raw_fd_ostream os(moduleName, ec, sys::fs::OF_None);
+        raw_fd_ostream os(module_name, ec, sys::fs::OF_None);
         module->print(os, nullptr);
         os.flush();
 
         if (compilerOpts.verbose)
         {
-            std::string info = "dumped module " + moduleName;
-            logCommandInformation(info);
+            std::string info = "dumped module " + module_name;
+            log_cmd_info(info);
         }
 
         // -3 is .ll
-        std::string binaryName = moduleName.substr(0, moduleName.size() - 3);
+        std::string binaryName = module_name.substr(0, module_name.size() - 3);
 
-        std::string llcCommand = "llc " + moduleName;
+        std::string llcCommand = "llc " + module_name;
 
         if (compilerOpts.verbose)
         {
-            logCommandInformation(llcCommand);
+            log_cmd_info(llcCommand);
         }
 
         int llcResult = std::system(llcCommand.c_str());
         if (llcResult != 0)
         {
-            logCommandError("failed " + llcCommand);
+            log_cmd_err("failed " + llcCommand);
             exit(1);
         }
 
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
         {
             std::string resultInfo = "compiled to " + binaryName 
                 + ".o" + " with status code " + std::to_string(llcResult);
-            logCommandInformation(resultInfo);
+            log_cmd_info(resultInfo);
         }
 
         if (compilerOpts.verbose) // output .o
@@ -126,13 +126,13 @@ int main(int argc, char *argv[])
             int gccResult = std::system(gccCommand.c_str());
             if (gccResult != 0)
             {
-                logCommandError("failed " + gccCommand);
+                log_cmd_err("failed " + gccCommand);
                 exit(1);
             }
 
             if (compilerOpts.verbose)
             {
-                logCommandInformation(gccCommand);
+                log_cmd_info(gccCommand);
             }
         }
         else // output executable
@@ -143,43 +143,43 @@ int main(int argc, char *argv[])
             int gccResult = std::system(gccCommand.c_str());
             if (gccResult != 0)
             {
-                logCommandError("failed " + gccCommand);
+                log_cmd_err("failed " + gccCommand);
                 exit(1);
             }
 
             if (compilerOpts.verbose)
             {
-                logCommandInformation(gccCommand);
+                log_cmd_info(gccCommand);
             }
         }
 
         std::string cleanupCommand = "rm -f " + binaryName + ".s";
         if (compilerOpts.verbose)
         {
-            logCommandInformation(cleanupCommand);
+            log_cmd_info(cleanupCommand);
         }
 
         int cleanupResult = std::system(cleanupCommand.c_str());
         if (cleanupResult != 0)
         {
-            logCommandError("failed " + cleanupCommand);
+            log_cmd_err("failed " + cleanupCommand);
             exit(1);
         }
 
         // remove the .ll file
         if (!compilerOpts.emitIR)
         {
-            std::string cleanupCommand = "rm -f " + moduleName;
+            std::string cleanupCommand = "rm -f " + module_name;
             int cleanResult = std::system(cleanupCommand.c_str());
             if (cleanResult != 0)
             {
-                logCommandError("failed " + cleanupCommand);
+                log_cmd_err("failed " + cleanupCommand);
                 exit(1);
             }
             
             if (compilerOpts.verbose)
             {
-                logCommandInformation(cleanupCommand);
+                log_cmd_info(cleanupCommand);
             }
         }
 
@@ -189,13 +189,13 @@ int main(int argc, char *argv[])
             int premResult = std::system(permCommand.c_str());
             if (premResult != 0)
             {
-                logCommandError("failed " + permCommand);
+                log_cmd_err("failed " + permCommand);
                 exit(1);
             }
             
             if (compilerOpts.verbose)
             {
-                logCommandInformation(permCommand);
+                log_cmd_info(permCommand);
             }
         }
     });

@@ -7,14 +7,14 @@
 
 struct FuncParam
 {
-    llvm::Type *paramType;
-    std::string paramName;
+    llvm::Type *param_type;
+    std::string param_name;
 };
 
-void funcDef_codegen(llvm::Function *function);
+void func_def_codegen(llvm::Function *function);
 
-void funcCall_codegen(std::string funcName, 
-                    size_t exprLength, std::vector<llvm::Value*> args);
+void func_call_codegen(std::string func_name, 
+                    size_t expr_length, std::vector<llvm::Value*> args);
 
-void funcSig_codegen(bool isExternal, std::string name, llvm::Type *returnType, 
-    std::vector<llvm::Type*> paramTypes, std::vector<FuncParam*> params);
+void func_sig_codegen(bool is_external, std::string name, llvm::Type *return_type, 
+    std::vector<llvm::Type*> param_types, std::vector<FuncParam*> params);

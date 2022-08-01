@@ -11,56 +11,53 @@ using namespace llvm;
 struct Variable
 {
     std::string name;
-    bool        isConst;
+    bool        is_const;
 };
 
 static std::map<std::string, Variable> variables;
 
-void identExpr_codegen(std::string id)
+void ident_expr_codegen(std::string id)
 {
-    AllocaInst *value = symbolTable.top()[id];
+    AllocaInst *value = symbol_table.top()[id];
     Type *type = value->getAllocatedType();
-    LoadInst *load = irBuilder.CreateLoad(type, value);
-    valueStack.push(load);
+    LoadInst *load = ir_builder.CreateLoad(type, value);
+    value_stack.push(load);
 }
 
 void assignment_codegen(std::string name, Value *val)
 {
     Variable var = variables[name];
-    bool isConst = var.isConst;
 
-    if (isConst)
+    if (var.is_const)
     {
-        logCompilerError("cannot reassign a constant \"" + name + "\"");
+        log_compiler_err("cannot reassign a constant \"" + name + "\"");
         exit(1);
     }
 
-    AllocaInst *stored = symbolTable.top()[name];
+    AllocaInst *stored = symbol_table.top()[name];
 
-    checkValueType(val, name);
+    check_value_type(val, name);
 
-    irBuilder.CreateStore(val, stored, false);
+    ir_builder.CreateStore(val, stored, false);
 
-    valueStack.pop();
+    value_stack.pop();
 }
 
-void varDeclare_codegen(std::string name, Type *resolvedType, 
-                        bool isConst, Value *val)
+void var_declare_codegen(std::string name, Type *resolved_type, 
+                        bool is_const, Value *val)
 {
-    AllocaInst *ptr 
-        = irBuilder.CreateAlloca(resolvedType, 0, "");
+    AllocaInst *ptr = ir_builder.CreateAlloca(resolved_type, 0, "");
 
     if (val != nullptr)
     {
-        irBuilder.CreateStore(val, ptr, false);
+        ir_builder.CreateStore(val, ptr, false);
     }
 
-    symbolTable.top()[name] = ptr;
+    symbol_table.top()[name] = ptr;
 
-    valueStack.push(ptr);
+    value_stack.push(ptr);
 
-    //bool isConst = (ctx->CONST() != nullptr);
-    Variable var{name, isConst};
+    Variable var{name, is_const};
     variables[name] = var;
 }
 
@@ -68,19 +65,19 @@ std::any Visitor::visitVar_declare(YupParser::Var_declareContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
-    Type *resolvedType 
-        = std::any_cast<Type*>(this->visit(ctx->type_annot()));
+    Type *resolved_type = std::any_cast<Type*>(
+        this->visit(ctx->type_annot()));
     
-    bool isConst = ctx->CONST() != nullptr;
+    bool is_const = ctx->CONST() != nullptr;
 
     Value *val = nullptr;
     if (ctx->var_value() != nullptr)
     {
         this->visit(ctx->var_value()->expr());
-        val = valueStack.top();
+        val = value_stack.top();
     }
 
-    varDeclare_codegen(name, resolvedType, isConst, val);
+    var_declare_codegen(name, resolved_type, is_const, val);
 
     return nullptr;
 }
@@ -90,7 +87,7 @@ std::any Visitor::visitAssignment(YupParser::AssignmentContext *ctx)
     std::string name = ctx->IDENTIFIER()->getText();
 
     this->visit(ctx->var_value()->expr());
-    Value *val = valueStack.top();
+    Value *val = value_stack.top();
 
     assignment_codegen(name, val);
     
@@ -101,7 +98,7 @@ std::any Visitor::visitIdentifierExpr(YupParser::IdentifierExprContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
 
-    identExpr_codegen(name);
+    ident_expr_codegen(name);
     
     return nullptr;
 }
