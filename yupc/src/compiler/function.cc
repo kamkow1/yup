@@ -1,7 +1,7 @@
 #include "compiler/visitor.h"
 #include "compiler/type.h"
 #include "compiler/function.h"
-#include "messaging/errors.h"
+#include "msg/errors.h"
 #include "util.h"
 
 #include "llvm/IR/Type.h"
@@ -11,6 +11,8 @@
 
 using namespace llvm;
 using namespace yupc;
+using namespace yupc::msg::errors;
+
 
 namespace cv = compiler::visitor;
 namespace cf = compiler::function;

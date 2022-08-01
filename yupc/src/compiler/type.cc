@@ -1,6 +1,6 @@
 #include "compiler/visitor.h"
 #include "compiler/type.h"
-#include "messaging/errors.h"
+#include "msg/errors.h"
 #include "util.h"
 
 #include "boost/algorithm/string.hpp"
@@ -10,6 +10,7 @@
 using namespace llvm;
 using namespace boost;
 using namespace yupc;
+using namespace yupc::msg::errors;
 
 namespace cv = compiler::visitor;
 namespace ct = compiler::type;

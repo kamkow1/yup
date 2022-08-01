@@ -1,8 +1,8 @@
 #include "compiler/visitor.h"
 #include "lexer/YupLexer.h"
 #include "parser/YupParser.h"
-#include "messaging/information.h"
-#include "messaging/errors.h"
+#include "msg/info.h"
+#include "msg/errors.h"
 #include "parser_error_listener.h"
 
 #include "llvm/IR/Verifier.h"
@@ -18,11 +18,14 @@
 using namespace llvm;
 using namespace CLI;
 using namespace yupc;
+using namespace yupc::msg::info;
+using namespace yupc::msg::errors;
 
 namespace fs = std::filesystem;
 namespace cv = compiler::visitor;
 namespace yu = yupc::util;
 namespace pse = yupc::parser_syntax_error;
+namespace msg = yupc::msg;
 
 struct CompilerOpts
 {
@@ -102,7 +105,7 @@ int main(int argc, char *argv[])
         if (compilerOpts.verbose)
         {
             std::string info = "dumped module " + cv::module_name;
-            log_cmd_info(info);
+            msg::info::log_cmd_info(info);
         }
 
         // -3 is .ll
@@ -112,13 +115,13 @@ int main(int argc, char *argv[])
 
         if (compilerOpts.verbose)
         {
-            log_cmd_info(llcCommand);
+            msg::info::log_cmd_info(llcCommand);
         }
 
         int llcResult = std::system(llcCommand.c_str());
         if (llcResult != 0)
         {
-            log_cmd_err("failed " + llcCommand);
+            msg::errors::log_cmd_err("failed " + llcCommand);
             exit(1);
         }
 
@@ -126,7 +129,7 @@ int main(int argc, char *argv[])
         {
             std::string resultInfo = "compiled to " + binaryName 
                 + ".o" + " with status code " + std::to_string(llcResult);
-            log_cmd_info(resultInfo);
+            msg::info::log_cmd_info(resultInfo);
         }
 
         if (compilerOpts.verbose) // output .o

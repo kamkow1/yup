@@ -1,8 +1,10 @@
-#include "messaging/errors.h"
+#include "msg/errors.h"
 #include "parser_error_listener.h"
 #include "string.h"
 
 using namespace yupc;
+using namespace yupc::msg::errors;
+
 
 namespace pse = parser_syntax_error;
 

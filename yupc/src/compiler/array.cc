@@ -1,7 +1,7 @@
 #include "compiler/visitor.h"
 #include "compiler/array.h"
 #include "compiler/type.h"
-#include "messaging/errors.h"
+#include "msg/errors.h"
 
 using namespace llvm;
 using namespace yupc;

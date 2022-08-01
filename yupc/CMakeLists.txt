@@ -50,8 +50,8 @@ set (SRCS
     src/compiler/addr_of.cc
     src/compiler/math.cc
     src/lexer/YupLexer.cc
-    src/messaging/errors.cc
-    src/messaging/information.cc
+    src/msg/errors.cc
+    src/msg/info.cc
     src/parser/YupParser.cc
     src/parser/YupParserBaseVisitor.cc
     src/parser/YupParserVisitor.cc

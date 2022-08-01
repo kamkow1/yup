@@ -1,5 +1,5 @@
 #include "compiler/visitor.h"
-#include "messaging/errors.h"
+#include "msg/errors.h"
 
 #include "util.h"
 
@@ -12,6 +12,8 @@
 #include "filesystem"
 
 using namespace yupc;
+using namespace yupc::msg::errors;
+
 
 namespace yu = yupc::util;
 namespace fs = std::filesystem;

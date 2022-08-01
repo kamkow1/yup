@@ -1,8 +1,10 @@
-#include "messaging/errors.h"
+#include "msg/errors.h"
 #include "termcolor/termcolor.hpp"
 #include "iostream"
 
-void log_compiler_err(std::string detail)
+using namespace yupc::msg;
+
+void errors::log_compiler_err(std::string detail)
 {
     std::cout
         << termcolor::red
@@ -18,7 +20,7 @@ void log_compiler_err(std::string detail)
         << "\n";
 }
 
-void log_input_err(std::string detail)
+void errors::log_input_err(std::string detail)
 {
     std::cout
         << termcolor::magenta
@@ -34,7 +36,7 @@ void log_input_err(std::string detail)
         << "\n";
 }
 
-void log_parsing_err(std::string detail)
+void errors::log_parsing_err(std::string detail)
 {
     std::cout
         << termcolor::yellow
@@ -50,7 +52,7 @@ void log_parsing_err(std::string detail)
         << "\n";
 }
 
-void log_cmd_err(std::string detail)
+void errors::log_cmd_err(std::string detail)
 {
     std::cout
     << termcolor::yellow

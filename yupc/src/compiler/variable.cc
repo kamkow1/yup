@@ -1,7 +1,7 @@
 #include "compiler/visitor.h"
 #include "compiler/type.h"
 #include "compiler/variable.h"
-#include "messaging/errors.h"
+#include "msg/errors.h"
 #include "util.h"
 
 #include "llvm/Support/TypeName.h"
@@ -9,6 +9,7 @@
 
 using namespace llvm;
 using namespace yupc;
+using namespace yupc::msg::errors;
 
 namespace cv = compiler::visitor;
 namespace cvar = compiler::variable;

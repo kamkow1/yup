@@ -1,8 +1,10 @@
-#include "messaging/information.h"
+#include "msg/info.h"
 #include "termcolor/termcolor.hpp"
 #include "iostream"
 
-void log_cmd_info(std::string detail)
+using namespace yupc::msg;
+
+void info::log_cmd_info(std::string detail)
 {
     std::cout
         << termcolor::bright_blue
