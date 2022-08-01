@@ -29,3 +29,8 @@ std::any Visitor::visitFile(YupParser::FileContext *ctx)
 
     return ctx;
 }
+
+std::any Visitor::visitEmphExpr(YupParser::EmphExprContext *ctx)
+{
+    return this->visit(ctx->expr());
+}

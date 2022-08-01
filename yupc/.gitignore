@@ -13,3 +13,4 @@ include/YupParser.h
 include/YupLexer.h
 debug/
 venv/
+.cache

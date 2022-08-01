@@ -20,6 +20,10 @@ QUEST_MARK          :   '?';
 ASTERISK            :   '*';
 AMPERSAND           :   '&';
 
+PLUS                :   '+';
+MINUS               :   '-';
+SLASH               :   '/';
+
 V_CHAR              :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 V_STRING            :   '"' ( Escape | ~('\'' | '\\' | '\n' | '\r') ) + '"';
 fragment Escape     :   '\\' ( '\'' | '\\' );

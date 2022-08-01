@@ -35,6 +35,8 @@ public:
     std::any visitAddr_of(YupParser::Addr_ofContext *ctx) override;
     std::any visitIndexedAccessExpr(YupParser::IndexedAccessExprContext *ctx) override;
     std::any visitArr_elem_assignment(YupParser::Arr_elem_assignmentContext *ctx) override;
+    std::any visitMathOperExpr(YupParser::MathOperExprContext *ctx) override;
+    std::any visitEmphExpr(YupParser::EmphExprContext *ctx) override;
 };
 
 extern std::string moduleName;

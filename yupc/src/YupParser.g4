@@ -45,7 +45,11 @@ expr                :   constant                        #ConstantExpr
                     |   IDENTIFIER                      #IdentifierExpr
                     |   array                           #ArrayExpr
                     |   addr_of                         #AddrOfExpr
-                    |   expr LSQBR expr RSQBR           #IndexedAccessExpr;
+                    |   expr LSQBR expr RSQBR           #IndexedAccessExpr
+                    |   expr binop expr                 #MathOperExpr
+                    |   LPAREN expr RPAREN              #EmphExpr;
+
+binop               :   PLUS | MINUS | ASTERISK | SLASH ;
 
 addr_of             :   AMPERSAND IDENTIFIER;
 
