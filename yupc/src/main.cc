@@ -2,6 +2,7 @@
 #include "lexer/YupLexer.h"
 #include "parser/YupParser.h"
 #include "messaging/information.h"
+#include "messaging/errors.h"
 #include "parser_error_listener.h"
 
 #include "llvm/IR/Verifier.h"

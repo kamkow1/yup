@@ -57,4 +57,12 @@ mv src/parser/YupParser.h include/parser/YupParser.h
 mv src/parser/YupParserBaseVisitor.h include/parser/YupParserBaseVisitor.h
 mv src/parser/YupParserVisitor.h include/parser/YupParserVisitor.h
 
+# fix includes
+sed -i '5 c \#include "parser/YupParserVisitor.h"' src/parser/YupParser.cc
+sed -i '7 c \#include "parser/YupParser.h"' src/parser/YupParser.cc
+sed -i '5 c \#include "parser/YupParserBaseVisitor.h"' src/parser/YupParserBaseVisitor.cc
+sed -i '5 c \#include "parser/YupParserVisitor.h"' src/parser/YupParserVisitor.cc
+
+sed -i '5 c \#include "lexer/YupLexer.h"' src/lexer/YupLexer.cc
+
 echo "finished generating lexer & parser"
