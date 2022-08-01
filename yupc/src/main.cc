@@ -21,6 +21,8 @@ using namespace yupc;
 
 namespace fs = std::filesystem;
 namespace cv = compiler::visitor;
+namespace yu = yupc::util;
+namespace pse = yupc::parser_syntax_error;
 
 struct CompilerOpts
 {
@@ -69,7 +71,7 @@ int main(int argc, char *argv[])
     build_cmd->callback([&]() 
     {
         std::string abs_src_path = fs::absolute(compilerOpts.srcPath);
-        std::string src_content = file_to_str(abs_src_path);
+        std::string src_content = yu::file_to_str(abs_src_path);
 
         antlr4::ANTLRInputStream input(src_content);
         lexer::YupLexer lexer(&input);
@@ -77,7 +79,7 @@ int main(int argc, char *argv[])
         parser::YupParser parser(&tokens);
 
         // add error listener
-        ParserErrorListener parserErrorListener;
+        pse::ParserErrorListener parserErrorListener;
         parser.removeErrorListeners();
         parser.addErrorListener(&parserErrorListener);
 
@@ -87,7 +89,7 @@ int main(int argc, char *argv[])
 
         cv::Visitor visitor;
 
-        cv::module_name = get_ir_fname(abs_src_path);
+        cv::module_name = yu::get_ir_fname(abs_src_path);
         visitor.visit(ctx);
 
         // dump module to .ll

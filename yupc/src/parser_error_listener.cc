@@ -2,7 +2,11 @@
 #include "parser_error_listener.h"
 #include "string.h"
 
-void ParserErrorListener::syntaxError(antlr4::Recognizer *recognizer,
+using namespace yupc;
+
+namespace pse = parser_syntax_error;
+
+void pse::ParserErrorListener::syntaxError(antlr4::Recognizer *recognizer,
                                      antlr4::Token *offendingSymbol,
                                      size_t line,
                                      size_t charPositionInLine,
