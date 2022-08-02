@@ -106,14 +106,31 @@ void ct::check_value_type(Value *val, std::string name)
 {
     std::string expr_type;
     raw_string_ostream rso(expr_type);
+
     val->getType()->print(rso);
     expr_type = ct::get_readable_type_name(rso.str());
 
-    Value *og_val = cv::symbol_table.top()[name];
+    Value *og_val;
+    bool is_local = cv::symbol_table.top().contains(name);
+    if (is_local)
+    {
+        og_val = cv::symbol_table.top()[name];
+    }
+    else
+    {
+        og_val = cv::global_variables[name];
+    }
+
     std::string og_type;
     raw_string_ostream og_rso(og_type);
+
     og_val->getType()->print(og_rso);
     og_type = ct::get_readable_type_name(og_rso.str());
+
+    if (!is_local)
+    {
+        og_type.pop_back();
+    }
 
     if ((og_type == "bool" || og_type == "char") || expr_type == "i8")
     {

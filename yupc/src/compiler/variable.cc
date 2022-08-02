@@ -6,6 +6,13 @@
 
 #include "llvm/Support/TypeName.h"
 #include "llvm/Support/Alignment.h"
+#include "llvm/IR/Constant.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/GlobalValue.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/Metadata.h"
+
+#include "cstdlib"
 
 using namespace llvm;
 using namespace yupc;
@@ -25,10 +32,23 @@ static std::map<std::string, Variable> variables;
 
 void cvar::ident_expr_codegen(std::string id)
 {
-    AllocaInst *value = cv::symbol_table.top()[id];
-    Type *type = value->getAllocatedType();
-    LoadInst *load = cv::ir_builder.CreateLoad(type, value);
-    cv::value_stack.push(load);
+    if (cv::symbol_table.top().contains(id))
+    {
+        AllocaInst *value = cv::symbol_table.top()[id];
+        Type *type = value->getAllocatedType();
+        LoadInst *load = cv::ir_builder.CreateLoad(type, value);
+
+        cv::value_stack.push(load);
+    }
+    else
+    {
+        GlobalVariable *gv = cv::global_variables[id];
+        Type *type = gv->getValueType();
+        LoadInst *load = cv::ir_builder.CreateLoad(type, gv);
+
+        cv::value_stack.push(load);
+    }
+
 }
 
 void cvar::assignment_codegen(std::string name, Value *val)
@@ -41,41 +61,95 @@ void cvar::assignment_codegen(std::string name, Value *val)
         exit(1);
     }
 
-    AllocaInst *stored = cv::symbol_table.top()[name];
+    if (cv::symbol_table.top().count(name))
+    {
+        AllocaInst *stored = cv::symbol_table.top()[name];
+        ct::check_value_type(val, name);
 
-    ct::check_value_type(val, name);
+        cv::ir_builder.CreateStore(val, stored, false);
 
-    cv::ir_builder.CreateStore(val, stored, false);
+        cv::value_stack.pop();
+    }
+    else
+    {
+        GlobalVariable *gv = cv::global_variables[name];
+        ct::check_value_type(val, name);
 
-    cv::value_stack.pop();
+        cv::ir_builder.CreateStore(val, gv, false);
+
+        cv::value_stack.pop();
+    }
 }
 
 void cvar::var_declare_codegen(std::string name, Type *resolved_type, 
-                        bool is_const, Value *val)
+                        bool is_const, bool is_glob, bool is_ext, Value *val)
 {
-    AllocaInst *ptr = cv::ir_builder.CreateAlloca(resolved_type, 0, "");
-
-    if (val != nullptr)
+    if (is_glob)
     {
-        cv::ir_builder.CreateStore(val, ptr, false);
+        GlobalValue::LinkageTypes lt = is_ext 
+            ? GlobalValue::ExternalLinkage 
+            : GlobalValue::InternalLinkage;
+
+        GlobalVariable *gv = new GlobalVariable(*cv::module, 
+                                                resolved_type, 
+                                                is_const, 
+                                                lt, 0);
+
+
+        gv->setDSOLocal(true);
+
+        gv->setInitializer((Constant*) val);
+        cv::global_variables[name] = gv;
+
+        cv::value_stack.push(gv);
+
+        Variable var{name, is_const};
+        variables[name] = var;
     }
+    else
+    {
+        AllocaInst *ptr = cv::ir_builder.CreateAlloca(resolved_type, 0, "");
 
-    cv::symbol_table.top()[name] = ptr;
+        if (val != nullptr)
+        {
+            cv::ir_builder.CreateStore(val, ptr, false);
+        }
 
-    cv::value_stack.push(ptr);
+        cv::symbol_table.top()[name] = ptr;
 
-    Variable var{name, is_const};
-    variables[name] = var;
+        cv::value_stack.push(ptr);
+
+        Variable var{name, is_const};
+        variables[name] = var;
+    }
 }
 
 std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ctx)
 {
     std::string name = ctx->IDENTIFIER()->getText();
+    
+    bool is_const = ctx->CONST() != nullptr;
+    bool is_glob = ctx->GLOBAL() != nullptr;
+    bool is_ext = ctx->EXPORT() != nullptr;
+
+    if (is_glob && cv::global_variables.contains(name))
+    {
+        msg::errors::log_compiler_err("global variable \"" + name 
+            + ctx->type_annot()->getText() + "\" already exists");
+
+        exit(1);
+    }
+
+    if (!is_glob && cv::symbol_table.top().contains(name))
+    {
+        msg::errors::log_compiler_err("variable \"" + name 
+            + ctx->type_annot()->getText()
+            + "\" has already been declared in this scope");
+        exit(1);
+    }
 
     Type *resolved_type = std::any_cast<Type*>(
         this->visit(ctx->type_annot()));
-    
-    bool is_const = ctx->CONST() != nullptr;
 
     Value *val = nullptr;
     if (ctx->var_value() != nullptr)
@@ -84,7 +158,12 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
         val = value_stack.top();
     }
 
-    cvar::var_declare_codegen(name, resolved_type, is_const, val);
+    cvar::var_declare_codegen(name, 
+                            resolved_type, 
+                            is_const, 
+                            is_glob, 
+                            is_ext, 
+                            val);
 
     return nullptr;
 }

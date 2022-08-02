@@ -3,6 +3,7 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Value.h"
+#include "llvm/IR/DerivedTypes.h"
 
 #include "string.h"
 #include "map"
@@ -18,7 +19,10 @@ std::string cv::module_name;
 LLVMContext cv::context;
 IRBuilder<> cv::ir_builder(context);
 std::unique_ptr<Module> cv::module = std::make_unique<Module>(module_name, context);
+
 std::stack<std::map<std::string, llvm::AllocaInst*>> cv::symbol_table;
+
+std::map<std::string, llvm::GlobalVariable*> cv::global_variables;
 
 std::stack<Value*> cv::value_stack;
 

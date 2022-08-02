@@ -6,6 +6,10 @@
 
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
+#include "llvm/IR/Comdat.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include <llvm/IR/Instructions.h>
 
 #include "string.h"
 
@@ -40,14 +44,15 @@ void cf::func_def_codegen(Function *function)
     }
 }
 
-void cf::func_call_codegen(std::string func_name, 
-                    size_t expr_length, std::vector<Value*> args)
+void cf::func_call_codegen(std::string func_name, size_t expr_length, 
+                        std::vector<Value*> args)
 {
     Function *fn_callee = cv::module->getFunction(func_name);
 
     if (fn_callee == nullptr)
     {
-        log_compiler_err("tried to call function " + func_name + " but it isn't declared");
+        log_compiler_err("tried to call function " 
+            + func_name + " but it isn't declared");
         exit(1);
     }
 
@@ -60,7 +65,9 @@ void cf::func_call_codegen(std::string func_name,
     }
 
 
-    bool is_void = fn_callee->getReturnType()->isVoidTy();
+    bool is_void = fn_callee->getFunctionType()
+                            ->getReturnType()
+                            ->isVoidTy();
     if (is_void)
     {
         CallInst *result = cv::ir_builder.CreateCall(fn_callee, args, "");
@@ -74,7 +81,7 @@ void cf::func_call_codegen(std::string func_name,
     }
 }
 
-void cf::func_sig_codegen(bool is_external, std::string name, Type *return_type, 
+void cf::func_sig_codegen(bool is_ext, std::string name, Type *return_type, 
     std::vector<llvm::Type*> param_types, std::vector<compiler::function::FuncParam*> params)
 {
     FunctionType *fn_type = FunctionType::get(
@@ -84,13 +91,13 @@ void cf::func_sig_codegen(bool is_external, std::string name, Type *return_type,
 
     Function *function = Function::Create(
             fn_type,
-            is_external
+            is_ext
                 ? GlobalValue::ExternalLinkage 
-                : GlobalValue::PrivateLinkage,
+                : GlobalValue::InternalLinkage,
             name,
             cv::module.get());
 
-    function->setDSOLocal(!is_external);
+    function->setDSOLocal(!is_ext);
 
     int arg_max = function->arg_size();
     for (int i = 0; i < arg_max; ++i)
@@ -127,9 +134,9 @@ std::any cv::Visitor::visitFunc_signature(parser::YupParser::Func_signatureConte
         param_types.push_back(pt->param_type);
     }
 
-    bool is_external = ctx->EXTERNAL() != nullptr;
+    bool is_EXPORT = ctx->EXPORT() != nullptr;
 
-    cf::func_sig_codegen(is_external, 
+    cf::func_sig_codegen(is_EXPORT, 
                     name, 
                     return_type, 
                     param_types, 

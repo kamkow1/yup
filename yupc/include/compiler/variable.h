@@ -11,6 +11,7 @@ namespace yupc::compiler::variable
     void assignment_codegen(std::string name, llvm::Value *val);
 
     void var_declare_codegen(std::string name, llvm::Type *resolved_type, 
-                        bool is_const, llvm::Value *val = nullptr);
+                        bool is_const, bool is_glob, 
+                        bool is_ext, llvm::Value *val = nullptr);
 
 }

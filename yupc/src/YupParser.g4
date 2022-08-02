@@ -20,13 +20,13 @@ arr_elem_assignment :   IDENTIFIER arr_index* var_value;
 
 arr_index           :   LSQBR expr RSQBR;
 
-var_declare         :   CONST? IDENTIFIER type_annot var_value?;
+var_declare         :   EXPORT? GLOBAL? CONST? IDENTIFIER type_annot var_value?;
 
 var_value           :   ASSIGN expr;
 
 func_def            :   func_signature code_block;
 
-func_signature      :   EXTERNAL? FUNCTION IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
+func_signature      :   EXPORT? FUNCTION IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
 
 func_return         :   RETURN expr;
 
@@ -36,7 +36,7 @@ func_param          :   IDENTIFIER type_annot;
 
 type_annot          :   TYPE_ANNOTATION type_name;
 
-type_name           :   IDENTIFIER (type_ext*)?;
+type_name           :   (type_ext*)? IDENTIFIER;
 
 type_ext            :   ASTERISK | AMPERSAND;
 

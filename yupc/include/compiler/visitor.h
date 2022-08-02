@@ -4,6 +4,7 @@
 //#include "llvm/IR/Constant.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
+#include <llvm/IR/GlobalVariable.h>
 //#include "llvm/IR/Function.h"
 //#include "llvm/IR/Type.h"
 //#include "llvm/IR/Verifier.h"
@@ -65,7 +66,10 @@ namespace yupc::compiler::visitor
     extern llvm::LLVMContext context;
     extern llvm::IRBuilder<> ir_builder;
     extern std::unique_ptr<llvm::Module> module;
+
     extern std::stack<std::map<std::string, llvm::AllocaInst*>> symbol_table;
+
+    extern std::map<std::string, llvm::GlobalVariable*> global_variables;
 
     extern std::stack<llvm::Value*> value_stack;
 }

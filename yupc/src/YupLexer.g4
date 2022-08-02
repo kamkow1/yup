@@ -1,13 +1,14 @@
 lexer grammar YupLexer;
 
-FUNCTION            :   'Fn';
+FUNCTION            :   'fnc';
 TYPE_ANNOTATION     :   '::';
 ASSIGN              :   '=';
 TERMINATOR          :   ';';
 RETURN              :   'return';
 COMPILER_FLAG_SYM   :   '@';
 CONST               :   'const';
-EXTERNAL            :   'ext';
+EXPORT              :   'export';
+GLOBAL              :   'glob';
 
 LPAREN              :   '(';
 RPAREN              :   ')';
