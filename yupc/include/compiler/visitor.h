@@ -1,4 +1,5 @@
 #pragma once
+#include "parser/YupParser.h"
 #include "parser/YupParserBaseVisitor.h"
 #include "llvm/IR/IRBuilder.h"
 //#include "llvm/IR/Constant.h"
@@ -59,6 +60,8 @@ namespace yupc::compiler::visitor
         std::any visitMathOperExpr(parser::YupParser::MathOperExprContext *ctx) override;
 
         std::any visitEmphExpr(parser::YupParser::EmphExprContext *ctx) override;
+
+        std::any visitArray_init(parser::YupParser::Array_initContext *ctx) override;
     };
 
     extern std::string module_name;

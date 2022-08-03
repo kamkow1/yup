@@ -44,6 +44,7 @@ expr                :   constant                        #ConstantExpr
                     |   func_call                       #FuncCallExpr
                     |   IDENTIFIER                      #IdentifierExpr
                     |   array                           #ArrayExpr
+                    |   array_init                      #ArrayInitExpr
                     |   addr_of                         #AddrOfExpr
                     |   expr LSQBR expr RSQBR           #IndexedAccessExpr
                     |   expr binop expr                 #MathOperExpr
@@ -54,6 +55,8 @@ binop               :   PLUS | MINUS | ASTERISK | SLASH ;
 addr_of             :   AMPERSAND IDENTIFIER;
 
 array               :   LSQBR (expr (COMMA expr)*)? RSQBR;
+
+array_init          :   LPAREN V_INT COMMA type_name RPAREN;
 
 constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_NULL | V_CHAR;
 

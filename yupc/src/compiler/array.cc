@@ -3,12 +3,46 @@
 #include "compiler/type.h"
 #include "msg/errors.h"
 
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/Instruction.h"
+#include "cstdint"
+
+#include "boost/lexical_cast.hpp"
+
 using namespace llvm;
 using namespace yupc;
+using namespace boost;
 
 namespace cv = compiler::visitor;
+namespace ca = compiler::array;
+namespace ct = compiler::type;
 
-void compiler::array::indexed_access_expr_codegen(Value *array, Value *idxVal)
+Instruction *ca::create_array_malloc(Type *elem_type, size_t elem_count, DataLayout dl)
+{
+    //Type *elem_type = elems[0]->getType();
+
+    Type *i32 = Type::getInt32Ty(cv::context);
+
+    //DataLayout dl = compiler::visitor::module->getDataLayout();
+
+    Constant *size_of_element = ConstantInt::get(
+        i32, dl.getTypeAllocSize(elem_type));
+
+    Constant *length = ConstantInt::get(i32, elem_count);
+    Constant *array_size = ConstantExpr::getMul(size_of_element, length);    
+
+    Instruction *array_malloc = CallInst::CreateMalloc(
+        cv::ir_builder.GetInsertBlock(), 
+        elem_type, 
+        elem_type, array_size,
+        nullptr, nullptr, ""); 
+
+    cv::ir_builder.Insert(array_malloc);
+
+    return array_malloc;
+}
+
+void ca::indexed_access_expr_codegen(Value *array, Value *idxVal)
 {
     Value *idx_gep = cv::ir_builder.CreateGEP(
         array->getType()->getPointerElementType(), array, idxVal);
@@ -16,7 +50,8 @@ void compiler::array::indexed_access_expr_codegen(Value *array, Value *idxVal)
     cv::value_stack.push(idx_gep);
 }
 
-void arr_elem_assignment_codegen(std::string arr_name, size_t idx_nesting_lvl, 
+void ca::arr_elem_assignment_codegen(std::string arr_name, 
+                                size_t idx_nesting_lvl, 
                                 std::vector<Value*> idx_vals)
 {
     AllocaInst *stored = cv::symbol_table.top()[arr_name];
@@ -39,29 +74,14 @@ void arr_elem_assignment_codegen(std::string arr_name, size_t idx_nesting_lvl,
     cv::value_stack.pop();
 }
 
-void array_codegen(std::vector<Value*> elems, size_t elemCount)
+void ca::array_codegen(std::vector<Value*> elems, size_t elem_count)
 {
     Type *elem_type = elems[0]->getType();
-
-    Type *i32 = Type::getInt32Ty(cv::context);
-
     DataLayout dl = compiler::visitor::module->getDataLayout();
 
-    Constant *size_of_element = ConstantInt::get(
-        i32, dl.getTypeAllocSize(elem_type));
+    Instruction *array_malloc = ca::create_array_malloc(elem_type, elem_count, dl);
 
-    Constant *length = ConstantInt::get(i32, elemCount);
-    Constant *array_size = ConstantExpr::getMul(size_of_element, length);    
-
-    Instruction *array_malloc = CallInst::CreateMalloc(
-        cv::ir_builder.GetInsertBlock(), 
-        elem_type, 
-        elem_type, array_size,
-        nullptr, nullptr, ""); 
-
-    cv::ir_builder.Insert(array_malloc);
-
-    for (size_t i = 0; i < elemCount; i++)
+    for (size_t i = 0; i < elem_count; i++)
     {
         Constant *idx = ConstantInt::get(
             Type::getInt32Ty(cv::context), i);
@@ -102,7 +122,7 @@ std::any cv::Visitor::visitArr_elem_assignment(parser::YupParser::Arr_elem_assig
         idx_vals.push_back(value_stack.top());
     }
 
-    arr_elem_assignment_codegen(name, idx_nesting_lvl, idx_vals);
+    ca::arr_elem_assignment_codegen(name, idx_nesting_lvl, idx_vals);
 
     return nullptr;
 }
@@ -118,7 +138,21 @@ std::any cv::Visitor::visitArray(parser::YupParser::ArrayContext *ctx)
         elems.push_back(elem);
     }
 
-    array_codegen(elems, elem_count);
+    ca::array_codegen(elems, elem_count);
+
+    return nullptr;
+}
+
+std::any cv::Visitor::visitArray_init(parser::YupParser::Array_initContext *ctx)
+{
+    Type *elem_type = ct::resolve_type(ctx->type_name()->getText());
+
+    int64_t elem_count = lexical_cast<int64_t>(ctx->V_INT()->getText());
+
+    DataLayout dl = cv::module->getDataLayout();
+
+    Instruction *array_malloc = ca::create_array_malloc(elem_type, elem_count, dl);
+    cv::value_stack.push(array_malloc);
 
     return nullptr;
 }

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "llvm/IR/Value.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/DataLayout.h"
+
 #include "vector"
 
 namespace yupc::compiler::array
@@ -11,4 +14,7 @@ namespace yupc::compiler::array
                                 std::vector<llvm::Value*> idxVals);
 
     void array_codegen(std::vector<llvm::Value*> elems, size_t elemCount);
+
+    llvm::Instruction *create_array_malloc(llvm::Type *elem_type, 
+                            size_t elem_count, llvm::DataLayout dl);
 }
