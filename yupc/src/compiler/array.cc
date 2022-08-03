@@ -7,7 +7,7 @@
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/GlobalVariable.h"
 
-#include <cstddef>
+#include "cstddef"
 #include "cstdint"
 
 #include "boost/lexical_cast.hpp"
