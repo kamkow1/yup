@@ -15,6 +15,9 @@ namespace yupc::compiler::array
 
     void array_codegen(std::vector<llvm::Value*> elems, size_t elemCount);
 
-    llvm::Instruction *create_array_malloc(llvm::Type *elem_type, 
+    llvm::Instruction *create_array_dyn_malloc(llvm::Type *elem_type, 
+                            llvm::Value *elem_count, llvm::DataLayout dl);
+
+    llvm::Instruction *create_array_const_malloc(llvm::Type *elem_type, 
                             size_t elem_count, llvm::DataLayout dl);
 }

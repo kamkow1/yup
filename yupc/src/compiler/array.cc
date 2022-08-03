@@ -5,6 +5,9 @@
 
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Instruction.h"
+#include "llvm/IR/GlobalVariable.h"
+
+#include <cstddef>
 #include "cstdint"
 
 #include "boost/lexical_cast.hpp"
@@ -17,19 +20,37 @@ namespace cv = compiler::visitor;
 namespace ca = compiler::array;
 namespace ct = compiler::type;
 
-Instruction *ca::create_array_malloc(Type *elem_type, size_t elem_count, DataLayout dl)
+Instruction *ca::create_array_dyn_malloc(Type *elem_type, Value *elem_count, DataLayout dl)
 {
-    //Type *elem_type = elems[0]->getType();
-
     Type *i32 = Type::getInt32Ty(cv::context);
 
-    //DataLayout dl = compiler::visitor::module->getDataLayout();
+    Constant *size_of_element = ConstantInt::get(
+        i32, dl.getTypeAllocSize(elem_type));
+
+    //Constant *length = ConstantInt::get(i32, elem_count);
+    Value *array_size = cv::ir_builder.CreateMul(size_of_element, elem_count);
+
+    Instruction *array_malloc = CallInst::CreateMalloc(
+        cv::ir_builder.GetInsertBlock(), 
+        elem_type, 
+        elem_type, array_size,
+        nullptr, nullptr, ""); 
+
+    cv::ir_builder.Insert(array_malloc);
+
+    return array_malloc;
+}
+
+Instruction *ca::create_array_const_malloc(Type *elem_type, uint64_t elem_count, DataLayout dl)
+{
+    Type *i32 = Type::getInt32Ty(cv::context);
 
     Constant *size_of_element = ConstantInt::get(
         i32, dl.getTypeAllocSize(elem_type));
 
     Constant *length = ConstantInt::get(i32, elem_count);
-    Constant *array_size = ConstantExpr::getMul(size_of_element, length);    
+
+    Constant *array_size = ConstantExpr::getMul(size_of_element, length);
 
     Instruction *array_malloc = CallInst::CreateMalloc(
         cv::ir_builder.GetInsertBlock(), 
@@ -79,7 +100,7 @@ void ca::array_codegen(std::vector<Value*> elems, size_t elem_count)
     Type *elem_type = elems[0]->getType();
     DataLayout dl = compiler::visitor::module->getDataLayout();
 
-    Instruction *array_malloc = ca::create_array_malloc(elem_type, elem_count, dl);
+    Instruction *array_malloc = ca::create_array_const_malloc(elem_type, elem_count, dl);
 
     for (size_t i = 0; i < elem_count; i++)
     {
@@ -147,11 +168,12 @@ std::any cv::Visitor::visitArray_init(parser::YupParser::Array_initContext *ctx)
 {
     Type *elem_type = ct::resolve_type(ctx->type_name()->getText());
 
-    int64_t elem_count = lexical_cast<int64_t>(ctx->V_INT()->getText());
+    this->visit(ctx->expr());
+    Value *array_size = cv::value_stack.top();
 
     DataLayout dl = cv::module->getDataLayout();
 
-    Instruction *array_malloc = ca::create_array_malloc(elem_type, elem_count, dl);
+    Instruction *array_malloc = ca::create_array_dyn_malloc(elem_type, array_size, dl);
     cv::value_stack.push(array_malloc);
 
     return nullptr;

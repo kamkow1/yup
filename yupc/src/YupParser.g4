@@ -56,7 +56,7 @@ addr_of             :   AMPERSAND IDENTIFIER;
 
 array               :   LSQBR (expr (COMMA expr)*)? RSQBR;
 
-array_init          :   LPAREN V_INT COMMA type_name RPAREN;
+array_init          :   LPAREN expr COMMA type_name RPAREN;
 
 constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_NULL | V_CHAR;
 
