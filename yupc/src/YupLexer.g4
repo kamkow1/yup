@@ -20,6 +20,7 @@ COMMA               :   ',';
 QUEST_MARK          :   '?';
 ASTERISK            :   '*';
 AMPERSAND           :   '&';
+DOT                 :   '.';
 
 PLUS                :   '+';
 MINUS               :   '-';
@@ -31,7 +32,6 @@ fragment Escape     :   '\\' ( '\'' | '\\' );
 V_INT               :   '-'? '0'..'9'+;
 V_FLOAT             :   '-'? ('0'..'9')+ '.' ('0'..'9')*;
 V_BOOL              :   ('True' | 'False');
-V_NULL              :   'Null';
 
 IDENTIFIER          :   ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_')*;
 WHITESPACE          :   [ \r\n\t]+    -> skip;

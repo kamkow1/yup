@@ -13,4 +13,6 @@ namespace yupc::compiler::constant
     void char_codegen(std::string text);
 
     void string_codegen(std::string text);
+
+    void null_codegen(std::string type_name);
 }

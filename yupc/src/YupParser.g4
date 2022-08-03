@@ -58,6 +58,8 @@ array               :   LSQBR (expr (COMMA expr)*)? RSQBR;
 
 array_init          :   LPAREN expr COMMA type_name RPAREN;
 
-constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_NULL | V_CHAR;
+constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_CHAR | null_const;
+
+null_const          :   DOT type_name;
 
 func_call           :   IDENTIFIER LPAREN (expr (COMMA expr)*)? RPAREN;

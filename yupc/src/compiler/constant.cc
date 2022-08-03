@@ -1,6 +1,9 @@
 #include "compiler/visitor.h"
 #include "compiler/constant.h"
+#include "compiler/type.h"
 #include "msg/errors.h"
+
+#include "llvm/IR/Constants.h"
 
 #include "boost/lexical_cast.hpp"
 
@@ -12,6 +15,7 @@ using namespace yupc::msg::errors;
 
 namespace cv = compiler::visitor;
 namespace cc = compiler::constant;
+namespace ct = compiler::type;
 
 void cc::int_codegen(int64_t value)
 {
@@ -49,6 +53,15 @@ void cc::string_codegen(std::string text)
 {
     Constant *gstrptr = cv::ir_builder.CreateGlobalStringPtr(StringRef(text));
     cv::value_stack.push(gstrptr);
+}
+
+void cc::null_codegen(std::string type_name)
+{
+    Type *ptype = ct::resolve_type(type_name);
+
+    Constant *nullp = ConstantPointerNull::getNullValue(ptype);
+
+    cv::value_stack.push(nullp);
 }
 
 std::any cv::Visitor::visitConstant(parser::YupParser::ConstantContext *ctx)
@@ -97,8 +110,19 @@ std::any cv::Visitor::visitConstant(parser::YupParser::ConstantContext *ctx)
         std::string text = ctx->V_STRING()->getText();
         text.erase(0, 1);
         text.erase(text.size() - 1);
-;
+
         cc::string_codegen(text);
+
+        return nullptr;
+    }
+
+    if (ctx->null_const() != nullptr)
+    {
+        std::string type_name = ctx->null_const()
+                                    ->type_name()
+                                    ->getText();
+
+        cc::null_codegen(type_name);
 
         return nullptr;
     }
