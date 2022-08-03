@@ -30,7 +30,7 @@ func_signature      :   EXPORT? FUNCTION IDENTIFIER LPAREN (func_param (COMMA fu
 
 func_return         :   RETURN expr;
 
-code_block          :   LBRACE statement* RBRACE;
+code_block          :   (LBRACE statement* RBRACE) | statement;
 
 func_param          :   IDENTIFIER type_annot;
 

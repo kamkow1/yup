@@ -9,7 +9,6 @@
 #include "llvm/IR/Comdat.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
-#include <llvm/IR/Instructions.h>
 
 #include "string.h"
 
