@@ -12,7 +12,8 @@ statement           :   expr                    TERMINATOR
                     |   func_return             TERMINATOR
                     |   var_declare             TERMINATOR
                     |   arr_elem_assignment     TERMINATOR
-                    |   func_signature          TERMINATOR;
+                    |   func_signature          TERMINATOR
+                    |   IMPORT V_STRING         TERMINATOR;
 
 assignment          :   IDENTIFIER var_value;
 

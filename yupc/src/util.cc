@@ -54,3 +54,8 @@ std::string yu::get_ir_fname(std::string path)
     fs::path fullName = directory + "/" + noExt + ".ll";
     return fullName;
 }
+
+std::string yu::base_name(std::string const &path)
+{
+    return path.substr(path.find_last_of("/\\") + 1);
+}

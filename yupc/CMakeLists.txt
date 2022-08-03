@@ -28,7 +28,10 @@ set (LLVM_INCLUDE_PATH ${LLVM_SRC}/build/include)
 
 set (ANTLR_BUILD_PATH ${ANTLR_SRC}/dist/libantlr4-runtime.a)
 
-include_directories (${ANTLR_INCLUDE_PATH} ${LLVM_INCLUDE_PATH} ${CMAKE_SOURCE_DIR}/include)
+include_directories (
+    ${ANTLR_INCLUDE_PATH} 
+    ${LLVM_INCLUDE_PATH} 
+    ${CMAKE_SOURCE_DIR}/include)
 
 conan_basic_setup ()
 

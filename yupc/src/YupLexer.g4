@@ -9,6 +9,7 @@ COMPILER_FLAG_SYM   :   '@';
 CONST               :   'const';
 EXPORT              :   'export';
 GLOBAL              :   'glob';
+IMPORT              :   'import';
 
 LPAREN              :   '(';
 RPAREN              :   ')';
@@ -27,7 +28,7 @@ MINUS               :   '-';
 SLASH               :   '/';
 
 V_CHAR              :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
-V_STRING            :   '"' ( Escape | ~('\'' | '\\' | '\n' | '\r') ) + '"';
+V_STRING            :   '"' ( Escape | ~('\'' | '\\' | '\n' | '\r') )* '"';
 fragment Escape     :   '\\' ( '\'' | '\\' );
 V_INT               :   '-'? '0'..'9'+;
 V_FLOAT             :   '-'? ('0'..'9')+ '.' ('0'..'9')*;

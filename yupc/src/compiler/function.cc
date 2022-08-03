@@ -90,7 +90,7 @@ void cf::func_sig_codegen(bool is_ext, std::string name, Type *return_type,
 
     Function *function = Function::Create(
             fn_type,
-            is_ext
+            is_ext || name == "main"
                 ? GlobalValue::ExternalLinkage 
                 : GlobalValue::InternalLinkage,
             name,
