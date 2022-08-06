@@ -6,7 +6,7 @@
 #include <llvm/IR/Value.h>
 #include <llvm/IR/DerivedTypes.h>
 
-#include <string.h>
+#include <string>
 #include <map>
 #include <stack>
 

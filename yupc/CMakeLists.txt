@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(yupc)
 
+set (CXX_STANDARD 20)
+
 set (CONAN_DISABLE_CHECK_COMPILER True CACHE BOOL "" FORCE)
 
 set (CMAKE_CXX_STANDARD 20)

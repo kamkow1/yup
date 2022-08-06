@@ -2,22 +2,22 @@
 #include <compiler/compilation_unit.h>
 
 #include <lexer/YupLexer.h>
-#include <llvm/IR/Module.h>
-#include <memory>
 #include <parser/YupParser.h>
 #include <msg/info.h>
 #include <msg/errors.h>
 #include <parser_error_listener.h>
-
-#include <llvm/IR/Verifier.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/IR/LLVMContext.h>
-
-#include <string.h>
-#include <CLI/CLI.hpp>
-#include <string.h>
-#include <filesystem>
 #include <util.h>
+
+#include <llvm/Support/FileSystem.h>
+#include <llvm/IR/Verifier.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+
+#include <CLI/CLI.hpp>
+
+#include <memory>
+#include <string>
+#include <filesystem>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -100,7 +100,7 @@ static void dump_module(Module *module, std::string module_name) {
 
     if (compiler_opts.verbose) {
         std::string info = "dumped module " + 
-            com_un::comp_units[com_un::current_comp_unit_id]->module_name;
+            com_un::comp_units.top().module_name;
         msg::info::log_cmd_info(info);
     }
 }
@@ -116,9 +116,9 @@ static void build_binary(fs::path bin_file, fs::path obj_dir) {
 
 static void output_obj(std::string s_path) {
     // -3 is .ll
-    std::string binaryName = com_un::comp_units[com_un::current_comp_unit_id]->module_name.substr(
+    std::string binaryName = com_un::comp_units.top().module_name.substr(
         0, 
-        com_un::comp_units[com_un::current_comp_unit_id]->module_name.size() - 3);
+        com_un::comp_units.top().module_name.size() - 3);
 
     binaryName += ".o";
     fs::path d(yu::get_dir_name(s_path));
@@ -177,39 +177,40 @@ static void process_source_file(std::string path) {
     fs::path f(yu::base_name(abs_src_path));
     fs::path mod_path = bd / f;
 
-    com_un::comp_units[com_un::current_comp_unit_id]->module_name 
+    com_un::comp_units.top().module_name 
         = yu::get_ir_fname(mod_path.string());
 
-    com_un::comp_units[com_un::current_comp_unit_id]
-        ->context->setOpaquePointers(false);
+    std::cout << (com_un::comp_units.top().module_name) << "\n";
+
+    com_un::comp_units.top()
+        .context.setOpaquePointers(false);
 
     std::cout <<  "after\n";
 
     visitor.visit(ctx);
 
     // dump module to .ll
-    verifyModule(*com_un::comp_units[com_un::current_comp_unit_id]->module, &outs());
+    verifyModule(*com_un::comp_units.top().module, &outs());
     dump_module(
-        com_un::comp_units[com_un::current_comp_unit_id]->module.release(), 
-        com_un::comp_units[com_un::current_comp_unit_id]->module_name);
+        com_un::comp_units.top().module.release(), 
+        com_un::comp_units.top().module_name);
         
-    output_obj(com_un::comp_units[com_un::current_comp_unit_id]->module_name);
+    output_obj(com_un::comp_units.top().module_name);
 }
 
-static void init_comp_unit(std::string new_id) {  
+static void init_comp_unit() {  
     com_un::CompilationUnit unit {
         "",
-        new LLVMContext,
-        IRBuilder<>(*unit.context),
-        std::make_unique<Module>(unit.module_name, *unit.context),
+        LLVMContext{},
+        IRBuilder<>(unit.context),
+        std::make_unique<Module>(unit.module_name, unit.context),
         std::stack<std::map<std::string, AllocaInst*>>{},
         std::map<std::string, GlobalVariable*>{},
         std::stack<Value*>{},
         std::vector<std::string>{}
     };
 
-    com_un::current_comp_unit_id = new_id;
-    com_un::comp_units[com_un::current_comp_unit_id] = &unit;
+    //com_un::comp_units.push(unit);
 }
 
 int main(int argc, char *argv[]) {
@@ -223,17 +224,19 @@ int main(int argc, char *argv[]) {
     build_cmd->callback([&]() {
         std::string fname = fs::absolute(compiler_opts.srcPath);
         
-        init_comp_unit(fname);
+        init_comp_unit();
         build_dir = init_build_dir(yu::get_dir_name(fname));
         process_source_file(compiler_opts.srcPath); // entry point file
 
-        for (size_t i = 0; i < com_un::comp_units[com_un::current_comp_unit_id]->module_imports.size(); i++) {
+        /*
+        for (size_t i = 0; i < com_un::comp_units.top()->module_imports.size(); i++) {
             std::string import_abs = fs::absolute(
-                com_un::comp_units[com_un::current_comp_unit_id]->module_imports[i]);
+                com_un::comp_units.top()->module_imports[i]);
             
             init_comp_unit(import_abs);
             process_source_file(import_abs);
         }
+        */
     });
 
     CLI11_PARSE(cli, argc, argv);

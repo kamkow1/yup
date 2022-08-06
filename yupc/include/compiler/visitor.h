@@ -1,18 +1,18 @@
 #pragma once
-#include <parser/YupParser.h>
-#include <parser/YupParserBaseVisitor.h>
+#include "parser/YupParser.h"
+#include "parser/YupParserBaseVisitor.h"
 
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/GlobalVariable.h>
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/GlobalVariable.h"
 
-#include <vector>
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <iostream>
-#include <stack>
+#include "vector"
+#include "iostream"
+#include "map"
+#include "sstream"
+#include "iostream"
+#include "stack"
 
 namespace yupc::compiler::visitor {
     namespace parser = yupc::parser;

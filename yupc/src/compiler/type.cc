@@ -6,7 +6,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include <string.h>
+#include <string>
 
 using namespace llvm;
 using namespace boost;
@@ -47,22 +47,22 @@ Type* ct::resolve_type(std::string type_name) {
     switch (ct::resolve_basic_type(type_name)) {
         case 1: // i32
             return Type::getInt32Ty(
-                *com_un::comp_units[com_un::current_comp_unit_id]->context);
+                com_un::comp_units.top().context);
         case 2: // i64
             return Type::getInt64Ty(
-                *com_un::comp_units[com_un::current_comp_unit_id]->context);
+                com_un::comp_units.top().context);
         case 3: // float
             return Type::getFloatTy(
-                *com_un::comp_units[com_un::current_comp_unit_id]->context);
+                com_un::comp_units.top().context);
         case 4: // bool
             return Type::getInt8Ty(
-                *com_un::comp_units[com_un::current_comp_unit_id]->context);
+                com_un::comp_units.top().context);
         case 5: // void
             return Type::getVoidTy(
-                *com_un::comp_units[com_un::current_comp_unit_id]->context);
+                com_un::comp_units.top().context);
         case 6: // char
             return Type::getInt8Ty(
-                *com_un::comp_units[com_un::current_comp_unit_id]->context);
+                com_un::comp_units.top().context);
 
         case SIZE_MAX: {
             std::string base_str = type_name;
@@ -105,14 +105,15 @@ void ct::check_value_type(Value *val, std::string name) {
     expr_type = ct::get_readable_type_name(rso.str());
 
     Value *og_val;
-    bool is_local = com_un::comp_units[com_un::current_comp_unit_id]
-        ->symbol_table.top().contains(name);
+    bool is_local = com_un::comp_units.top()
+        .symbol_table.top().contains(name);
+
     if (is_local) {
-        og_val = com_un::comp_units[com_un::current_comp_unit_id]
-            ->symbol_table.top()[name];
+        og_val = com_un::comp_units.top()
+            .symbol_table.top()[name];
     } else {
-        og_val = com_un::comp_units[com_un::current_comp_unit_id]
-            ->global_variables[name];
+        og_val = com_un::comp_units.top()
+            .global_variables[name];
     }
 
     std::string og_type;

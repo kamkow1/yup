@@ -2,7 +2,7 @@
 #include <compiler/import.h>
 #include <compiler/compilation_unit.h>
 
-#include <string.h>
+#include <string>
 #include <vector>
 
 using namespace yupc;
@@ -12,8 +12,8 @@ namespace ci = compiler::import;
 namespace com_un = compiler::compilation_unit;
 
 void ci::append_import(std::string path) {
-    com_un::comp_units[com_un::current_comp_unit_id]
-        ->module_imports.push_back(path);
+    com_un::comp_units.top()
+        .module_imports.push_back(path);
 }
 
 std::any cv::Visitor::visitImport_decl(parser::YupParser::Import_declContext *ctx) {

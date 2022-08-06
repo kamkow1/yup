@@ -65,4 +65,6 @@ sed -i '5 c \#include "parser/YupParserVisitor.h"' src/parser/YupParserVisitor.c
 
 sed -i '5 c \#include "lexer/YupLexer.h"' src/lexer/YupLexer.cc
 
+sed -i '8 c \#include "parser/YupParserVisitor.h"' include/parser/YupParserBaseVisitor.h
+
 echo "finished generating lexer & parser"

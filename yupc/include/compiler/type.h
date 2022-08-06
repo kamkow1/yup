@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string.h>
-#include <llvm/IR/Type.h>
-#include <llvm/IR/Value.h>
+#include "string.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Value.h"
 
 namespace yupc::compiler::type {
     struct TypeAnnotation {
