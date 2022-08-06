@@ -1,6 +1,7 @@
 #pragma once
-#include "string.h"
-#include "cstdint"
+
+#include <string.h>
+#include <cstdint>
 
 namespace yupc::compiler::constant
 {

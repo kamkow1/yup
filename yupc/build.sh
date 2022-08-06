@@ -42,5 +42,3 @@ conan install ..
 cmake .. -G Ninja -DCMAKE_BUILD_TYPE="$build_mode"
 
 ninja
-
-echo "finished building with error code $?"

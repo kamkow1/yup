@@ -1,21 +1,25 @@
-#include "compiler/visitor.h"
-#include "lexer/YupLexer.h"
-#include "parser/YupParser.h"
-#include "msg/info.h"
-#include "msg/errors.h"
-#include "parser_error_listener.h"
+#include <compiler/visitor.h>
+#include <compiler/compilation_unit.h>
 
-#include "llvm/IR/Verifier.h"
-#include "llvm/Support/FileSystem.h"
-#include "filesystem"
-#include "string"
+#include <lexer/YupLexer.h>
+#include <llvm/IR/Module.h>
+#include <memory>
+#include <parser/YupParser.h>
+#include <msg/info.h>
+#include <msg/errors.h>
+#include <parser_error_listener.h>
 
-#include "CLI/CLI.hpp"
-#include "string.h"
-#include "filesystem"
-#include "util.h"
-#include "sys/ioctl.h"
-#include "unistd.h"
+#include <llvm/IR/Verifier.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/IR/LLVMContext.h>
+
+#include <string.h>
+#include <CLI/CLI.hpp>
+#include <string.h>
+#include <filesystem>
+#include <util.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 using namespace llvm;
 using namespace CLI;
@@ -28,21 +32,19 @@ namespace cv = compiler::visitor;
 namespace yu = yupc::util;
 namespace pse = yupc::parser_syntax_error;
 namespace msg = yupc::msg;
+namespace com_un = compiler::compilation_unit;
 
-struct CompilerOpts
-{
+struct CompilerOpts {
     bool emitIR;
     bool givePerms;
     bool verbose;
-    bool outputObj;
 
     std::string srcPath;
 };
 
 static CompilerOpts compiler_opts;
 
-static void init_build_opts(App *build_cmd, CompilerOpts *compiler_opts)
-{
+static void init_build_opts(App *build_cmd, CompilerOpts *compiler_opts) {
     build_cmd
         ->add_option("-s,--source", 
                 compiler_opts->srcPath, 
@@ -63,140 +65,175 @@ static void init_build_opts(App *build_cmd, CompilerOpts *compiler_opts)
         ->add_flag("-v,--verbose", 
                 compiler_opts->verbose, 
                 "enables verbose compiler output");
-
-    build_cmd
-        ->add_flag("-o, --object", 
-                compiler_opts->outputObj, 
-                "outputs .o object file instead of an executable ~ doesn't require main()");
 }
 
-static std::string init_build_dir(std::string dir_base)
-{
+static std::string init_build_dir(std::string dir_base) {
     fs::path b(dir_base);
     fs::path bd(".build");
     fs::path f_path = b / bd;
-    bool succ =fs::create_directory(f_path.string());
+    bool succ;
 
-    if (compiler_opts.verbose)
-    {
-        if (succ)
-        {
+    if (!fs::is_directory(f_path.string()) || !fs::exists(f_path.string())) {
+        succ = fs::create_directory(f_path.string());
+    } else {
+        succ = true;
+    }
+
+    if (compiler_opts.verbose) {
+        if (succ) {
             msg::info::log_cmd_info("successfully created .build directory");
-        }
-        else
-        {
-            msg::info::log_cmd_info("failed to create .build directory");
+        } else {
+            msg::errors::log_cmd_err("failed to create .build directory");
         }
     }
 
     return f_path.string();
 }
 
-static void dump_module(Module *module, std::string module_name)
-{
+static std::string build_dir;
+
+static void dump_module(Module *module, std::string module_name) {
     std::error_code ec;
     raw_fd_ostream os(module_name, ec, sys::fs::OF_None);
     module->print(os, nullptr);
     os.flush();
 
-    if (compiler_opts.verbose)
-    {
-        std::string info = "dumped module " + cv::module_name;
+    if (compiler_opts.verbose) {
+        std::string info = "dumped module " + 
+            com_un::comp_units[com_un::current_comp_unit_id]->module_name;
         msg::info::log_cmd_info(info);
     }
 }
 
-static void output_o_or_bin(std::string s_path)
-{
-    // -3 is .ll
-    std::string binaryName = cv::module_name.substr(0, 
-        cv::module_name.size() - 3);
-
-    if (compiler_opts.outputObj)
-    {
-        binaryName += ".o";
-        std::string obj_clang = "clang -c " + s_path;
-        int ec = std::system(obj_clang.c_str());
-
-        if (compiler_opts.verbose)
-        {
-            msg::info::log_cmd_info(obj_clang);
-        }
-
-        if (ec)
-        {
-            msg::errors::log_cmd_err(obj_clang);
-        }
+static void build_binary(fs::path bin_file, fs::path obj_dir) {
+    std::string gcc = "gcc -o " + bin_file.string();
+    for (const auto &entry : fs::directory_iterator(obj_dir)) {
+        gcc += " " + entry.path().string();
     }
-    else
-    {
-        fs::path d(yu::get_dir_name(s_path));
-        fs::path b("bin");
 
-        fs::path bin_dir = d / b;
-        fs::create_directory(bin_dir.string());
-
-        fs::path bn(yu::base_name(binaryName));
-        std::string full_bin_name = bin_dir / bn;
-
-        std::string bin_clang = "clang " + s_path 
-            + " -o " + full_bin_name
-            + " -Wno-override-module";
-        int ec = std::system(bin_clang.c_str());
-
-        if (compiler_opts.verbose)
-        {
-            msg::info::log_cmd_info(bin_clang);
-        }
-
-        if (ec)
-        {
-            msg::errors::log_cmd_err(bin_clang);
-        }
-    }
+    std::system(gcc.c_str());
 }
 
-int main(int argc, char *argv[]) 
-{
+static void output_obj(std::string s_path) {
+    // -3 is .ll
+    std::string binaryName = com_un::comp_units[com_un::current_comp_unit_id]->module_name.substr(
+        0, 
+        com_un::comp_units[com_un::current_comp_unit_id]->module_name.size() - 3);
+
+    binaryName += ".o";
+    fs::path d(yu::get_dir_name(s_path));
+    fs::path b("obj");
+
+    fs::path obj_dir = d / b;
+    fs::create_directory(obj_dir.string());
+
+    fs::path bn(yu::base_name(binaryName));
+    std::string full_obj_name = obj_dir / bn;
+
+    std::string obj_clang = "clang -c " + s_path
+        + " -o " + full_obj_name
+        + " -Wno-override-module";
+    int ec = std::system(obj_clang.c_str());
+
+    if (compiler_opts.verbose) {
+        msg::info::log_cmd_info(obj_clang);
+    }
+
+    if (ec) {
+        msg::errors::log_cmd_err(obj_clang);
+    }
+
+    fs::path bin(yu::get_dir_name(binaryName));
+    fs::path dir("bin");
+
+    fs::path bin_dir = bin / dir;
+    fs::create_directory(bin_dir.string());
+
+    fs::path p(yu::base_name(
+        binaryName.substr(0, binaryName.size() - 2)));
+    fs::path bin_file = bin_dir / p;
+
+    build_binary(bin_file, obj_dir);
+}
+
+static void process_source_file(std::string path) {
+    std::string abs_src_path = fs::absolute(path);
+    std::string src_content = yu::file_to_str(abs_src_path);
+
+    antlr4::ANTLRInputStream input(src_content);
+    lexer::YupLexer lexer(&input);
+    antlr4::CommonTokenStream tokens(&lexer);
+    parser::YupParser parser(&tokens);
+
+    // add error listener
+    pse::ParserErrorListener parserErrorListener;
+    parser.removeErrorListeners();
+    parser.addErrorListener(&parserErrorListener);
+
+    parser::YupParser::FileContext* ctx = parser.file();
+    cv::Visitor visitor;
+
+    fs::path bd(build_dir);
+    fs::path f(yu::base_name(abs_src_path));
+    fs::path mod_path = bd / f;
+
+    com_un::comp_units[com_un::current_comp_unit_id]->module_name 
+        = yu::get_ir_fname(mod_path.string());
+
+    com_un::comp_units[com_un::current_comp_unit_id]
+        ->context->setOpaquePointers(false);
+
+    std::cout <<  "after\n";
+
+    visitor.visit(ctx);
+
+    // dump module to .ll
+    verifyModule(*com_un::comp_units[com_un::current_comp_unit_id]->module, &outs());
+    dump_module(
+        com_un::comp_units[com_un::current_comp_unit_id]->module.release(), 
+        com_un::comp_units[com_un::current_comp_unit_id]->module_name);
+        
+    output_obj(com_un::comp_units[com_un::current_comp_unit_id]->module_name);
+}
+
+static void init_comp_unit(std::string new_id) {  
+    com_un::CompilationUnit unit {
+        "",
+        new LLVMContext,
+        IRBuilder<>(*unit.context),
+        std::make_unique<Module>(unit.module_name, *unit.context),
+        std::stack<std::map<std::string, AllocaInst*>>{},
+        std::map<std::string, GlobalVariable*>{},
+        std::stack<Value*>{},
+        std::vector<std::string>{}
+    };
+
+    com_un::current_comp_unit_id = new_id;
+    com_un::comp_units[com_un::current_comp_unit_id] = &unit;
+}
+
+int main(int argc, char *argv[]) {
     App cli{"a compiler for the yup programming language"};
 
-    App *build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
+    App *build_cmd = cli.add_subcommand("build", 
+        "compiles a .yup source file into an executable binary");
 
     init_build_opts(build_cmd, &compiler_opts);
 
-    build_cmd->callback([&]() 
-    {
-        std::string abs_src_path = fs::absolute(compiler_opts.srcPath);
-        std::string src_content = yu::file_to_str(abs_src_path);
-
-        antlr4::ANTLRInputStream input(src_content);
-        lexer::YupLexer lexer(&input);
-        antlr4::CommonTokenStream tokens(&lexer);
-        parser::YupParser parser(&tokens);
-
-        // add error listener
-        pse::ParserErrorListener parserErrorListener;
-        parser.removeErrorListeners();
-        parser.addErrorListener(&parserErrorListener);
-
-        parser::YupParser::FileContext* ctx = parser.file();
-        cv::Visitor visitor;
-
-        std::string build_dir = init_build_dir(yu::get_dir_name(abs_src_path));
-        fs::path bd(build_dir);
-        fs::path f(yu::base_name(abs_src_path));
-        fs::path mod_path = bd / f;
-
-        cv::module_name = yu::get_ir_fname(mod_path.string());
-
-        cv::context.setOpaquePointers(false);
-        visitor.visit(ctx);
-
-        // dump module to .ll
-        verifyModule(*cv::module, &outs());
-        dump_module(cv::module.release(), cv::module_name);
+    build_cmd->callback([&]() {
+        std::string fname = fs::absolute(compiler_opts.srcPath);
         
-        output_o_or_bin(cv::module_name);
+        init_comp_unit(fname);
+        build_dir = init_build_dir(yu::get_dir_name(fname));
+        process_source_file(compiler_opts.srcPath); // entry point file
+
+        for (size_t i = 0; i < com_un::comp_units[com_un::current_comp_unit_id]->module_imports.size(); i++) {
+            std::string import_abs = fs::absolute(
+                com_un::comp_units[com_un::current_comp_unit_id]->module_imports[i]);
+            
+            init_comp_unit(import_abs);
+            process_source_file(import_abs);
+        }
     });
 
     CLI11_PARSE(cli, argc, argv);

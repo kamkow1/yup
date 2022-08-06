@@ -16,3 +16,4 @@ venv/
 .cache
 include/lexer
 include/parser
+.build/

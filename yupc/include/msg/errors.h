@@ -1,9 +1,8 @@
 #pragma once
 
-#include "string"
+#include <string>
 
-namespace yupc::msg::errors
-{
+namespace yupc::msg::errors {
     void log_compiler_err(std::string detail);
 
     void log_input_err(std::string detail);

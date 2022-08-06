@@ -1,13 +1,11 @@
 #pragma once
 
-#include "string.h"
-#include "llvm/IR/Type.h"
-#include "llvm/IR/Value.h"
+#include <string.h>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Value.h>
 
-namespace yupc::compiler::type
-{
-    struct TypeAnnotation
-    {
+namespace yupc::compiler::type {
+    struct TypeAnnotation {
         std::string type_str;
         llvm::Value *array_size;
     };

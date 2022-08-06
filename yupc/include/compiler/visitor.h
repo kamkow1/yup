@@ -1,29 +1,23 @@
 #pragma once
-#include "parser/YupParser.h"
-#include "parser/YupParserBaseVisitor.h"
-#include "llvm/IR/IRBuilder.h"
-//#include "llvm/IR/Constant.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
-#include <llvm/IR/GlobalVariable.h>
-//#include "llvm/IR/Function.h"
-//#include "llvm/IR/Type.h"
-//#include "llvm/IR/Verifier.h"
-//#include "llvm/Support/FileSystem.h"
-//#include "llvm/IR/Value.h"
-#include "vector"
-#include "iostream"
-#include "map"
-#include "sstream"
-#include "iostream"
-#include "stack"
+#include <parser/YupParser.h>
+#include <parser/YupParserBaseVisitor.h>
 
-namespace yupc::compiler::visitor
-{
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/GlobalVariable.h>
+
+#include <vector>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <iostream>
+#include <stack>
+
+namespace yupc::compiler::visitor {
     namespace parser = yupc::parser;
 
-    class Visitor : public parser::YupParserBaseVisitor
-    {
+    class Visitor : public parser::YupParserBaseVisitor {
     public:
         std::any visitFunc_def(parser::YupParser::Func_defContext *ctx) override;
 
@@ -62,17 +56,7 @@ namespace yupc::compiler::visitor
         std::any visitEmphExpr(parser::YupParser::EmphExprContext *ctx) override;
 
         std::any visitArray_init(parser::YupParser::Array_initContext *ctx) override;
+
+        std::any visitImport_decl(parser::YupParser::Import_declContext *ctx) override;
     };
-
-    extern std::string module_name;
-
-    extern llvm::LLVMContext context;
-    extern llvm::IRBuilder<> ir_builder;
-    extern std::unique_ptr<llvm::Module> module;
-
-    extern std::stack<std::map<std::string, llvm::AllocaInst*>> symbol_table;
-
-    extern std::map<std::string, llvm::GlobalVariable*> global_variables;
-
-    extern std::stack<llvm::Value*> value_stack;
 }

@@ -1,12 +1,11 @@
 #pragma once
 
-#include "llvm/IR/Function.h"
-#include "llvm/IR/Value.h"
-#include "vector"
-#include "string.h"
+#include <llvm/IR/Function.h>
+#include <llvm/IR/Value.h>
+#include <vector>
+#include <string.h>
 
-namespace yupc::compiler::function
-{
+namespace yupc::compiler::function {
     struct FuncParam
     {
         llvm::Type *param_type;

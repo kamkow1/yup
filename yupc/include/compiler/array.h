@@ -1,13 +1,12 @@
 #pragma once
 
-#include "llvm/IR/Value.h"
-#include "llvm/IR/Type.h"
-#include "llvm/IR/DataLayout.h"
+#include <llvm/IR/Value.h>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/DataLayout.h>
 
 #include "vector"
 
-namespace yupc::compiler::array
-{
+namespace yupc::compiler::array {
     void indexed_access_expr_codegen(llvm::Value *array, llvm::Value *idxVal);
 
     void arr_elem_assignment_codegen(std::string arrName, size_t idxNestingLvl, 

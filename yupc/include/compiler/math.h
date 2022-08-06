@@ -1,6 +1,6 @@
 #pragma once
 
-#include "llvm/IR/Value.h"
+#include <llvm/IR/Value.h>
 
 namespace yupc::compiler::math
 {

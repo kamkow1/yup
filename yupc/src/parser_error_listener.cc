@@ -1,6 +1,6 @@
-#include "msg/errors.h"
-#include "parser_error_listener.h"
-#include "string.h"
+#include <msg/errors.h>
+#include <parser_error_listener.h>
+#include <string.h>
 
 using namespace yupc;
 using namespace yupc::msg::errors;
@@ -13,8 +13,7 @@ void pse::ParserErrorListener::syntaxError(antlr4::Recognizer *recognizer,
                                      size_t line,
                                      size_t charPositionInLine,
                                      const std::string &msg,
-                                     std::exception_ptr e)
-{
+                                     std::exception_ptr e) {
     std::string errorMessage =
             "unexpected token \""
             + offendingSymbol->getText() + "\" "

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "string"
+#include <string>
 
-namespace yupc::msg::info
-{
+namespace yupc::msg::info {
     void log_cmd_info(std::string detail);
 }

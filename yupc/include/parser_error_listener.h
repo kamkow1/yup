@@ -1,12 +1,10 @@
 #pragma once
 
-#include "antlr4-runtime.h"
-#include "parser/YupParser.h"
+#include <antlr4-runtime.h>
+#include <parser/YupParser.h>
 
-namespace yupc::parser_syntax_error
-{
-    class ParserErrorListener : public antlr4::BaseErrorListener
-    {
+namespace yupc::parser_syntax_error {
+    class ParserErrorListener : public antlr4::BaseErrorListener {
     public:
         virtual void syntaxError(antlr4::Recognizer *recognizer,
                                 antlr4::Token *offendingSymbol,
