@@ -26,35 +26,33 @@ static std::map<std::string, Function*> function_table;
 
 void cf::func_def_codegen(Function *function) {
     BasicBlock *block = BasicBlock::Create(
-        com_un::comp_units.top()
-            .module->getContext(), 
+        com_un::comp_units.top()->module->getContext(), 
         "entry", 
         function);
 
-    com_un::comp_units.top().ir_builder.SetInsertPoint(block);
+    com_un::comp_units.top()->ir_builder.SetInsertPoint(block);
 
     std::map<std::string, AllocaInst*> map;
-    com_un::comp_units.top().symbol_table.push(map);
+
+    com_un::comp_units.top()->symbol_table.push(map);
 
     size_t len = function->arg_size();
     for (size_t i = 0; i < len; ++i) {
         Argument &arg = *function->getArg(i);
 
         AllocaInst *alloca = com_un::comp_units.top()
-          .ir_builder.CreateAlloca(arg.getType(), 0, arg.getName());
+            ->ir_builder.CreateAlloca(arg.getType(), 0, arg.getName());
 
-        com_un::comp_units.top()
-            .symbol_table.top()[arg.getName().str()] = alloca;
+        com_un::comp_units.top()->symbol_table.top()[arg.getName().str()] = alloca;
 
-        com_un::comp_units.top()
-            .ir_builder.CreateStore(&arg, alloca);
+        com_un::comp_units.top()->ir_builder.CreateStore(&arg, alloca);
     }
 }
 
 void cf::func_call_codegen(std::string func_name, size_t expr_length, 
                         std::vector<Value*> args) {
-    Function *fn_callee = com_un::comp_units.top()
-        .module->getFunction(func_name);
+
+    Function *fn_callee = com_un::comp_units.top()->module->getFunction(func_name);
 
     if (fn_callee == nullptr) {
         log_compiler_err("tried to call function " 
@@ -74,22 +72,23 @@ void cf::func_call_codegen(std::string func_name, size_t expr_length,
                             ->getReturnType()
                             ->isVoidTy();
     if (is_void) {
-        CallInst *result = com_un::comp_units.top()
-            .ir_builder.CreateCall(fn_callee, args, "");
+        CallInst *result = com_un::comp_units.top()->ir_builder.CreateCall(fn_callee, args, "");
 
-        com_un::comp_units.top().value_stack.push(result);
+        com_un::comp_units.top()->value_stack.push(result);
+
     } else {
         std::string call_label = std::string("call") + "_" + func_name;
-        CallInst *result = com_un::comp_units.top()
-            .ir_builder.CreateCall(fn_callee, args, call_label);
 
-        com_un::comp_units.top()
-            .value_stack.push(result);
+        CallInst *result = com_un::comp_units.top()
+            ->ir_builder.CreateCall(fn_callee, args, call_label);
+
+        com_un::comp_units.top()->value_stack.push(result);
     }
 }
 
 void cf::func_sig_codegen(bool is_ext, std::string name, Type *return_type, 
     std::vector<llvm::Type*> param_types, std::vector<compiler::function::FuncParam*> params) {
+
     FunctionType *fn_type = FunctionType::get(
             return_type,
             param_types,
@@ -101,7 +100,7 @@ void cf::func_sig_codegen(bool is_ext, std::string name, Type *return_type,
                 ? GlobalValue::ExternalLinkage 
                 : GlobalValue::InternalLinkage,
             name,
-            com_un::comp_units.top().module.get());
+            com_un::comp_units.top()->module.get());
 
     function->setDSOLocal(!is_ext);
 
@@ -176,23 +175,18 @@ std::any cv::Visitor::visitFunc_def(parser::YupParser::Func_defContext *ctx) {
     if (!is_void) {
         this->visit(ctx->code_block());
 
-        Value *ret_value = com_un::comp_units.top()
-            .value_stack.top();
+        Value *ret_value = com_un::comp_units.top()->value_stack.top();
 
-        com_un::comp_units.top()
-            .ir_builder.CreateRet(ret_value);
+        com_un::comp_units.top()->ir_builder.CreateRet(ret_value);
 
-        com_un::comp_units.top()
-            .value_stack.pop();
+        com_un::comp_units.top()->value_stack.pop();
     } else {
         this->visit(ctx->code_block());
-        com_un::comp_units.top()
-            .ir_builder.CreateRetVoid();
+        com_un::comp_units.top()->ir_builder.CreateRetVoid();
     }
 
     verifyFunction(*function, &outs());
-    com_un::comp_units.top()
-        .symbol_table.pop();
+    com_un::comp_units.top()->symbol_table.pop();
 
     return nullptr;
 }
@@ -200,8 +194,10 @@ std::any cv::Visitor::visitFunc_def(parser::YupParser::Func_defContext *ctx) {
 std::any cv::Visitor::visitFunc_call(parser::YupParser::Func_callContext *ctx) {
     std::string func_name = ctx->IDENTIFIER()->getText();
 
-    if (com_un::comp_units.top().symbol_table.top().find(func_name) 
-        != com_un::comp_units.top().symbol_table.top().end()) {
+    auto find = com_un::comp_units.top()->symbol_table.top().find(func_name);
+    auto end = com_un::comp_units.top()->symbol_table.top().end();
+
+    if (find != end) {
         log_compiler_err("cannot call function \"" + func_name 
             + "\" because it doesn't exist in the symbol table");
         exit(1);
@@ -213,13 +209,11 @@ std::any cv::Visitor::visitFunc_call(parser::YupParser::Func_callContext *ctx) {
         parser::YupParser::ExprContext* expr = ctx->expr()[i];
 
         this->visit(expr);
-        Value *arg_val = com_un::comp_units.top()
-            .value_stack.top();
+        Value *arg_val = com_un::comp_units.top()->value_stack.top();
 
         args.push_back(arg_val);
 
-        com_un::comp_units.top()
-            .value_stack.pop();
+        com_un::comp_units.top()->value_stack.pop();
     }
 
     cf::func_call_codegen(func_name, expr_length, args);

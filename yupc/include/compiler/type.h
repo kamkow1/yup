@@ -5,11 +5,6 @@
 #include "llvm/IR/Value.h"
 
 namespace yupc::compiler::type {
-    struct TypeAnnotation {
-        std::string type_str;
-        llvm::Value *array_size;
-    };
-
     static llvm::Type *resolve_ptr_type(llvm::Type *base);
 
     static size_t resolve_basic_type(std::string match);

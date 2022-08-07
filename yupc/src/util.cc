@@ -28,10 +28,8 @@ std::string yu::file_to_str(const std::string& path)
         exit(1);
     }
 
-    std::istreambuf_iterator<char, std::char_traits<char>> beg 
-        = std::istreambuf_iterator<char>(input_file);
-    std::istreambuf_iterator<char, std::char_traits<char>> end 
-        = std::istreambuf_iterator<char>();
+    auto beg = std::istreambuf_iterator<char>(input_file);
+    auto end = std::istreambuf_iterator<char>();
     return std::string(beg, end);
 }
 

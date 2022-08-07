@@ -12,11 +12,12 @@ namespace ci = compiler::import;
 namespace com_un = compiler::compilation_unit;
 
 void ci::append_import(std::string path) {
-    com_un::comp_units.top()
-        .module_imports.push_back(path);
+
+    com_un::comp_units.top()->module_imports.push_back(path);
 }
 
 std::any cv::Visitor::visitImport_decl(parser::YupParser::Import_declContext *ctx) {
+    
     std::string path_text = ctx->V_STRING()->getText();
 
     path_text.erase(0, 1);

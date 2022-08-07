@@ -13,11 +13,9 @@ namespace cao = compiler::addr_of;
 namespace com_un = compiler::compilation_unit;
 
 void cao::addr_of_expr_codegen(std::string id) {
-    AllocaInst *val = com_un::comp_units.top()
-        .symbol_table.top()[id];
+    AllocaInst *val = com_un::comp_units.top()->symbol_table.top()[id];
 
-    com_un::comp_units.top()
-        .value_stack.push(val);
+    com_un::comp_units.top()->value_stack.push(val);
 }
 
 std::any cv::Visitor::visitAddr_of(parser::YupParser::Addr_ofContext *ctx) {
