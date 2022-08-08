@@ -5,17 +5,17 @@
 
 #include <string>
 #include <filesystem>
+#include <vector>
 
 namespace fs = std::filesystem;
 
 namespace yupc::compiler
 {
     struct CompilerOpts {
-        bool emitIR;
-        bool givePerms;
+        bool give_perms;
         bool verbose;
 
-        std::string srcPath;
+        std::vector<std::string> src_path;
     };
 
     extern std::string build_dir;

@@ -104,7 +104,6 @@ void cvar::var_declare_codegen(std::string name, Type *resolved_type,
         gv->setInitializer((Constant*) val);
 
         com_un::comp_units.top()->global_variables[name] = gv;
-
         com_un::comp_units.top()->value_stack.push(gv);
 
         Variable var{name, is_const};
@@ -142,7 +141,10 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
         exit(1);
     }
 
-    bool loc_constains = com_un::comp_units.top()->symbol_table.top().contains(name);
+    bool loc_constains = false;
+    if (com_un::comp_units.top()->symbol_table.size() != 0) {
+        com_un::comp_units.top()->symbol_table.top().contains(name);
+    }
 
     if (!is_glob && loc_constains) {
         msg::errors::log_compiler_err("variable \"" + name 

@@ -9,7 +9,9 @@
 #include <parser_error_listener.h>
 #include <lexer/YupLexer.h>
 
+#include <string>
 #include <util.h>
+#include <dirent.h>
 
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/LLVMContext.h>
@@ -50,7 +52,6 @@ void compiler::process_source_file(std::string path) {
     fs::path mod_path = bd / f;
 
     com_un::comp_units.top()->module_name = yu::get_ir_fname(mod_path.string());
-
     com_un::comp_units.top()->context->setOpaquePointers(false);
 
     visitor.visit(ctx);
@@ -58,7 +59,7 @@ void compiler::process_source_file(std::string path) {
     // dump module to .ll
     verifyModule(*com_un::comp_units.top()->module, &outs());
     dump_module(com_un::comp_units.top()->module.release(), 
-    com_un::comp_units.top()->module_name);
+        com_un::comp_units.top()->module_name);
         
     output_obj(com_un::comp_units.top()->module_name);
 }
@@ -68,12 +69,10 @@ std::string compiler::init_build_dir(std::string dir_base) {
     fs::path b(dir_base);
     fs::path bd(".build");
     fs::path f_path = b / bd;
-    bool succ;
+    bool succ = true;
 
     if (!fs::is_directory(f_path.string()) || !fs::exists(f_path.string())) {
         succ = fs::create_directory(f_path.string());
-    } else {
-        succ = true;
     }
 
     if (compiler_opts.verbose) {
@@ -109,6 +108,15 @@ void compiler::build_binary(fs::path bin_file, fs::path obj_dir) {
     }
 
     std::system(gcc.c_str());
+
+    if (compiler::compiler_opts.give_perms) {
+        std::system((std::string("chmod +x ") + bin_file.string()).c_str());
+
+        if (compiler::compiler_opts.verbose) {
+            msg::info::log_cmd_info("gave permissions to the executable");
+        }
+    }
+
 }
 
 void compiler::output_obj(std::string s_path) {
