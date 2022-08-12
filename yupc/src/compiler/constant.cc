@@ -118,9 +118,7 @@ std::any cv::Visitor::visitConstant(parser::YupParser::ConstantContext *ctx) {
     }
 
     if (ctx->null_const() != nullptr) {
-        auto type_name = ctx->null_const()
-                                    ->type_name()
-                                    ->getText();
+        auto type_name = ctx->null_const()->type_name()->getText();
 
         cc::null_codegen(type_name);
 

@@ -133,9 +133,7 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
     auto glob_contains = com_un::comp_units.back()->global_variables.contains(name);
 
     if (is_glob && glob_contains) {
-        msg::errors::log_compiler_err("global variable \"" + name 
-            + ctx->type_annot()->getText() + "\" already exists");
-
+        msg::errors::log_compiler_err("global variable \"" + name + ctx->type_annot()->getText() + "\" already exists");
         exit(1);
     }
 
@@ -145,9 +143,7 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
     }
 
     if (!is_glob && loc_constains) {
-        msg::errors::log_compiler_err("variable \"" + name 
-            + ctx->type_annot()->getText()
-            + "\" has already been declared in this scope");
+        msg::errors::log_compiler_err("variable \"" + name + ctx->type_annot()->getText() + "\" has already been declared in this scope");
         exit(1);
     }
 
@@ -185,8 +181,7 @@ std::any cv::Visitor::visitIdentifierExpr(parser::YupParser::IdentifierExprConte
     auto is_loc = com_un::comp_units.back()->symbol_table.back().contains(name);
 
     if (!is_glob && !is_loc) {
-        msg::errors::log_compiler_err("symbol \"" 
-            + name + "\" is neither a local nor a global variable");
+        msg::errors::log_compiler_err("symbol \"" + name + "\" is neither a local nor a global variable");
 
         exit(1);
     }

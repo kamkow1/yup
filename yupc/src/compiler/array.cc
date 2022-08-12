@@ -29,11 +29,9 @@ Instruction *ca::create_array_dyn_malloc(Type *elem_type, Value *elem_count, Dat
 
     auto *array_size = com_un::comp_units.back()->ir_builder->CreateMul(size_of_element, elem_count);
 
-    auto *array_malloc = CallInst::CreateMalloc(
-        com_un::comp_units.back()->ir_builder->GetInsertBlock(), 
-        elem_type, 
-        elem_type, array_size,
-        nullptr, nullptr, ""); 
+    auto *basic_block = com_un::comp_units.back()->ir_builder->GetInsertBlock();
+
+    auto *array_malloc = CallInst::CreateMalloc(basic_block, elem_type, elem_type, array_size, nullptr, nullptr, ""); 
 
     com_un::comp_units.back()->ir_builder->Insert(array_malloc);
 
@@ -49,11 +47,9 @@ Instruction *ca::create_array_const_malloc(Type *elem_type, uint64_t elem_count,
 
     auto *array_size = ConstantExpr::getMul(size_of_element, length);
 
-    auto *array_malloc = CallInst::CreateMalloc(
-        com_un::comp_units.back()->ir_builder->GetInsertBlock(), 
-        elem_type, 
-        elem_type, array_size,
-        nullptr, nullptr, ""); 
+    auto *basic_block = com_un::comp_units.back()->ir_builder->GetInsertBlock();
+
+    auto *array_malloc = CallInst::CreateMalloc(basic_block, elem_type, elem_type, array_size, nullptr, nullptr, ""); 
 
     com_un::comp_units.back()->ir_builder->Insert(array_malloc);
 
@@ -69,9 +65,7 @@ void ca::indexed_access_expr_codegen(Value *array, Value *idxVal) {
     com_un::comp_units.back()->value_stack.push(idx_gep);
 }
 
-void ca::arr_elem_assignment_codegen(std::string arr_name, 
-                                size_t idx_nesting_lvl, 
-                                std::vector<Value*> idx_vals) {
+void ca::arr_elem_assignment_codegen(std::string arr_name, size_t idx_nesting_lvl, std::vector<Value*> idx_vals) {
 
     auto *stored = com_un::comp_units.back()->symbol_table.back()[arr_name];
 
