@@ -5,7 +5,7 @@ using namespace yupc;
 namespace cv = compiler::visitor;
 
 std::any cv::Visitor::visitCode_block(parser::YupParser::Code_blockContext *ctx) {
-    for (parser::YupParser::StatementContext *const statement : ctx->statement()) {
+    for (auto *const statement : ctx->statement()) {
         this->visit(statement);
     }
 

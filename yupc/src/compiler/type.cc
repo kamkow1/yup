@@ -47,34 +47,34 @@ Type* ct::resolve_type(std::string type_name) {
     switch (ct::resolve_basic_type(type_name)) {
         case 1: // i32
             return Type::getInt32Ty(
-                *com_un::comp_units.top()->context);
+                *com_un::comp_units.back()->context);
         case 2: // i64
             return Type::getInt64Ty(
-                *com_un::comp_units.top()->context);
+                *com_un::comp_units.back()->context);
         case 3: // float
             return Type::getFloatTy(
-                *com_un::comp_units.top()->context);
+                *com_un::comp_units.back()->context);
         case 4: // bool
             return Type::getInt8Ty(
-                *com_un::comp_units.top()->context);
+                *com_un::comp_units.back()->context);
         case 5: // void
             return Type::getVoidTy(
-                *com_un::comp_units.top()->context);
+                *com_un::comp_units.back()->context);
         case 6: // char
             return Type::getInt8Ty(
-                *com_un::comp_units.top()->context);
+                *com_un::comp_units.back()->context);
 
         case SIZE_MAX: {
-            std::string base_str = type_name;
+            auto base_str = type_name;
             algorithm::erase_all(base_str, "*");
 
-            Type *base = resolve_type(base_str);
+            auto *base = resolve_type(base_str);
 
-            std::string suffixes = type_name;
+            auto suffixes = type_name;
             algorithm::erase_all(suffixes, base_str);
             
-            for (size_t i = 0; i < suffixes.size(); i++) {
-                char c = suffixes[i];
+            for (auto i = 0; i < suffixes.size(); i++) {
+                auto c = suffixes[i];
 
                 switch (c) {
                     case '*':
@@ -105,16 +105,12 @@ void ct::check_value_type(Value *val, std::string name) {
     expr_type = ct::get_readable_type_name(rso.str());
 
     Value *og_val;
-    bool is_local = com_un::comp_units.top()->symbol_table.top().contains(name);
+    auto is_local = com_un::comp_units.back()->symbol_table.back().contains(name);
 
     if (is_local) {
-
-        og_val = com_un::comp_units.top()->symbol_table.top()[name];
-
+        og_val = com_un::comp_units.back()->symbol_table.back()[name];
     } else {
-
-        og_val = com_un::comp_units.top()->global_variables[name];
-        
+        og_val = com_un::comp_units.back()->global_variables[name];
     }
 
     std::string og_type;
@@ -140,13 +136,12 @@ void ct::check_value_type(Value *val, std::string name) {
 
 std::any cv::Visitor::visitType_annot(parser::YupParser::Type_annotContext *ctx) {
     
-    std::string base = ctx->type_name()->IDENTIFIER()->getText();
-    Type *type_base = ct::resolve_type(base);
+    auto base = ctx->type_name()->IDENTIFIER()->getText();
+    auto *type_base = ct::resolve_type(base);
 
-    size_t ext_len = ctx->type_name()->type_ext().size();
-    for (size_t i = 0; i < ext_len; i++) {
-        parser::YupParser::Type_extContext *ext 
-            = ctx->type_name()->type_ext(i);
+    auto ext_len = ctx->type_name()->type_ext().size();
+    for (auto i = 0; i < ext_len; i++) {
+        auto *ext = ctx->type_name()->type_ext(i);
 
         if (ext->ASTERISK() != nullptr) {
             base += "*";

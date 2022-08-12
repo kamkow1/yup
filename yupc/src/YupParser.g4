@@ -13,9 +13,16 @@ statement           :   expr                    TERMINATOR
                     |   var_declare             TERMINATOR
                     |   arr_elem_assignment     TERMINATOR
                     |   func_signature          TERMINATOR
-                    |   import_decl             TERMINATOR;
+                    |   import_decl             TERMINATOR
+                    |   module_decl             TERMINATOR;
 
-import_decl         :   IMPORT V_STRING;
+module_decl         :   MODULE IDENTIFIER;
+
+import_decl         :   IMPORT import_list FROM IDENTIFIER;
+
+import_list         :   LBRACE (IDENTIFIER (COMMA IDENTIFIER)*)? RBRACE;
+
+func_import_sig     :   IDENTIFIER LPAREN (type_annot (COMMA type_annot)*)? RPAREN type_annot;
 
 assignment          :   IDENTIFIER var_value;
 
@@ -23,13 +30,13 @@ arr_elem_assignment :   IDENTIFIER arr_index* var_value;
 
 arr_index           :   LSQBR expr RSQBR;
 
-var_declare         :   EXPORT? GLOBAL? CONST? IDENTIFIER type_annot var_value?;
+var_declare         :   PUBSYM? GLOBAL? CONST? IDENTIFIER type_annot var_value?;
 
 var_value           :   ASSIGN expr;
 
 func_def            :   func_signature code_block;
 
-func_signature      :   EXPORT? FUNCTION IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
+func_signature      :   PUBSYM? FUNCTION IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
 
 func_return         :   RETURN expr;
 
@@ -37,7 +44,7 @@ code_block          :   (LBRACE statement* RBRACE) | statement;
 
 func_param          :   IDENTIFIER type_annot;
 
-type_annot          :   TYPE_ANNOTATION type_name;
+type_annot          :   type_name;
 
 type_name           :   (type_ext*)? IDENTIFIER;
 

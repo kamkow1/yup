@@ -33,55 +33,59 @@ static std::map<std::string, Variable> variables;
 
 void cvar::ident_expr_codegen(std::string id) {
 
-    bool contains_id = com_un::comp_units.top()->symbol_table.top().contains(id);
+    auto contains_id = com_un::comp_units.back()->symbol_table.back().contains(id);
 
     if (contains_id) {
-        AllocaInst *value =com_un::comp_units.top()->symbol_table.top()[id];
+        auto *value =com_un::comp_units.back()->symbol_table.back()[id];
 
-        Type *type = value->getAllocatedType();
+        auto *type = value->getAllocatedType();
 
-        LoadInst *load = com_un::comp_units.top()->ir_builder.CreateLoad(type, value);
+        auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(type, value);
 
-        com_un::comp_units.top()->value_stack.push(load);
+        com_un::comp_units.back()->value_stack.push(load);
     } else {
-        GlobalVariable *gv = com_un::comp_units.top()->global_variables[id];
+        auto *gv = com_un::comp_units.back()->global_variables[id];
 
-        Type *type = gv->getValueType();
+        auto *type = gv->getValueType();
 
-        LoadInst *load = com_un::comp_units.top()->ir_builder.CreateLoad(type, gv);
+        auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(type, gv);
 
-        com_un::comp_units.top()->value_stack.push(load);
+        com_un::comp_units.back()->value_stack.push(load);
     }
 
 }
 
 void cvar::assignment_codegen(std::string name, Value *val) {
 
-    Variable var = variables[name];
+    auto var = variables[name];
 
     if (var.is_const) {
         log_compiler_err("cannot reassign a constant \"" + name + "\"");
         exit(1);
     }
 
-    bool contains_name = com_un::comp_units.top()->symbol_table.top().contains(name);
+    auto is_local = com_un::comp_units.back()->symbol_table.back().contains(name);
+    auto is_global = com_un::comp_units.back()->global_variables.contains(name);
 
-    if (contains_name) {
-        AllocaInst *stored = com_un::comp_units.top()->symbol_table.top()[name];
+    if (is_local) {
+        auto *stored = com_un::comp_units.back()->symbol_table.back()[name];
 
         ct::check_value_type(val, name);
 
-        com_un::comp_units.top()->ir_builder.CreateStore(val, stored, false);
+        com_un::comp_units.back()->ir_builder->CreateStore(val, stored, false);
 
-        com_un::comp_units.top()->value_stack.pop();
+        com_un::comp_units.back()->value_stack.pop();
+    } else if (is_global) {
+        auto *gv = com_un::comp_units.back()->global_variables[name];
+
+        ct::check_value_type(val, name);
+
+        com_un::comp_units.back()->ir_builder->CreateStore(val, gv, false);
+
+        com_un::comp_units.back()->value_stack.pop();
     } else {
-        GlobalVariable *gv = com_un::comp_units.top()->global_variables[name];
-
-        ct::check_value_type(val, name);
-
-        com_un::comp_units.top()->ir_builder.CreateStore(val, gv, false);
-
-        com_un::comp_units.top()->value_stack.pop();
+        log_compiler_err("cannot reassign \"" + name + "\" because it doesn't exist");
+        exit(1);
     }
 }
 
@@ -89,35 +93,29 @@ void cvar::var_declare_codegen(std::string name, Type *resolved_type,
                         bool is_const, bool is_glob, bool is_ext, Value *val) {
 
     if (is_glob) {
-        GlobalValue::LinkageTypes lt = is_ext 
-            ? GlobalValue::ExternalLinkage 
-            : GlobalValue::InternalLinkage;
+        auto lt = is_ext ? GlobalValue::ExternalLinkage : GlobalValue::InternalLinkage;
 
-        GlobalVariable *gv = new GlobalVariable(*com_un::comp_units.top()->module, 
-                                                resolved_type, 
-                                                is_const, 
-                                                lt, 0);
-
+        auto *gv = new GlobalVariable(*com_un::comp_units.back()->module, resolved_type, is_const, lt, 0);
 
         gv->setDSOLocal(true);
 
         gv->setInitializer((Constant*) val);
 
-        com_un::comp_units.top()->global_variables[name] = gv;
-        com_un::comp_units.top()->value_stack.push(gv);
+        com_un::comp_units.back()->global_variables[name] = gv;
+        com_un::comp_units.back()->value_stack.push(gv);
 
         Variable var{name, is_const};
         variables[name] = var;
     } else {
-        AllocaInst *ptr = com_un::comp_units.top()->ir_builder.CreateAlloca(resolved_type, 0, "");
+        auto *ptr = com_un::comp_units.back()->ir_builder->CreateAlloca(resolved_type, 0, "");
 
         if (val != nullptr) {
-            com_un::comp_units.top()->ir_builder.CreateStore(val, ptr, false);
+            com_un::comp_units.back()->ir_builder->CreateStore(val, ptr, false);
         }
 
-        com_un::comp_units.top()->symbol_table.top()[name] = ptr;
+        com_un::comp_units.back()->symbol_table.back()[name] = ptr;
 
-        com_un::comp_units.top()->value_stack.push(ptr);
+        com_un::comp_units.back()->value_stack.push(ptr);
 
         Variable var{name, is_const};
         variables[name] = var;
@@ -126,13 +124,13 @@ void cvar::var_declare_codegen(std::string name, Type *resolved_type,
 
 std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ctx) {
 
-    std::string name = ctx->IDENTIFIER()->getText();
+    auto name = ctx->IDENTIFIER()->getText();
     
-    bool is_const = ctx->CONST() != nullptr;
-    bool is_glob = ctx->GLOBAL() != nullptr;
-    bool is_ext = ctx->EXPORT() != nullptr;
+    auto is_const = ctx->CONST() != nullptr;
+    auto is_glob = ctx->GLOBAL() != nullptr;
+    auto is_pub = ctx->PUBSYM() != nullptr;
 
-    bool glob_contains = com_un::comp_units.top()->global_variables.contains(name);
+    auto glob_contains = com_un::comp_units.back()->global_variables.contains(name);
 
     if (is_glob && glob_contains) {
         msg::errors::log_compiler_err("global variable \"" + name 
@@ -141,9 +139,9 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
         exit(1);
     }
 
-    bool loc_constains = false;
-    if (com_un::comp_units.top()->symbol_table.size() != 0) {
-        com_un::comp_units.top()->symbol_table.top().contains(name);
+    auto loc_constains = false;
+    if (com_un::comp_units.back()->symbol_table.size() != 0) {
+        com_un::comp_units.back()->symbol_table.back().contains(name);
     }
 
     if (!is_glob && loc_constains) {
@@ -153,30 +151,25 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
         exit(1);
     }
 
-    Type *resolved_type = std::any_cast<Type*>(this->visit(ctx->type_annot()));
+    auto *resolved_type = std::any_cast<Type*>(this->visit(ctx->type_annot()));
 
     Value *val = nullptr;
     if (ctx->var_value() != nullptr) {
         this->visit(ctx->var_value()->expr());
-        val = com_un::comp_units.top()->value_stack.top();
+        val = com_un::comp_units.back()->value_stack.top();
     }
 
-    cvar::var_declare_codegen(name, 
-                            resolved_type, 
-                            is_const, 
-                            is_glob, 
-                            is_ext, 
-                            val);
+    cvar::var_declare_codegen(name, resolved_type, is_const, is_glob, is_pub, val);
 
     return nullptr;
 }
 
 std::any cv::Visitor::visitAssignment(parser::YupParser::AssignmentContext *ctx) {
 
-    std::string name = ctx->IDENTIFIER()->getText();
+    auto name = ctx->IDENTIFIER()->getText();
 
     this->visit(ctx->var_value()->expr());
-    Value *val = com_un::comp_units.top()->value_stack.top();
+    auto *val = com_un::comp_units.back()->value_stack.top();
 
     cvar::assignment_codegen(name, val);
     
@@ -185,13 +178,13 @@ std::any cv::Visitor::visitAssignment(parser::YupParser::AssignmentContext *ctx)
 
 std::any cv::Visitor::visitIdentifierExpr(parser::YupParser::IdentifierExprContext *ctx) {
 
-    std::string name = ctx->IDENTIFIER()->getText();
+    auto name = ctx->IDENTIFIER()->getText();
 
-    bool is_glob = com_un::comp_units.top()->global_variables.contains(name);
+    auto is_glob = com_un::comp_units.back()->global_variables.contains(name);
 
-    bool is_loc = com_un::comp_units.top()->symbol_table.top().contains(name);
+    auto is_loc = com_un::comp_units.back()->symbol_table.back().contains(name);
 
-    if (!is_glob || !is_loc) {
+    if (!is_glob && !is_loc) {
         msg::errors::log_compiler_err("symbol \"" 
             + name + "\" is neither a local nor a global variable");
 

@@ -31,8 +31,8 @@ compiler::CompilerOpts compiler::compiler_opts;
 
 void compiler::process_source_file(std::string path) {
 
-    std::string abs_src_path = fs::absolute(path);
-    std::string src_content = yu::file_to_str(abs_src_path);
+    auto abs_src_path = fs::absolute(path);
+    auto src_content = yu::file_to_str(abs_src_path);
 
     antlr4::ANTLRInputStream input(src_content);
     lexer::YupLexer lexer(&input);
@@ -44,24 +44,22 @@ void compiler::process_source_file(std::string path) {
     parser.removeErrorListeners();
     parser.addErrorListener(&parserErrorListener);
 
-    parser::YupParser::FileContext* ctx = parser.file();
+    auto *ctx = parser.file();
     cv::Visitor visitor;
 
     fs::path bd(build_dir);
     fs::path f(yu::base_name(abs_src_path));
     fs::path mod_path = bd / f;
 
-    com_un::comp_units.top()->module_name = yu::get_ir_fname(mod_path.string());
-    com_un::comp_units.top()->context->setOpaquePointers(false);
+    com_un::comp_units.back()->module_name = yu::get_ir_fname(mod_path.string());
+    com_un::comp_units.back()->context->setOpaquePointers(false);
 
     visitor.visit(ctx);
 
     // dump module to .ll
-    verifyModule(*com_un::comp_units.top()->module, &outs());
-    dump_module(com_un::comp_units.top()->module.release(), 
-        com_un::comp_units.top()->module_name);
-        
-    output_obj(com_un::comp_units.top()->module_name);
+    //verifyModule(*com_un::comp_units.back()->module, &outs());
+    dump_module(com_un::comp_units.back()->module, 
+        com_un::comp_units.back()->module_name);
 }
 
 std::string compiler::init_build_dir(std::string dir_base) {
@@ -69,7 +67,7 @@ std::string compiler::init_build_dir(std::string dir_base) {
     fs::path b(dir_base);
     fs::path bd(".build");
     fs::path f_path = b / bd;
-    bool succ = true;
+    auto succ = true;
 
     if (!fs::is_directory(f_path.string()) || !fs::exists(f_path.string())) {
         succ = fs::create_directory(f_path.string());
@@ -94,20 +92,22 @@ void compiler::dump_module(Module *module, std::string module_name) {
     os.flush();
 
     if (compiler::compiler_opts.verbose) {
-        std::string info = "dumped module " + com_un::comp_units.top()->module_name;
+        std::string info = "dumped module " + com_un::comp_units.back()->module_name;
 
         msg::info::log_cmd_info(info);
     }
 }
 
-void compiler::build_binary(fs::path bin_file, fs::path obj_dir) {
+void compiler::build_bitcode(fs::path bin_file, fs::path ll_dir) {
 
-    std::string gcc = "gcc -o " + bin_file.string();
-    for (const auto &entry : fs::directory_iterator(obj_dir)) {
-        gcc += " " + entry.path().string();
+    auto llvm_link = "llvm-link -o " + bin_file.string();
+    for (const auto &entry : fs::directory_iterator(ll_dir)) {
+        if (!fs::is_directory(entry)) {
+            llvm_link += " " + entry.path().string();
+        }
     }
 
-    std::system(gcc.c_str());
+    std::system(llvm_link.c_str());
 
     if (compiler::compiler_opts.give_perms) {
         std::system((std::string("chmod +x ") + bin_file.string()).c_str());
@@ -117,47 +117,4 @@ void compiler::build_binary(fs::path bin_file, fs::path obj_dir) {
         }
     }
 
-}
-
-void compiler::output_obj(std::string s_path) {
-
-    // -3 is .ll
-    std::string binaryName = com_un::comp_units.top()->module_name.substr(0, 
-        com_un::comp_units.top()->module_name.size() - 3);
-
-    binaryName += ".o";
-    fs::path d(yu::get_dir_name(s_path));
-    fs::path b("obj");
-
-    fs::path obj_dir = d / b;
-    fs::create_directory(obj_dir.string());
-
-    fs::path bn(yu::base_name(binaryName));
-    std::string full_obj_name = obj_dir / bn;
-
-    std::string obj_clang = "clang -c " + s_path
-        + " -o " + full_obj_name
-        + " -Wno-override-module";
-
-    int ec = std::system(obj_clang.c_str());
-
-    if (compiler::compiler_opts.verbose) {
-        msg::info::log_cmd_info(obj_clang);
-    }
-
-    if (ec) {
-        msg::errors::log_cmd_err(obj_clang);
-    }
-
-    fs::path bin(yu::get_dir_name(binaryName));
-    fs::path dir("bin");
-
-    fs::path bin_dir = bin / dir;
-    fs::create_directory(bin_dir.string());
-
-    fs::path p(yu::base_name(
-        binaryName.substr(0, binaryName.size() - 2)));
-    fs::path bin_file = bin_dir / p;
-
-    compiler::build_binary(bin_file, obj_dir);
 }

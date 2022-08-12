@@ -14,8 +14,8 @@ namespace yupc::compiler
     struct CompilerOpts {
         bool give_perms;
         bool verbose;
-
-        std::vector<std::string> src_path;
+        std::vector<std::string> src_path;  
+        std::string binary_name;
     };
 
     extern std::string build_dir;
@@ -23,9 +23,7 @@ namespace yupc::compiler
 
     void dump_module(llvm::Module *module, std::string module_name);
 
-    void build_binary(fs::path bin_file, fs::path obj_dir);
-
-    void output_obj(std::string s_path);
+    void build_bitcode(fs::path bin_file, fs::path ll_dir);
 
     void process_source_file(std::string path);
 

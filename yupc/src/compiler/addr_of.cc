@@ -13,14 +13,14 @@ namespace cao = compiler::addr_of;
 namespace com_un = compiler::compilation_unit;
 
 void cao::addr_of_expr_codegen(std::string id) {
-    AllocaInst *val = com_un::comp_units.top()->symbol_table.top()[id];
+    auto *val = com_un::comp_units.back()->symbol_table.back()[id];
 
-    com_un::comp_units.top()->value_stack.push(val);
+    com_un::comp_units.back()->value_stack.push(val);
 }
 
 std::any cv::Visitor::visitAddr_of(parser::YupParser::Addr_ofContext *ctx) {
 
-    std::string text = ctx->IDENTIFIER()->getText();
+    auto text = ctx->IDENTIFIER()->getText();
     cao::addr_of_expr_codegen(text);
     
     return nullptr;

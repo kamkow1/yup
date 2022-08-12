@@ -7,9 +7,11 @@ TERMINATOR          :   ';';
 RETURN              :   'return';
 COMPILER_FLAG_SYM   :   '@';
 CONST               :   'const';
-EXPORT              :   'export';
+PUBSYM              :   'pubsym';
 GLOBAL              :   'glob';
 IMPORT              :   'import';
+FROM                :   'from';
+MODULE              :   'module';
 
 LPAREN              :   '(';
 RPAREN              :   ')';
