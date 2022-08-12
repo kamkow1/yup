@@ -66,10 +66,16 @@ void ci::import_global_var(std::map<std::string, GlobalVariable*> global_vars, s
         exit(1);
     }
 
-    auto *gvar_type = global_vars[sym]->getType();
+    std::string gvar_type_str;
+    raw_string_ostream rso(gvar_type_str);
+
+    global_vars[sym]->getType()->print(rso);
+
+    auto *gvar_type = ct::resolve_type(rso.str());
+
     auto is_const = global_vars[sym]->isConstant();
 
-    GlobalVariable *global_var = new GlobalVariable(gvar_type, is_const, GlobalValue::LinkageTypes::ExternalLinkage);
+    auto *global_var = new GlobalVariable(*com_un::comp_units.back()->module, gvar_type, is_const, GlobalValue::ExternalLinkage, nullptr, sym);
 
     com_un::comp_units.back()->global_variables[sym] = global_var;
 }

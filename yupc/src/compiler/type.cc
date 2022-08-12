@@ -22,12 +22,13 @@ static Type *ct::resolve_ptr_type(Type *base) {
 }
 
 static std::map<std::string, size_t> types {
-    { "i32",    1 },
-    { "i64",    2 },
-    { "float",  3 },
-    { "bool",   4 },
-    { "void",   5 },
-    { "char",   6 },
+    { "i32",    ct::I32_TYPE },
+    { "i64",    ct::I64_TYPE },
+    { "float",  ct::FLOAT_TYPE },
+    { "bool",   ct::BOOL_TYPE },
+    { "void",   ct::VOID_TYPE },
+    { "char",   ct::CHAR_TYPE },
+    { "i8",     ct::I8_TYPE }
 };
 
 static size_t ct::resolve_basic_type(std::string match) {
@@ -45,24 +46,20 @@ void ct::appendTypeID(size_t n, std::string id_str) {
 
 Type* ct::resolve_type(std::string type_name) {
     switch (ct::resolve_basic_type(type_name)) {
-        case 1: // i32
-            return Type::getInt32Ty(
-                *com_un::comp_units.back()->context);
-        case 2: // i64
-            return Type::getInt64Ty(
-                *com_un::comp_units.back()->context);
-        case 3: // float
-            return Type::getFloatTy(
-                *com_un::comp_units.back()->context);
-        case 4: // bool
-            return Type::getInt8Ty(
-                *com_un::comp_units.back()->context);
-        case 5: // void
-            return Type::getVoidTy(
-                *com_un::comp_units.back()->context);
-        case 6: // char
-            return Type::getInt8Ty(
-                *com_un::comp_units.back()->context);
+        case ct::I32_TYPE: // i32
+            return Type::getInt32Ty(*com_un::comp_units.back()->context);
+        case ct::I64_TYPE: // i64
+            return Type::getInt64Ty(*com_un::comp_units.back()->context);
+        case ct::I8_TYPE:
+            return Type::getInt8Ty(*com_un::comp_units.back()->context);
+        case ct::FLOAT_TYPE: // float
+            return Type::getFloatTy(*com_un::comp_units.back()->context);
+        case ct::BOOL_TYPE: // bool
+            return Type::getInt8Ty(*com_un::comp_units.back()->context);
+        case ct::VOID_TYPE: // void
+            return Type::getVoidTy(*com_un::comp_units.back()->context);
+        case ct::CHAR_TYPE: // char
+            return Type::getInt8Ty(*com_un::comp_units.back()->context);
 
         case SIZE_MAX: {
             auto base_str = type_name;
@@ -128,8 +125,7 @@ void ct::check_value_type(Value *val, std::string name) {
     }
 
     if (expr_type != og_type) {
-        log_compiler_err("mismatch of types \"" + og_type 
-            + "\" and \"" + expr_type + "\"");
+        log_compiler_err("mismatch of types \"" + og_type + "\" and \"" + expr_type + "\"");
         exit(1);
     }
 }

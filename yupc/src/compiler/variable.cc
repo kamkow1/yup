@@ -89,8 +89,7 @@ void cvar::assignment_codegen(std::string name, Value *val) {
     }
 }
 
-void cvar::var_declare_codegen(std::string name, Type *resolved_type, 
-                        bool is_const, bool is_glob, bool is_ext, Value *val) {
+void cvar::var_declare_codegen(std::string name, Type *resolved_type, bool is_const, bool is_glob, bool is_ext, Value *val) {
 
     if (is_glob) {
         auto lt = is_ext ? GlobalValue::ExternalLinkage : GlobalValue::InternalLinkage;
