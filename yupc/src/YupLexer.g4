@@ -6,7 +6,7 @@ TERMINATOR          :   ';';
 RETURN              :   'return';
 COMPILER_FLAG_SYM   :   '@';
 CONST               :   'const';
-PUBSYM              :   'pubsym';
+PUBSYM              :   'public';
 GLOBAL              :   'glob';
 IMPORT              :   'import';
 FROM                :   'from';
