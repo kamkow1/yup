@@ -1,6 +1,5 @@
 lexer grammar YupLexer;
 
-FUNCTION            :   'fnc';
 TYPE_ANNOTATION     :   ':';
 ASSIGN              :   '=';
 TERMINATOR          :   ';';
