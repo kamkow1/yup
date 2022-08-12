@@ -6,6 +6,7 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include <any>
 #include <string>
 
 using namespace llvm;
@@ -16,6 +17,8 @@ using namespace yupc::msg::errors;
 namespace cv = compiler::visitor;
 namespace ct = compiler::type;
 namespace com_un = compiler::compilation_unit;
+
+std::map<std::string, std::string> ct::type_aliases;
 
 static Type *ct::resolve_ptr_type(Type *base) {
     return PointerType::get(base, 0);
@@ -45,6 +48,11 @@ void ct::appendTypeID(size_t n, std::string id_str) {
 }
 
 Type* ct::resolve_type(std::string type_name) {
+
+    if (ct::type_aliases.contains(type_name)) {
+        type_name = ct::type_aliases[type_name];
+    }
+
     switch (ct::resolve_basic_type(type_name)) {
         case ct::I32_TYPE: // i32
             return Type::getInt32Ty(*com_un::comp_units.back()->context);
@@ -128,6 +136,18 @@ void ct::check_value_type(Value *val, std::string name) {
         log_compiler_err("mismatch of types \"" + og_type + "\" and \"" + expr_type + "\"");
         exit(1);
     }
+}
+
+std::any cv::Visitor::visitType_decl(parser::YupParser::Type_declContext *ctx) {
+    if (ctx->type_def()->type_alias() != nullptr) {
+
+        auto alias_name = ctx->IDENTIFIER()->getText();
+        auto old_name = ctx->type_def()->type_alias()->type_annot()->getText();
+
+        ct::type_aliases[alias_name] = old_name;
+    }
+
+    return nullptr;
 }
 
 std::any cv::Visitor::visitType_annot(parser::YupParser::Type_annotContext *ctx) {

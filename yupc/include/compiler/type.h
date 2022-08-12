@@ -1,8 +1,10 @@
 #pragma once
 
-#include "string.h"
-#include "llvm/IR/Type.h"
-#include "llvm/IR/Value.h"
+#include <string>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Value.h>
+
+#include <map>
 
 namespace yupc::compiler::type {
     enum BuiltInTypes {
@@ -14,6 +16,8 @@ namespace yupc::compiler::type {
         VOID_TYPE,
         CHAR_TYPE
     };
+
+    extern std::map<std::string, std::string> type_aliases;
 
     static llvm::Type *resolve_ptr_type(llvm::Type *base);
 

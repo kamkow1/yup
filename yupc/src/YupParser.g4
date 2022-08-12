@@ -14,7 +14,14 @@ statement           :   expr                    TERMINATOR
                     |   arr_elem_assignment     TERMINATOR
                     |   func_signature          TERMINATOR
                     |   import_decl             TERMINATOR
-                    |   module_decl             TERMINATOR;
+                    |   module_decl             TERMINATOR
+                    |   type_decl               TERMINATOR;
+
+type_decl           :   TYPE IDENTIFIER type_def;
+
+type_def            :   type_alias;
+
+type_alias          :   ALIAS ASSIGN type_annot;
 
 module_decl         :   MODULE IDENTIFIER;
 

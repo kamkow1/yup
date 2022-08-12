@@ -12,6 +12,9 @@ IMPORT              :   'import';
 FROM                :   'from';
 MODULE              :   'module';
 
+TYPE                :   'type';
+ALIAS               :   'alias';
+
 LPAREN              :   '(';
 RPAREN              :   ')';
 LBRACE              :   '{';
