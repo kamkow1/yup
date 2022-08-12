@@ -62,5 +62,7 @@ namespace yupc::compiler::visitor {
         std::any visitModule_decl(parser::YupParser::Module_declContext *ctx) override;
 
         std::any visitType_decl(parser::YupParser::Type_declContext *ctx) override;
+
+        std::any visitPtr_dereference(parser::YupParser::Ptr_dereferenceContext *ctx) override;
     };
 }

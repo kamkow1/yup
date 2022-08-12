@@ -65,7 +65,10 @@ expr                :   constant                        #ConstantExpr
                     |   addr_of                         #AddrOfExpr
                     |   expr LSQBR expr RSQBR           #IndexedAccessExpr
                     |   expr binop expr                 #MathOperExpr
-                    |   LPAREN expr RPAREN              #EmphExpr;
+                    |   LPAREN expr RPAREN              #EmphExpr
+                    |   ptr_dereference                 #PtrDereferenceExpr;
+
+ptr_dereference     :   ASTERISK expr;
 
 binop               :   PLUS | MINUS | ASTERISK | SLASH ;
 
