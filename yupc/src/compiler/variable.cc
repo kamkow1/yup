@@ -31,11 +31,12 @@ struct Variable {
 
 static std::map<std::string, Variable> variables;
 
-void cvar::ident_expr_codegen(std::string id) {
+void cvar::ident_expr_codegen(std::string id, bool is_glob) {
 
     auto contains_id = com_un::comp_units.back()->symbol_table.back().contains(id);
 
     if (contains_id) {
+
         auto *value =com_un::comp_units.back()->symbol_table.back()[id];
 
         auto *type = value->getAllocatedType();
@@ -43,7 +44,14 @@ void cvar::ident_expr_codegen(std::string id) {
         auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(type, value);
 
         com_un::comp_units.back()->value_stack.push(load);
+    } else if (is_glob) {
+        
+        auto *gv = com_un::comp_units.back()->global_variables[id];
+
+        com_un::comp_units.back()->value_stack.push(gv);
+
     } else {
+
         auto *gv = com_un::comp_units.back()->global_variables[id];
 
         auto *type = gv->getValueType();
@@ -186,7 +194,7 @@ std::any cv::Visitor::visitIdentifierExpr(parser::YupParser::IdentifierExprConte
     }
 
 
-    cvar::ident_expr_codegen(name);
+    cvar::ident_expr_codegen(name, is_glob);
     
     return nullptr;
 }

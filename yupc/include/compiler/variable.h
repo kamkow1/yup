@@ -5,7 +5,7 @@
 #include "llvm/IR/Type.h"
 
 namespace yupc::compiler::variable {
-    void ident_expr_codegen(std::string id);
+    void ident_expr_codegen(std::string id, bool is_glob);
 
     void assignment_codegen(std::string name, llvm::Value *val);
 
