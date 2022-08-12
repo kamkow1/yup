@@ -1,7 +1,7 @@
 lexer grammar YupLexer;
 
 TYPE_ANNOTATION     :   ':';
-ASSIGN              :   '=';
+ASSIGN              :   ':=';
 TERMINATOR          :   ';';
 RETURN              :   'return';
 COMPILER_FLAG_SYM   :   '@';
