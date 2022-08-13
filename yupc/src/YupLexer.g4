@@ -1,6 +1,6 @@
 lexer grammar YupLexer;
 
-TYPE_ANNOTATION     :   ':';
+COLON               :   ':';
 ASSIGN              :   ':=';
 TERMINATOR          :   ';';
 RETURN              :   'return';
@@ -8,6 +8,7 @@ COMPILER_FLAG_SYM   :   '@';
 CONST               :   'const';
 PUBSYM              :   'public';
 GLOBAL              :   'glob';
+
 IMPORT              :   'import';
 FROM                :   'from';
 MODULE              :   'module';

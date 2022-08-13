@@ -46,6 +46,8 @@ namespace ct = compiler::type;
 void init_build_opts(App *build_cmd, compiler::CompilerOpts *compiler_opts) {
     build_cmd->add_option("-s,--sources", compiler_opts->src_path, ".yup source files");
 
+    build_cmd->add_option("-i,--imports", compiler_opts->external_imports, "imports external libraries");
+
     build_cmd->add_option("-b,--binary-name", compiler_opts->binary_name, "sets the output binary's name");
 
     build_cmd->add_flag("-n,--no-perm", compiler_opts->give_perms, "allows the compiler to give permissions to the binary file");
@@ -62,6 +64,19 @@ int main(int argc, char *argv[]) {
     init_build_opts(build_cmd, &compiler::compiler_opts);
 
     build_cmd->callback([&]() {
+        for (auto &ext_import : compiler::compiler_opts.external_imports) {
+            auto import = fs::absolute(ext_import);
+
+            for (auto src_file : fs::directory_iterator(import)) {
+
+                if (!fs::is_directory(src_file)) {
+                    auto file_path = src_file.path().string();
+
+                    compiler::compiler_opts.src_path.push_back(file_path);
+                }
+            }
+        }
+
         for (auto &path : compiler::compiler_opts.src_path) {
             auto fname = fs::absolute(path);
 

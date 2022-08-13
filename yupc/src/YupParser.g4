@@ -25,7 +25,9 @@ type_alias          :   ALIAS ASSIGN type_annot;
 
 module_decl         :   MODULE IDENTIFIER;
 
-import_decl         :   IMPORT import_list FROM IDENTIFIER;
+import_decl         :   IMPORT import_list FROM lib_path? IDENTIFIER;
+
+lib_path            :   IDENTIFIER COLON;
 
 import_list         :   LBRACE (IDENTIFIER (COMMA IDENTIFIER)*)? RBRACE;
 

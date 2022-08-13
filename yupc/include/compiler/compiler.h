@@ -16,6 +16,7 @@ namespace yupc::compiler
         bool verbose;
         std::vector<std::string> src_path;  
         std::string binary_name;
+        std::vector<std::string> external_imports;
     };
 
     extern std::string build_dir;
