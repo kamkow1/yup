@@ -16,36 +16,14 @@ Before you compile yupc, you need to build all of the dependencies:
 ##### (you will need cmake for this)
 
 #### 1. LLVM
-```bash
-cd /path/to/yup/source/yup
-
-cd yupc/third_party
-
-cd llvm
-
-cd build
-
-cmake ..
-
-cmake --target install
-```
-
-warning: building LLVM may take up to 5+ hours!
+Read LLVM instructions: <br>
+https://www.llvm.org/docs/CMake.html
 
 #### 2. ANTLR4
-```bash
-cd /path/to/yup/source/yup
+Read ANTLR4 C++ runtime instructions: <br>
+https://github.com/antlr/antlr4/blob/master/runtime/Cpp/README.md
 
-cd yupc/third_party
-
-cd antlr4-runtime
-
-mkdir build && mkdir run && cd build
-
-cmake ..
-
-make
-```
+the ANTLR4 runtime can be found in the third_party directory.
 
 In order to build the Yup compiler from source run:
 ```bash
@@ -59,6 +37,12 @@ cd yupc
 
 ./build.sh -m release # -m [relrease | debug]
 ```
+
+#### 3. Conan dependencies
+
+the rest of the dependencies are provided by Conan
+Learn more on how to install conan: <br>
+ https://conan.io/downloads.html
 
 # scripts
 
@@ -78,20 +62,7 @@ arguments: <br>
 *   -j | --jar [path]
     - path: path to antlr4 tool (a .jar file)
 
-## run.sh
-description: <br>
-allows for quick runs (instead of typing complex yupc's cli commands) <br>
-this is helpful during development to quickly run the compiler
-
-arguments: <br>
-*   r [emit LLVM IR] (--emit-ir | --ir)
-    - [true | false]
-*   v [verbose output] (--verbose | -v)
-    - [true | false]
-*   o [output object file] (--object | -o)
-    - [true | false]
-
-### development goals
+### development roadmap
 * basics [&check;]
     - [&check;] variable assignment
     - [&check;] overriding variables
@@ -107,13 +78,14 @@ arguments: <br>
         * [&check;] array type
         * [&check;] string type
     - [&check;] global variables
-    - [&#10799;] external symbols
+    - [&check;] external symbols
     - [&#10799;] for loop
     - [&#10799;] while loop
     - [&#10799;] conditional statements ( if + elif + else )
     - [&#10799;] basic module system
         * [&check;] exports
-        * [&#10799;] imports
+        * [&check;] imports
+        * [&#10799;] namespaces
 * OOP [&#10799;]
     - [&#10799;] structs
     - [&#10799;] access modifiers
@@ -128,21 +100,20 @@ arguments: <br>
 
 ```text
 
-glob array_size: i32 = .i32;
+module main;
 
-fnc set_array_size(s: i32): void
-    array_size = s;
+import { EXIT_SUCCESS, string } from x;
 
-fnc get_array_size(): i32
-    return array_size;
+main() i32 {
 
-fnc main(argc: i32, argv: **char): i32
-{
-    set_array_size(100);
+    a i32 := 56;
+    b *i32 := &a;
 
-    my_array: *i32 = (get_array_size(), i32);
+    c i32 := *b;
 
-    return 0;
+    sss string := "eoeooe";
+
+    return *EXIT_SUCCESS;
 }
 
 ```
