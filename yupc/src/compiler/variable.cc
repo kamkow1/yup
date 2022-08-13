@@ -2,6 +2,8 @@
 #include <compiler/type.h>
 #include <compiler/variable.h>
 #include <compiler/compilation_unit.h>
+#include <compiler/auto_deleter.h>
+
 #include <msg/errors.h>
 #include <util.h>
 
@@ -23,6 +25,7 @@ namespace cv = compiler::visitor;
 namespace cvar = compiler::variable;
 namespace ct = compiler::type;
 namespace com_un = compiler::compilation_unit;
+namespace auto_del = compiler::auto_deleter;
 
 struct Variable {
     std::string name;
@@ -48,7 +51,9 @@ void cvar::ident_expr_codegen(std::string id, bool is_glob) {
         
         auto *gv = com_un::comp_units.back()->global_variables[id];
 
-        com_un::comp_units.back()->value_stack.push(gv);
+        auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(gv->getValueType(), gv);
+
+        com_un::comp_units.back()->value_stack.push(load);
 
     } else {
 
@@ -126,6 +131,10 @@ void cvar::var_declare_codegen(std::string name, Type *resolved_type, bool is_co
 
         Variable var{name, is_const};
         variables[name] = var;
+
+        //if (ptr->getAllocatedType()->isPointerTy()) {
+        //    auto_del::mark_variable(name);
+        //}
     }
 }
 

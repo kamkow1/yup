@@ -80,6 +80,13 @@ void ci::import_global_var(std::map<std::string, GlobalVariable*> global_vars, s
     com_un::comp_units.back()->global_variables[sym] = global_var;
 }
 
+void ci::import_type_alias(std::vector<ct::AliasType*> &unit_alias_types, int i) {
+
+    ct::AliasType* alias_type = unit_alias_types[i];
+
+    com_un::comp_units.back()->alias_types.push_back(alias_type);
+}
+
 std::any cv::Visitor::visitImport_decl(parser::YupParser::Import_declContext *ctx) {
     
     auto module_name = ctx->IDENTIFIER()->getText();
@@ -109,6 +116,15 @@ std::any cv::Visitor::visitImport_decl(parser::YupParser::Import_declContext *ct
                     if (global_var.first == sym) {
                         ci::import_global_var(unit->global_variables, sym);
                     }
+                }
+
+                int i = 0;
+                for (auto *type_alias : unit->alias_types) {
+                    if (type_alias->type_name == sym) {
+                        ci::import_type_alias(unit->alias_types, i);
+                    }
+
+                    i++;
                 }
             }
         }

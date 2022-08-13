@@ -40,6 +40,7 @@ add_definitions (${LLVM_DEFINITIONS})
 llvm_map_components_to_libnames(llvm_libs support core)
 
 set (SRCS
+    src/compiler/auto_deleter.cc
     src/compiler/ptr_dereference.cc
     src/compiler/module.cc
     src/compiler/compiler.cc

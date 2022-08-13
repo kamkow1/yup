@@ -38,8 +38,7 @@ void cf::func_def_codegen(Function *function) {
     for (auto i = 0; i < len; ++i) {
         auto &arg = *function->getArg(i);
 
-        auto *alloca = com_un::comp_units.back()
-            ->ir_builder->CreateAlloca(arg.getType(), 0, arg.getName());
+        auto *alloca = com_un::comp_units.back()->ir_builder->CreateAlloca(arg.getType(), 0, arg.getName());
 
         com_un::comp_units.back()->symbol_table.back()[arg.getName().str()] = alloca;
 

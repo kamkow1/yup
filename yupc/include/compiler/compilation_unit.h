@@ -1,6 +1,7 @@
 #pragma once
 
 #include <compiler/import.h>
+#include <compiler/type.h>
 
 #include <llvm/IR/Function.h>
 #include <llvm/IR/LLVMContext.h>
@@ -26,6 +27,7 @@ namespace yupc::compiler::compilation_unit {
         std::map<std::string, llvm::Function*> functions;
         std::stack<llvm::Value*> value_stack;
         std::vector<yupc::compiler::import::ImportDecl> imported_syms;
+        std::vector<yupc::compiler::type::AliasType*> alias_types;
     };
 
     extern std::vector<CompilationUnit*> comp_units;

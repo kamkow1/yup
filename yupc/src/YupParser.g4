@@ -17,7 +17,7 @@ statement           :   expr                    TERMINATOR
                     |   module_decl             TERMINATOR
                     |   type_decl               TERMINATOR;
 
-type_decl           :   TYPE IDENTIFIER type_def;
+type_decl           :   PUBSYM? TYPE IDENTIFIER type_def;
 
 type_def            :   type_alias;
 

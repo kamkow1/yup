@@ -18,8 +18,6 @@ namespace cv = compiler::visitor;
 namespace ct = compiler::type;
 namespace com_un = compiler::compilation_unit;
 
-std::map<std::string, std::string> ct::type_aliases;
-
 static Type *ct::resolve_ptr_type(Type *base) {
     return PointerType::get(base, 0);
 }
@@ -49,8 +47,16 @@ void ct::appendTypeID(size_t n, std::string id_str) {
 
 Type* ct::resolve_type(std::string type_name) {
 
-    if (ct::type_aliases.contains(type_name)) {
-        type_name = ct::type_aliases[type_name];
+    for (auto i = 0; i < com_un::comp_units.back()->alias_types.size(); i++) {
+        
+        ct::AliasType *alias_type = com_un::comp_units.back()->alias_types[i];
+
+        if (alias_type->is_public) {
+
+            if (alias_type->type_name == type_name) {
+                type_name = com_un::comp_units.back()->alias_types[i]->destination;
+            }
+        }
     }
 
     switch (ct::resolve_basic_type(type_name)) {
@@ -144,7 +150,12 @@ std::any cv::Visitor::visitType_decl(parser::YupParser::Type_declContext *ctx) {
         auto alias_name = ctx->IDENTIFIER()->getText();
         auto old_name = ctx->type_def()->type_alias()->type_annot()->getText();
 
-        ct::type_aliases[alias_name] = old_name;
+        auto *type = new ct::AliasType;
+        type->type_name = alias_name;
+        type->destination = old_name;
+        type->is_public = ctx->PUBSYM() != nullptr;
+
+        com_un::comp_units.back()->alias_types.push_back(type);
     }
 
     return nullptr;

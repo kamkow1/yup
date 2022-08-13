@@ -17,7 +17,11 @@ namespace yupc::compiler::type {
         CHAR_TYPE
     };
 
-    extern std::map<std::string, std::string> type_aliases;
+    struct AliasType {
+        std::string type_name;
+        std::string destination;
+        bool is_public;
+    };
 
     static llvm::Type *resolve_ptr_type(llvm::Type *base);
 

@@ -2,6 +2,7 @@
 #include <compiler/compilation_unit.h>
 #include <compiler/compiler.h>
 #include <compiler/import.h>
+#include <compiler/type.h>
 
 #include <lexer/YupLexer.h>
 #include <parser/YupParser.h>
@@ -40,6 +41,7 @@ namespace fs = std::filesystem;
 namespace yu = yupc::util;
 namespace com_un = compiler::compilation_unit;
 namespace ci = compiler::import;
+namespace ct = compiler::type;
 
 void init_build_opts(App *build_cmd, compiler::CompilerOpts *compiler_opts) {
     build_cmd->add_option("-s,--sources", compiler_opts->src_path, ".yup source files");
@@ -74,6 +76,7 @@ int main(int argc, char *argv[]) {
             comp_unit->functions = std::map<std::string, Function*>{};
             comp_unit->value_stack = std::stack<Value*>{};
             comp_unit->imported_syms = std::vector<ci::ImportDecl>{};
+            comp_unit->alias_types = std::vector<ct::AliasType*>{};
 
             com_un::comp_units.push_back(comp_unit);
 
