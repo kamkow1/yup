@@ -8,7 +8,9 @@
 
 #include <parser/YupParser.h>
 #include <parser/parser_error_listener.h>
+
 #include <lexer/YupLexer.h>
+#include <lexer/lexer_error_listener.h>
 
 #include <string>
 #include <util.h>
@@ -24,7 +26,8 @@ using namespace llvm;
 
 namespace yu = util;
 namespace cv = compiler::visitor;
-namespace pse = parser_syntax_error;
+namespace pse = parser::parser_syntax_error;
+namespace lse = lexer::lexer_syntax_error;
 namespace com_un = compiler::compilation_unit;
 
 std::string compiler::build_dir;
@@ -37,13 +40,18 @@ void compiler::process_source_file(std::string path) {
 
     antlr4::ANTLRInputStream input(src_content);
     lexer::YupLexer lexer(&input);
+
+    lse::LexerErrorListener lexer_error_listener;
+    lexer.removeErrorListeners();
+    lexer.addErrorListener(&lexer_error_listener);
+
     antlr4::CommonTokenStream tokens(&lexer);
+
     parser::YupParser parser(&tokens);
 
-    // add error listener
-    pse::ParserErrorListener parserErrorListener;
+    pse::ParserErrorListener parser_error_listener;
     parser.removeErrorListeners();
-    parser.addErrorListener(&parserErrorListener);
+    parser.addErrorListener(&parser_error_listener);
 
     auto *ctx = parser.file();
     cv::Visitor visitor;

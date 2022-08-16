@@ -55,6 +55,24 @@ void msg::errors::log_parsing_err(std::string detail, std::string f_path)
         << "\n";
 }
 
+void msg::errors::log_lexing_err(std::string detail, std::string f_path) {
+    std::cout
+        << termcolor::cyan
+        << "["
+        << termcolor::underline
+        << "LEXING ERROR"
+        << termcolor::reset
+        << termcolor::yellow
+        << "]: "
+        << termcolor::reset
+        << " (in file "
+        << f_path
+        << ") "
+        << detail
+        << termcolor::reset
+        << "\n";
+}
+
 void msg::errors::log_cmd_err(std::string detail)
 {
     std::cout

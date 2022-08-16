@@ -3,8 +3,8 @@
 #include <BaseErrorListener.h>
 #include <antlr4-runtime.h>
 
-namespace yupc::parser::parser_syntax_error {
-    class ParserErrorListener : public antlr4::BaseErrorListener {
+namespace yupc::lexer::lexer_syntax_error {
+    class LexerErrorListener : public antlr4::BaseErrorListener {
     public:
         virtual void syntaxError(antlr4::Recognizer *recognizer,
                                 antlr4::Token *offendingSymbol,

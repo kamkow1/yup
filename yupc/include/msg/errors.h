@@ -9,5 +9,7 @@ namespace yupc::msg::errors {
 
     void log_parsing_err(std::string detail, std::string f_path);
 
+    void log_lexing_err(std::string detail, std::string f_path);
+
     void log_cmd_err(std::string detail);
 }

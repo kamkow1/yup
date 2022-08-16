@@ -8,22 +8,21 @@ using namespace yupc;
 using namespace yupc::msg::errors;
 
 
-namespace pse = parser_syntax_error;
+namespace pse = parser::parser_syntax_error;
 namespace com_un = compiler::compilation_unit;
 
 void pse::ParserErrorListener::syntaxError(antlr4::Recognizer *recognizer,
-                                     antlr4::Token *offendingSymbol,
-                                     size_t line,
-                                     size_t charPositionInLine,
-                                     const std::string &msg,
-                                     std::exception_ptr e) {
-    std::string errorMessage =
-            "unexpected token \""
-            + offendingSymbol->getText() + "\" "
-            + "in line no. "
-            + std::to_string(offendingSymbol->getLine())
-            + " at position "
-            + std::to_string(charPositionInLine);
+                                        antlr4::Token *offendingSymbol,
+                                        size_t line,
+                                        size_t charPositionInLine,
+                                        const std::string &msg,
+                                        std::exception_ptr e) {
+    auto errorMessage = "unable to parse text \""
+                        + offendingSymbol->getText() + "\" "
+                        + "in line no. "
+                        + std::to_string(offendingSymbol->getLine())
+                        + " near position "
+                        + std::to_string(charPositionInLine);
 
     log_parsing_err(errorMessage, com_un::comp_units.back()->source_file);
     exit(1);

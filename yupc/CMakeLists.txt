@@ -58,6 +58,7 @@ set (SRCS
     src/msg/errors.cpp
     src/msg/info.cpp
     src/lexer/YupLexer.cpp
+    src/lexer/lexer_error_listener.cpp
     src/parser/YupParser.cpp
     src/parser/YupParserBaseVisitor.cpp
     src/parser/YupParserVisitor.cpp
