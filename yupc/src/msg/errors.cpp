@@ -2,9 +2,9 @@
 #include <termcolor/termcolor.hpp>
 #include <iostream>
 
-using namespace yupc::msg;
+using namespace yupc;
 
-void errors::log_compiler_err(std::string detail)
+void msg::errors::log_compiler_err(std::string detail)
 {
     std::cout
         << termcolor::red
@@ -20,7 +20,7 @@ void errors::log_compiler_err(std::string detail)
         << "\n";
 }
 
-void errors::log_input_err(std::string detail)
+void msg::errors::log_input_err(std::string detail)
 {
     std::cout
         << termcolor::magenta
@@ -36,7 +36,7 @@ void errors::log_input_err(std::string detail)
         << "\n";
 }
 
-void errors::log_parsing_err(std::string detail)
+void msg::errors::log_parsing_err(std::string detail, std::string f_path)
 {
     std::cout
         << termcolor::yellow
@@ -47,12 +47,15 @@ void errors::log_parsing_err(std::string detail)
         << termcolor::yellow
         << "]: "
         << termcolor::reset
+        << " (in file "
+        << f_path
+        << ") "
         << detail
         << termcolor::reset
         << "\n";
 }
 
-void errors::log_cmd_err(std::string detail)
+void msg::errors::log_cmd_err(std::string detail)
 {
     std::cout
     << termcolor::yellow

@@ -21,7 +21,8 @@ namespace ci = compiler::import;
 
 std::vector<com_un::CompilationUnit*> com_un::comp_units;
 
-void com_un::init_comp_unit(CompilationUnit &comp_unit) {
+void com_un::init_comp_unit(CompilationUnit &comp_unit, std::string source_file) {
+    comp_unit.source_file = source_file;
     comp_unit.module_id = "";
     comp_unit.module_name = "";
     comp_unit.context = new LLVMContext;

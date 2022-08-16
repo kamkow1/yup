@@ -17,6 +17,7 @@
 
 namespace yupc::compiler::compilation_unit {
     struct CompilationUnit {
+        std::string source_file;
         std::string module_id;
         std::string module_name;
         llvm::LLVMContext *context;
@@ -32,5 +33,5 @@ namespace yupc::compiler::compilation_unit {
 
     extern std::vector<CompilationUnit*> comp_units;
 
-    void init_comp_unit(CompilationUnit &comp_unit);
+    void init_comp_unit(CompilationUnit &comp_unit, std::string source_file);
 }

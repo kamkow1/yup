@@ -30,7 +30,7 @@ void init_build_opts(App *build_cmd, compiler::CompilerOpts *compiler_opts) {
 
 void process_path(std::string path) {
     auto *comp_unit = new com_un::CompilationUnit;
-    com_un::init_comp_unit(*comp_unit);
+    com_un::init_comp_unit(*comp_unit, path);
     com_un::comp_units.push_back(comp_unit);
 
     compiler::process_source_file(path);
