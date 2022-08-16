@@ -23,14 +23,14 @@ void ptr_deref::ptr_deref_codegen(Value *value) {
         exit(1);
     }
 
-    LoadInst *load = com_un::comp_units.back()->ir_builder->CreateLoad(value->getType()->getNonOpaquePointerElementType(), value);
+    auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(value->getType()->getNonOpaquePointerElementType(), value);
     com_un::comp_units.back()->value_stack.push(load);
 }
 
 std::any cv::Visitor::visitPtr_dereference(parser::YupParser::Ptr_dereferenceContext *ctx) {
 
     this->visit(ctx->expr());
-    Value *value = com_un::comp_units.back()->value_stack.top();
+    auto *value = com_un::comp_units.back()->value_stack.top();
 
     ptr_deref::ptr_deref_codegen(value);
 

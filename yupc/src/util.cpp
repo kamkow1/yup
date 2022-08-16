@@ -16,15 +16,13 @@ using namespace yupc::msg::errors;
 
 
 namespace yu = yupc::util;
-namespace fs = std::filesystem;
 
 std::string yu::file_to_str(const std::string& path)
 {
     std::ifstream input_file(path);
     if (!input_file.is_open())
     {
-        std::string errorMessage = "unable to open file \"" + path + "\"";
-        log_input_err(errorMessage);
+        log_input_err("unable to open file \"" + path + "\"");
         exit(1);
     }
 
@@ -35,22 +33,20 @@ std::string yu::file_to_str(const std::string& path)
 
 std::string yu::get_dir_name(const std::string& fname)
 {
-    size_t pos = fname.find_last_of("\\/");
-    return (std::string::npos == pos)
-           ? ""
-           : fname.substr(0, pos);
+    auto pos = fname.find_last_of("\\/");
+    return std::string::npos == pos ? "" : fname.substr(0, pos);
 }
 
 std::string yu::get_ir_fname(std::string path)
 {
-    std::string base = path.substr(path.find_last_of("/\\") + 1);
-    std::string directory = get_dir_name(path);
+    auto base = path.substr(path.find_last_of("/\\") + 1);
+    auto directory = get_dir_name(path);
 
     std::string::size_type const p(base.find_last_of('.'));
-    std::string noExt = base.substr(0, p);
+    auto no_ext = base.substr(0, p);
 
-    fs::path fullName = directory + "/" + noExt + ".ll";
-    return fullName;
+    auto full_name = directory + "/" + no_ext + ".ll";
+    return full_name;
 }
 
 std::string yu::base_name(std::string const &path)

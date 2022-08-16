@@ -99,7 +99,8 @@ void cf::func_sig_codegen(bool is_ext, std::string name, Type *return_type, std:
 
     auto arg_max = function->arg_size();
     for (auto i = 0; i < arg_max; ++i) {
-        std::string pn = params[i]->param_name;
+        
+        auto pn = params[i]->param_name;
         function->getArg(i)->setName(pn);
     }
 

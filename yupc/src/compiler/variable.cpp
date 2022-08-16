@@ -25,11 +25,10 @@ namespace cv = compiler::visitor;
 namespace cvar = compiler::variable;
 namespace ct = compiler::type;
 namespace com_un = compiler::compilation_unit;
-namespace auto_del = compiler::auto_deleter;
 
 struct Variable {
     std::string name;
-    bool        is_const;
+    bool is_const;
 };
 
 static std::map<std::string, Variable> variables;

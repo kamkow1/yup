@@ -29,8 +29,7 @@ void cc::int_codegen(int64_t value) {
 
 void cc::float_codegen(float value) {
 
-    auto *constant = ConstantFP::get(
-        *com_un::comp_units.back()->context, APFloat(value));
+    auto *constant = ConstantFP::get(*com_un::comp_units.back()->context, APFloat(value));
 
     com_un::comp_units.back()->value_stack.push(constant);
 }

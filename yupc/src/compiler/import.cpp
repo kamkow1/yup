@@ -82,7 +82,7 @@ void ci::import_global_var(std::map<std::string, GlobalVariable*> global_vars, s
 
 void ci::import_type_alias(std::vector<ct::AliasType*> &unit_alias_types, int i) {
 
-    ct::AliasType* alias_type = unit_alias_types[i];
+    auto *alias_type = unit_alias_types[i];
 
     com_un::comp_units.back()->alias_types.push_back(alias_type);
 }

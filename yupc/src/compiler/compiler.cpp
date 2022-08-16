@@ -66,7 +66,7 @@ std::string compiler::init_build_dir(std::string dir_base) {
 
     fs::path b(dir_base);
     fs::path bd("build");
-    fs::path f_path = b / bd;
+    auto f_path = b / bd;
     auto succ = true;
 
     if (!fs::is_directory(f_path.string()) || !fs::exists(f_path.string())) {

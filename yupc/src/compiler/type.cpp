@@ -49,7 +49,7 @@ Type* ct::resolve_type(std::string type_name) {
 
     for (auto i = 0; i < com_un::comp_units.back()->alias_types.size(); i++) {
         
-        ct::AliasType *alias_type = com_un::comp_units.back()->alias_types[i];
+        auto *alias_type = com_un::comp_units.back()->alias_types[i];
 
         if (alias_type->is_public) {
 
