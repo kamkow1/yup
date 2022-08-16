@@ -55,14 +55,14 @@ set (SRCS
     src/compiler/addr_of.cc
     src/compiler/math.cc
     src/compiler/import.cc
-    src/lexer/YupLexer.cc
     src/msg/errors.cc
     src/msg/info.cc
-    src/parser/YupParser.cc
-    src/parser/YupParserBaseVisitor.cc
-    src/parser/YupParserVisitor.cc
+    src/lexer/YupLexer.cpp
+    src/parser/YupParser.cpp
+    src/parser/YupParserBaseVisitor.cpp
+    src/parser/YupParserVisitor.cpp
     src/main.cc
-    src/parser_error_listener.cc
+    src/parser/parser_error_listener.cpp
     src/util.cc
 )
 

@@ -35,11 +35,11 @@ cd src/
 java -jar "$antlr_jar_path" ./YupLexer.g4 -Dlanguage=Cpp -o ./lexer -package yupc::lexer
 java -jar "$antlr_jar_path" ./YupParser.g4 -Dlanguage=Cpp -o ./parser -no-listener -visitor -package yupc::parser
 
-mv lexer/YupLexer.cpp lexer/YupLexer.cc
+#mv lexer/YupLexer.cpp lexer/YupLexer.cc
 
-mv parser/YupParser.cpp parser/YupParser.cc
-mv parser/YupParserBaseVisitor.cpp parser/YupParserBaseVisitor.cc
-mv parser/YupParserVisitor.cpp parser/YupParserVisitor.cc
+#mv parser/YupParser.cpp parser/YupParser.cc
+#mv parser/YupParserBaseVisitor.cpp parser/YupParserBaseVisitor.cc
+#mv parser/YupParserVisitor.cpp parser/YupParserVisitor.cc
 
 cd ..
 
@@ -58,12 +58,12 @@ mv src/parser/YupParserBaseVisitor.h include/parser/YupParserBaseVisitor.h
 mv src/parser/YupParserVisitor.h include/parser/YupParserVisitor.h
 
 # fix includes
-sed -i '5 c \#include "parser/YupParserVisitor.h"' src/parser/YupParser.cc
-sed -i '7 c \#include "parser/YupParser.h"' src/parser/YupParser.cc
-sed -i '5 c \#include "parser/YupParserBaseVisitor.h"' src/parser/YupParserBaseVisitor.cc
-sed -i '5 c \#include "parser/YupParserVisitor.h"' src/parser/YupParserVisitor.cc
+sed -i '5 c \#include "parser/YupParserVisitor.h"' src/parser/YupParser.cpp
+sed -i '7 c \#include "parser/YupParser.h"' src/parser/YupParser.cpp
+sed -i '5 c \#include "parser/YupParserBaseVisitor.h"' src/parser/YupParserBaseVisitor.cpp
+sed -i '5 c \#include "parser/YupParserVisitor.h"' src/parser/YupParserVisitor.cpp
 
-sed -i '5 c \#include "lexer/YupLexer.h"' src/lexer/YupLexer.cc
+sed -i '5 c \#include "lexer/YupLexer.h"' src/lexer/YupLexer.cpp
 
 sed -i '8 c \#include "parser/YupParserVisitor.h"' include/parser/YupParserBaseVisitor.h
 

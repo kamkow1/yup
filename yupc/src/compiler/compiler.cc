@@ -7,7 +7,7 @@
 #include <msg/info.h>
 
 #include <parser/YupParser.h>
-#include <parser_error_listener.h>
+#include <parser/parser_error_listener.h>
 #include <lexer/YupLexer.h>
 
 #include <string>

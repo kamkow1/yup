@@ -4,33 +4,16 @@
 #include <compiler/import.h>
 #include <compiler/type.h>
 
-#include <lexer/YupLexer.h>
-#include <parser/YupParser.h>
-#include <parser_error_listener.h>
-
-#include <msg/info.h>
-#include <msg/errors.h>
-
 #include <util.h>
-
-#include <llvm/Support/FileSystem.h>
-#include <llvm/IR/Function.h>
-#include <llvm/IR/Verifier.h>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/IRBuilder.h>
 
 #include <CLI/CLI.hpp>
 
 #include <string>
 #include <filesystem>
-#include <stack>
 
 using namespace llvm;
 using namespace CLI;
 using namespace yupc;
-using namespace yupc::msg::info;
-using namespace yupc::msg::errors;
 
 namespace fs = std::filesystem;
 namespace com_un = compiler::compilation_unit;

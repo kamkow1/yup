@@ -1,6 +1,6 @@
-#include "msg/errors.h"
-#include "parser_error_listener.h"
-#include "string.h"
+#include <msg/errors.h>
+#include <parser/parser_error_listener.h>
+#include <string>
 
 using namespace yupc;
 using namespace yupc::msg::errors;
