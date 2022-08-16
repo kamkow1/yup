@@ -2,6 +2,7 @@
 #include <compiler/compilation_unit.h>
 #include <compiler/visitor.h>
 
+#include <filesystem>
 #include <msg/errors.h>
 #include <msg/info.h>
 
@@ -58,14 +59,13 @@ void compiler::process_source_file(std::string path) {
 
     // dump module to .ll
     //verifyModule(*com_un::comp_units.back()->module, &outs());
-    dump_module(com_un::comp_units.back()->module, 
-        com_un::comp_units.back()->module_name);
+    dump_module(com_un::comp_units.back()->module, com_un::comp_units.back()->module_name);
 }
 
 std::string compiler::init_build_dir(std::string dir_base) {
 
     fs::path b(dir_base);
-    fs::path bd(".build");
+    fs::path bd("build");
     fs::path f_path = b / bd;
     auto succ = true;
 
@@ -75,17 +75,29 @@ std::string compiler::init_build_dir(std::string dir_base) {
 
     if (compiler_opts.verbose) {
         if (succ) {
-            msg::info::log_cmd_info("successfully created .build directory");
+            msg::info::log_cmd_info("created build directory");
         } else {
-            msg::errors::log_cmd_err("failed to create .build directory");
+            msg::errors::log_cmd_err("failed to create build directory");
         }
     }
 
     return f_path.string();
 }
 
+std::string compiler::init_bin_dir(std::string build_dir) {
+    fs::path bin(compiler::build_dir);
+    fs::path dir("bin");
+
+    auto bin_dir = bin / dir;
+    fs::create_directory(bin_dir.string());
+
+    fs::path p(compiler::compiler_opts.binary_name + ".bc");
+    auto bc_file = bin_dir / p;
+
+    return bc_file;
+}
+
 void compiler::dump_module(Module *module, std::string module_name) {
-    
     std::error_code ec;
     raw_fd_ostream os(module_name, ec, sys::fs::OF_None);
     module->print(os, nullptr);
@@ -98,9 +110,9 @@ void compiler::dump_module(Module *module, std::string module_name) {
     }
 }
 
-void compiler::build_bitcode(fs::path bin_file, fs::path ll_dir) {
+void compiler::build_bitcode(fs::path bc_file, fs::path ll_dir) {
 
-    auto llvm_link = "llvm-link -o " + bin_file.string();
+    auto llvm_link = "llvm-link -o " + bc_file.string();
     for (const auto &entry : fs::directory_iterator(ll_dir)) {
         if (!fs::is_directory(entry)) {
             llvm_link += " " + entry.path().string();
@@ -110,7 +122,7 @@ void compiler::build_bitcode(fs::path bin_file, fs::path ll_dir) {
     std::system(llvm_link.c_str());
 
     if (compiler::compiler_opts.give_perms) {
-        std::system((std::string("chmod +x ") + bin_file.string()).c_str());
+        std::system((std::string("chmod +x ") + bc_file.string()).c_str());
 
         if (compiler::compiler_opts.verbose) {
             msg::info::log_cmd_info("gave permissions to the executable");

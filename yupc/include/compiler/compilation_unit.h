@@ -31,4 +31,6 @@ namespace yupc::compiler::compilation_unit {
     };
 
     extern std::vector<CompilationUnit*> comp_units;
+
+    void init_comp_unit(CompilationUnit &comp_unit);
 }

@@ -22,14 +22,9 @@
 
 #include <CLI/CLI.hpp>
 
-#include <memory>
 #include <string>
 #include <filesystem>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <utility>
 #include <stack>
-#include <cstddef>
 
 using namespace llvm;
 using namespace CLI;
@@ -38,21 +33,24 @@ using namespace yupc::msg::info;
 using namespace yupc::msg::errors;
 
 namespace fs = std::filesystem;
-namespace yu = yupc::util;
 namespace com_un = compiler::compilation_unit;
-namespace ci = compiler::import;
-namespace ct = compiler::type;
 
 void init_build_opts(App *build_cmd, compiler::CompilerOpts *compiler_opts) {
     build_cmd->add_option("-s,--sources", compiler_opts->src_path, ".yup source files");
-
-    build_cmd->add_option("-i,--imports", compiler_opts->external_imports, "imports external libraries");
 
     build_cmd->add_option("-b,--binary-name", compiler_opts->binary_name, "sets the output binary's name");
 
     build_cmd->add_flag("-n,--no-perm", compiler_opts->give_perms, "allows the compiler to give permissions to the binary file");
 
     build_cmd->add_flag("-v,--verbose", compiler_opts->verbose, "enables verbose compiler output");
+}
+
+void process_path(std::string path) {
+    auto *comp_unit = new com_un::CompilationUnit;
+    com_un::init_comp_unit(*comp_unit);
+    com_un::comp_units.push_back(comp_unit);
+
+    compiler::process_source_file(path);
 }
 
 int main(int argc, char *argv[]) {
@@ -64,53 +62,26 @@ int main(int argc, char *argv[]) {
     init_build_opts(build_cmd, &compiler::compiler_opts);
 
     build_cmd->callback([&]() {
-        for (auto &ext_import : compiler::compiler_opts.external_imports) {
-            auto import = fs::absolute(ext_import);
+        auto cwd = fs::current_path();
+        compiler::build_dir = compiler::init_build_dir(cwd.string());
 
-            for (auto src_file : fs::directory_iterator(import)) {
+        for (auto &path : compiler::compiler_opts.src_path) {
 
-                if (!fs::is_directory(src_file)) {
-                    auto file_path = src_file.path().string();
-
-                    compiler::compiler_opts.src_path.push_back(file_path);
+            if (fs::is_directory(path)) {
+                for (auto &entry : fs::directory_iterator(path)) {
+                    if (!fs::is_directory(entry)) {
+                        process_path(entry.path().string());
+                    }
                 }
+
+            } else {
+
+                process_path(path);
             }
         }
 
-        for (auto &path : compiler::compiler_opts.src_path) {
-            auto fname = fs::absolute(path);
-
-            auto *comp_unit = new com_un::CompilationUnit; 
-            comp_unit->module_id = "";
-            comp_unit->module_name = "";
-            comp_unit->context = new LLVMContext;
-            comp_unit->ir_builder = new IRBuilder<>(*comp_unit->context);
-            comp_unit->module = new Module(comp_unit->module_name, *comp_unit->context);
-            comp_unit->symbol_table = std::vector<std::map<std::string, AllocaInst*>>{};
-            comp_unit->global_variables = std::map<std::string, GlobalVariable*>{};
-            comp_unit->functions = std::map<std::string, Function*>{};
-            comp_unit->value_stack = std::stack<Value*>{};
-            comp_unit->imported_syms = std::vector<ci::ImportDecl>{};
-            comp_unit->alias_types = std::vector<ct::AliasType*>{};
-
-            com_un::comp_units.push_back(comp_unit);
-
-            compiler::build_dir = compiler::init_build_dir(yu::get_dir_name(fname));
-
-            compiler::process_source_file(path);
-        }
-
-
-        fs::path bin(compiler::build_dir);
-        fs::path dir("bin");
-
-        auto bin_dir = bin / dir;
-        fs::create_directory(bin_dir.string());
-
-        fs::path p(compiler::compiler_opts.binary_name + ".bc");
-        auto bin_file = bin_dir / p;
-
-        compiler::build_bitcode(bin_file, compiler::build_dir);
+        auto bc_file = compiler::init_bin_dir(compiler::build_dir);
+        compiler::build_bitcode(bc_file, compiler::build_dir);
     });
 
     CLI11_PARSE(cli, argc, argv);
