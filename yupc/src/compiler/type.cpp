@@ -1,12 +1,18 @@
+#include "parser/YupParser.h"
 #include <compiler/visitor.h>
 #include <compiler/type.h>
 #include <compiler/compilation_unit.h>
+
 #include <msg/errors.h>
 #include <util.h>
 
+#include <llvm/IR/DerivedTypes.h>
+
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <any>
+#include <cstdint>
 #include <string>
 
 using namespace llvm;
@@ -104,6 +110,13 @@ Type* ct::resolve_type(std::string type_name) {
     return nullptr;
 }
 
+Type *ct::resolve_fixed_array_type(Type *base, uint64_t size) {
+
+    auto *array_type = ArrayType::get(base, size);    
+    
+    return array_type;
+}
+
 std::string ct::get_readable_type_name(std::string type_name) {    
     return type_name;
 }
@@ -171,9 +184,20 @@ std::any cv::Visitor::visitType_annot(parser::YupParser::Type_annotContext *ctx)
         auto *ext = ctx->type_name()->type_ext(i);
 
         if (ext->ASTERISK() != nullptr) {
+
             base += "*";
             type_base = ct::resolve_type(base);
-        } 
+        }
+
+        if (ext->array_type_ext() != nullptr) {
+
+            if (dynamic_cast<parser::YupParser::ConstantContext*>(ext->array_type_ext()->expr())) {
+
+                auto elem_count = lexical_cast<uint64_t>(ext->array_type_ext()->expr()->getText());
+
+                type_base = ct::resolve_fixed_array_type(type_base, elem_count);
+            }
+        }
     }
 
     return type_base;

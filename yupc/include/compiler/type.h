@@ -31,6 +31,8 @@ namespace yupc::compiler::type {
 
     llvm::Type *resolve_type(std::string type_name);
 
+    llvm::Type *resolve_fixed_array_type(llvm::Type *base, uint64_t size);
+
     std::string get_readable_type_name(std::string type_name);
 
     void check_value_type(llvm::Value *val, std::string name);
