@@ -2,7 +2,6 @@
 #include <compiler/type.h>
 #include <compiler/variable.h>
 #include <compiler/compilation_unit.h>
-#include <compiler/auto_deleter.h>
 
 #include <msg/errors.h>
 #include <util.h>
@@ -136,10 +135,6 @@ void cvar::var_declare_codegen(std::string name, Type *resolved_type, bool is_co
 
         Variable var{name, is_const, is_ref};
         variables[name] = var;
-
-        //if (ptr->getAllocatedType()->isPointerTy()) {
-        //    auto_del::mark_variable(name);
-        //}
     }
 }
 

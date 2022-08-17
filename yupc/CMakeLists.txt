@@ -44,7 +44,6 @@ set (SRCS
     src/shell/cmds.cpp
     src/shell/shell.cpp
     src/compiler/gen_runtime_lib.cpp
-    src/compiler/auto_deleter.cpp
     src/compiler/ptr_dereference.cpp
     src/compiler/module.cpp
     src/compiler/compiler.cpp
