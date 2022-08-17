@@ -34,10 +34,8 @@ static std::map<std::string, size_t> types {
     { "i32",    ct::I32_TYPE },
     { "i64",    ct::I64_TYPE },
     { "float",  ct::FLOAT_TYPE },
-    { "bool",   ct::BOOL_TYPE },
     { "void",   ct::VOID_TYPE },
-    { "char",   ct::CHAR_TYPE },
-    { "i8",     ct::I8_TYPE }
+    { "byte",   ct::BYTE_TYPE }
 };
 
 static size_t ct::resolve_basic_type(std::string match) {
@@ -72,16 +70,12 @@ Type* ct::resolve_type(std::string type_name) {
             return Type::getInt32Ty(*com_un::comp_units.back()->context);
         case ct::I64_TYPE: // i64
             return Type::getInt64Ty(*com_un::comp_units.back()->context);
-        case ct::I8_TYPE:
+        case ct::BYTE_TYPE:
             return Type::getInt8Ty(*com_un::comp_units.back()->context);
         case ct::FLOAT_TYPE: // float
             return Type::getFloatTy(*com_un::comp_units.back()->context);
-        case ct::BOOL_TYPE: // bool
-            return Type::getInt8Ty(*com_un::comp_units.back()->context);
         case ct::VOID_TYPE: // void
             return Type::getVoidTy(*com_un::comp_units.back()->context);
-        case ct::CHAR_TYPE: // char
-            return Type::getInt8Ty(*com_un::comp_units.back()->context);
 
         case SIZE_MAX: {
             auto base_str = type_name;

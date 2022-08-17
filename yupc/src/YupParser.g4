@@ -53,7 +53,7 @@ code_block          :   (LBRACE statement* RBRACE) | statement;
 
 func_param          :   IDENTIFIER type_annot;
 
-type_annot          :   type_name;
+type_annot          :   COLON type_name;
 
 type_name           :   (type_ext*)? IDENTIFIER;
 

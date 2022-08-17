@@ -10,11 +10,9 @@ namespace yupc::compiler::type {
     enum BuiltInTypes {
         I32_TYPE,
         I64_TYPE,
-        I8_TYPE,
         FLOAT_TYPE,
-        BOOL_TYPE,
         VOID_TYPE,
-        CHAR_TYPE
+        BYTE_TYPE
     };
 
     struct AliasType {
