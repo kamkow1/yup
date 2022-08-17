@@ -10,7 +10,8 @@ namespace yupc::shell::cmds {
     enum ShellCmdTypes {
         SHELL_END,
         SHELL_COMPILE,
-        SHELL_READ_BUF
+        SHELL_READ_BUF,
+        SHELL_EXT_SRC
     };
 
     extern std::map<std::string, ShellCmdTypes> shell_cmds;
