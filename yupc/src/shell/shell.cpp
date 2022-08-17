@@ -1,7 +1,11 @@
 #include <compiler/compiler.h>
 #include <shell/shell.h>
+#include <shell/cmds.h>
+#include <shell/file_sys.h>
 
 #include <util.h>
+
+#include <boost/algorithm/string.hpp>
 
 #include <string>
 #include <ios>
@@ -10,56 +14,19 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 using namespace yupc;
+using namespace boost;
 
 namespace fs = std::filesystem;
-
-static std::ofstream fp;
-static std::string fp_path;
-
-std::map<std::string, shell::ShellCmdTypes> shell::shell_cmds {
-    { "!shell:end", shell::ShellCmdTypes::SHELL_END },
-    { "!shell:compile", shell::ShellCmdTypes::SHELL_COMPILE },
-    { "!shell:readbuf", shell::ShellCmdTypes::SHELL_READ_BUF }
-};
-
-void shell::close_dump_file(std::ofstream &fp) {
-    fp.close();
-    remove(fp_path.c_str());
-}
-
-void shell::invoke_shell_cmd(shell::ShellCmdTypes cmd_type) {
-
-    switch (cmd_type) {
-        case shell::ShellCmdTypes::SHELL_END: {
-            std::cout << "closing yup shell\n";
-
-            shell::close_dump_file(fp);
-            exit(0);
-        }
-
-        case shell::ShellCmdTypes::SHELL_COMPILE: {
-            std::cout << "\ncompiling buffer\n";
-
-            compiler::process_path(fp_path);
-
-            auto bc_file = compiler::init_bin_dir(compiler::build_dir);
-            compiler::build_bitcode(bc_file, compiler::build_dir);
-        }
-
-        case shell::ShellCmdTypes::SHELL_READ_BUF: {
-            std::cout << "\ncurrent buffer:\n";
-            auto buf = util::file_to_str(fp_path);
-            std::cout << buf << "\n";
-        }
-    }
-}
+namespace sc = shell::cmds;
+namespace shfs = shell::file_sys;
 
 void shell::main_shell_loop(fs::path p) {
 
-    fp_path = p.string();
-    fp.open(p.string(), std::ios::out);
+    shfs::fp_path = p.string();
+    shfs::fp.open(p.string(), std::ios::out);
 
     std::string input;
 
@@ -68,13 +35,16 @@ void shell::main_shell_loop(fs::path p) {
     while (std::getline(std::cin, input)) {
         std::cout << "yupc > ";
         
-        if (shell::shell_cmds.contains(input)) {
-            shell::invoke_shell_cmd(shell::shell_cmds[input]);
+        std::string tmp  = input;
+        std::vector<std::string> tokens;
+        boost::split(tokens, input, algorithm::is_any_of("\t"));
+        if (sc::shell_cmds.contains(tokens[0])) {
+            sc::invoke_shell_cmd(sc::shell_cmds[input]);
             continue;
         }
 
         auto to_send = input + "\n";
-        fp << to_send;
-        fp.flush();
+        shfs::fp << to_send;
+        shfs::fp.flush();
     }
 }
