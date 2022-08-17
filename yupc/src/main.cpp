@@ -4,7 +4,7 @@
 #include <compiler/compiler.h>
 #include <compiler/import.h>
 #include <compiler/type.h>
-#include <shell.h>
+#include <shell/shell.h>
 
 #include <util.h>
 
@@ -18,7 +18,6 @@ using namespace CLI;
 using namespace yupc;
 
 namespace fs = std::filesystem;
-namespace com_un = compiler::compilation_unit;
 
 void init_build_opts(App *build_cmd, compiler::CompilerOpts *compiler_opts) {
     build_cmd->add_option("-s,--sources", compiler_opts->src_path, ".yup source files");
@@ -33,8 +32,6 @@ void init_shell_opts(App *shell_cmd, compiler::CompilerOpts *compiler_opts) {
     shell_cmd->add_flag("-n,--no-perm", compiler_opts->give_perms, "allows the compiler to give permissions to the binary file in shell mode");
     shell_cmd->add_flag("-v,--verbose", compiler_opts->verbose, "enables verbose compiler output in shell mode");
 }
-
-
 
 void process_build_cmd() {
     auto cwd = fs::current_path();
