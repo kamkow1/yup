@@ -1,6 +1,7 @@
 #include <compiler/compiler.h>
 #include <compiler/compilation_unit.h>
 #include <compiler/visitor.h>
+#include <compiler/gen_runtime_lib.h>
 
 #include <filesystem>
 #include <msg/errors.h>
@@ -29,6 +30,7 @@ namespace cv = compiler::visitor;
 namespace pse = parser::parser_syntax_error;
 namespace lse = lexer::lexer_syntax_error;
 namespace com_un = compiler::compilation_unit;
+namespace grlib = compiler::gen_runtime_lib;
 
 std::string compiler::build_dir;
 compiler::CompilerOpts compiler::compiler_opts;
@@ -61,7 +63,8 @@ void compiler::process_source_file(std::string path) {
     fs::path mod_path = bd / f;
 
     com_un::comp_units.back()->module_name = yu::get_ir_fname(mod_path.string());
-    //com_un::comp_units.back()->context->setOpaquePointers(false);
+
+    grlib::init_runtime_lib(*com_un::comp_units.back()->module);
 
     visitor.visit(ctx);
 

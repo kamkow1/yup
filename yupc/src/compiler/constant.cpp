@@ -108,6 +108,7 @@ std::any cv::Visitor::visitConstant(parser::YupParser::ConstantContext *ctx) {
 
     if (ctx->V_STRING() != nullptr) {
         auto text = ctx->V_STRING()->getText();
+        std::cout << text << "\n";
         text.erase(0, 1);
         text.erase(text.size() - 1);
 
