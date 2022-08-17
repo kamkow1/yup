@@ -26,7 +26,7 @@ namespace cv = compiler::visitor;
 namespace ct = compiler::type;
 namespace com_un = compiler::compilation_unit;
 
-static Type *ct::resolve_ptr_type(Type *base) {
+Type *ct::resolve_ptr_type(Type *base) {
     return PointerType::get(base, 0);
 }
 
@@ -38,7 +38,7 @@ static std::map<std::string, size_t> types {
     { "byte",   ct::BYTE_TYPE }
 };
 
-static size_t ct::resolve_basic_type(std::string match) {
+size_t ct::resolve_basic_type(std::string match) {
     auto itr = types.find(match);
     if (itr != types.end()) {
         return itr->second;
@@ -89,10 +89,8 @@ Type* ct::resolve_type(std::string type_name) {
             for (auto i = 0; i < suffixes.size(); i++) {
                 auto c = suffixes[i];
 
-                switch (c) {
-                    case '*':
-                        base = ct::resolve_ptr_type(base);
-                        break;                  
+                if (c == '*') {
+                    base = ct::resolve_ptr_type(base);
                 }
             }
 

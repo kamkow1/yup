@@ -39,7 +39,7 @@ arr_elem_assignment :   IDENTIFIER arr_index* var_value;
 
 arr_index           :   LSQBR expr RSQBR;
 
-var_declare         :   PUBSYM? GLOBAL? CONST? IDENTIFIER type_annot var_value?;
+var_declare         :   PUBSYM? GLOBAL? CONST? REF? IDENTIFIER type_annot var_value?;
 
 var_value           :   ASSIGN expr;
 
@@ -57,7 +57,7 @@ type_annot          :   COLON type_name;
 
 type_name           :   (type_ext*)? IDENTIFIER;
 
-type_ext            :   array_type_ext | ASTERISK | AMPERSAND;
+type_ext            :   array_type_ext | ASTERISK;
 
 array_type_ext      :   LSQBR expr RSQBR;
 

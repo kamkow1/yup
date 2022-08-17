@@ -9,6 +9,7 @@ CONST               :   'const';
 PUBSYM              :   'public';
 GLOBAL              :   'glob';
 FUNC                :   'func';
+REF                 :   'ref';
 
 IMPORT              :   'import';
 FROM                :   'from';

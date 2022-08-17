@@ -21,9 +21,9 @@ namespace yupc::compiler::type {
         bool is_public;
     };
 
-    static llvm::Type *resolve_ptr_type(llvm::Type *base);
-
-    static size_t resolve_basic_type(std::string match);
+    llvm::Type *resolve_ptr_type(llvm::Type *base);
+    
+    size_t resolve_basic_type(std::string match);
 
     void appendTypeID(size_t n, std::string id_str);
 

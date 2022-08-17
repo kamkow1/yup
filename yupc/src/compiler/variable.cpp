@@ -29,6 +29,7 @@ namespace com_un = compiler::compilation_unit;
 struct Variable {
     std::string name;
     bool is_const;
+    bool is_ref;
 };
 
 static std::map<std::string, Variable> variables;
@@ -72,8 +73,12 @@ void cvar::assignment_codegen(std::string name, Value *val) {
     auto var = variables[name];
 
     if (var.is_const) {
-        log_compiler_err("cannot reassign a constant \"" + name + "\"");
+        msg::errors::log_compiler_err("cannot reassign a constant \"" + name + "\"");
         exit(1);
+    }
+
+    if (var.is_ref) {
+        msg::errors::log_compiler_err("cannot make a reference point to another variable");
     }
 
     auto is_local = com_un::comp_units.back()->symbol_table.back().contains(name);
@@ -101,7 +106,8 @@ void cvar::assignment_codegen(std::string name, Value *val) {
     }
 }
 
-void cvar::var_declare_codegen(std::string name, Type *resolved_type, bool is_const, bool is_glob, bool is_ext, Value *val) {
+void cvar::var_declare_codegen(std::string name, Type *resolved_type, bool is_const, 
+                            bool is_glob, bool is_ext, bool is_ref, Value *val) {
 
     if (is_glob) {
         auto lt = is_ext ? GlobalValue::ExternalLinkage : GlobalValue::InternalLinkage;
@@ -115,7 +121,7 @@ void cvar::var_declare_codegen(std::string name, Type *resolved_type, bool is_co
         com_un::comp_units.back()->global_variables[name] = gv;
         com_un::comp_units.back()->value_stack.push(gv);
 
-        Variable var{name, is_const};
+        Variable var{name, is_const, is_ref};
         variables[name] = var;
     } else {
         auto *ptr = com_un::comp_units.back()->ir_builder->CreateAlloca(resolved_type, 0, "");
@@ -128,7 +134,7 @@ void cvar::var_declare_codegen(std::string name, Type *resolved_type, bool is_co
 
         com_un::comp_units.back()->value_stack.push(ptr);
 
-        Variable var{name, is_const};
+        Variable var{name, is_const, is_ref};
         variables[name] = var;
 
         //if (ptr->getAllocatedType()->isPointerTy()) {
@@ -144,6 +150,12 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
     auto is_const = ctx->CONST() != nullptr;
     auto is_glob = ctx->GLOBAL() != nullptr;
     auto is_pub = ctx->PUBSYM() != nullptr;
+    auto is_ref = ctx->REF() != nullptr;
+
+    if (is_ref && ctx->var_value() == nullptr) {
+        msg::errors::log_compiler_err("cannot declare a reference that doesn't point to a variable");
+        exit(1);
+    }
 
     auto glob_contains = com_un::comp_units.back()->global_variables.contains(name);
 
@@ -170,7 +182,7 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
         val = com_un::comp_units.back()->value_stack.top();
     }
 
-    cvar::var_declare_codegen(name, resolved_type, is_const, is_glob, is_pub, val);
+    cvar::var_declare_codegen(name, resolved_type, is_const, is_glob, is_pub, is_ref, val);
 
     return nullptr;
 }
