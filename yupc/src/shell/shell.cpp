@@ -35,11 +35,20 @@ void shell::main_shell_loop(fs::path p) {
     while (std::getline(std::cin, input)) {
         std::cout << "yupc > ";
         
-        std::string tmp  = input;
+        auto tmp  = input;
         std::vector<std::string> tokens;
-        boost::split(tokens, input, algorithm::is_any_of("\t"));
+        boost::split(tokens, input, algorithm::is_any_of(" "));
+
+        std::vector<std::string> args;
+        for (auto i = 1; i < tokens.size(); i++) {
+
+            if (tokens[i] != SHELL_CMD_NONE_ARG) {
+                args.push_back(tokens[i]);
+            }
+        }
+
         if (sc::shell_cmds.contains(tokens[0])) {
-            sc::invoke_shell_cmd(sc::shell_cmds[input]);
+            sc::invoke_shell_cmd(sc::shell_cmds[tokens[0]], args);
             continue;
         }
 

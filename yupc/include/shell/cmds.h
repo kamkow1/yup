@@ -2,6 +2,9 @@
 
 #include <string>
 #include <map>
+#include <vector>
+
+#define SHELL_CMD_NONE_ARG "--"
 
 namespace yupc::shell::cmds {
     enum ShellCmdTypes {
@@ -12,5 +15,5 @@ namespace yupc::shell::cmds {
 
     extern std::map<std::string, ShellCmdTypes> shell_cmds;
 
-    void invoke_shell_cmd(ShellCmdTypes cmd_type);
+    void invoke_shell_cmd(ShellCmdTypes cmd_type, std::vector<std::string> args);
 }
