@@ -30,4 +30,6 @@ namespace yupc::compiler
     std::string init_bin_dir(std::string build_dir);
 
     std::string init_build_dir(std::string dir_base);
+
+    void process_path(std::string path);
 };
