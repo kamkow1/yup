@@ -8,7 +8,7 @@ COMPILER_FLAG_SYM   :   '@';
 CONST               :   'const';
 PUBSYM              :   'public';
 GLOBAL              :   'glob';
-VAR                 :   'var';
+FUNC                :   'func';
 
 IMPORT              :   'import';
 FROM                :   'from';

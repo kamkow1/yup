@@ -39,13 +39,13 @@ arr_elem_assignment :   IDENTIFIER arr_index* var_value;
 
 arr_index           :   LSQBR expr RSQBR;
 
-var_declare         :   PUBSYM? GLOBAL? CONST? VAR IDENTIFIER type_annot var_value?;
+var_declare         :   PUBSYM? GLOBAL? CONST? IDENTIFIER type_annot var_value?;
 
 var_value           :   ASSIGN expr;
 
 func_def            :   func_signature code_block;
 
-func_signature      :   PUBSYM? IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
+func_signature      :   PUBSYM? FUNC IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
 
 func_return         :   RETURN expr;
 
