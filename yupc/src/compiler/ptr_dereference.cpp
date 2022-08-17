@@ -23,7 +23,7 @@ void ptr_deref::ptr_deref_codegen(Value *value, std::string text) {
         exit(1);
     }
 
-    auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(value->getType()->getNonOpaquePointerElementType(), value);
+    auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(value->getType()->getPointerTo(), value);
     com_un::comp_units.back()->value_stack.push(load);
 }
 
