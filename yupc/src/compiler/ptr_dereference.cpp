@@ -16,10 +16,10 @@ namespace cv = compiler::visitor;
 namespace ptr_deref = compiler::ptr_dereference;
 namespace com_un = compiler::compilation_unit;
 
-void ptr_deref::ptr_deref_codegen(Value *value) {
+void ptr_deref::ptr_deref_codegen(Value *value, std::string text) {
 
     if (!value->getType()->isPointerTy()) {
-        msg::errors::log_compiler_err("cannot dereference a non pointer type expression");
+        msg::errors::log_compiler_err("cannot dereference a non pointer type expression", text);
         exit(1);
     }
 
@@ -32,7 +32,7 @@ std::any cv::Visitor::visitPtr_dereference(parser::YupParser::Ptr_dereferenceCon
     this->visit(ctx->expr());
     auto *value = com_un::comp_units.back()->value_stack.top();
 
-    ptr_deref::ptr_deref_codegen(value);
+    ptr_deref::ptr_deref_codegen(value, ctx->getText());
 
     return nullptr;
 }

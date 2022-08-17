@@ -98,7 +98,7 @@ Type* ct::resolve_type(std::string type_name) {
         }
     }
 
-    log_compiler_err("couldn't match type \"" + type_name + "\"");
+    log_compiler_err("couldn't match type \"" + type_name + "\"", "");
     exit(1);
 
     return nullptr;
@@ -146,7 +146,7 @@ void ct::check_value_type(Value *val, std::string name) {
     }
 
     if (expr_type != og_type) {
-        log_compiler_err("mismatch of types \"" + og_type + "\" and \"" + expr_type + "\"");
+        log_compiler_err("mismatch of types \"" + og_type + "\" and \"" + expr_type + "\"", "");
         exit(1);
     }
 }

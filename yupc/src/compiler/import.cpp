@@ -24,9 +24,9 @@ namespace com_un = compiler::compilation_unit;
 namespace ci = compiler::import;
 namespace ct = compiler::type;
 
-void ci::import_func(std::map<std::string, Function*> &funcs, std::string sym) {
+void ci::import_func(std::map<std::string, Function*> &funcs, std::string sym, std::string text) {
     if (!funcs.contains(sym)) {
-        msg::errors::log_compiler_err("cannot import function \"" + sym + "\" because it doesn't exist");
+        msg::errors::log_compiler_err("cannot import function \"" + sym + "\" because it doesn't exist", text);
         exit(1);
     }
 
@@ -60,9 +60,9 @@ void ci::import_func(std::map<std::string, Function*> &funcs, std::string sym) {
     com_un::comp_units.back()->functions[sym] = func;
 }
 
-void ci::import_global_var(std::map<std::string, GlobalVariable*> global_vars, std::string sym) {
+void ci::import_global_var(std::map<std::string, GlobalVariable*> global_vars, std::string sym, std::string text) {
     if (!global_vars.contains(sym)) {
-        msg::errors::log_compiler_err("cannot import global variable \"" + sym + "\" because it doesn't exist");
+        msg::errors::log_compiler_err("cannot import global variable \"" + sym + "\" because it doesn't exist", text);
         exit(1);
     }
 
@@ -108,13 +108,13 @@ std::any cv::Visitor::visitImport_decl(parser::YupParser::Import_declContext *ct
 
                 for (auto &func : unit->functions) {
                     if (func.first == sym) {
-                        ci::import_func(unit->functions, sym);
+                        ci::import_func(unit->functions, sym, ctx->getText());
                     }
                 }
 
                 for (auto &global_var : unit->global_variables) {
                     if (global_var.first == sym) {
-                        ci::import_global_var(unit->global_variables, sym);
+                        ci::import_global_var(unit->global_variables, sym, ctx->getText());
                     }
                 }
 

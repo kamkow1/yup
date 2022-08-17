@@ -125,6 +125,6 @@ std::any cv::Visitor::visitConstant(parser::YupParser::ConstantContext *ctx) {
         return nullptr;
     }
 
-    log_compiler_err("couldn't match type and create a constant");
+    log_compiler_err("couldn't match type and create a constant", ctx->getText());
     exit(1);
 }

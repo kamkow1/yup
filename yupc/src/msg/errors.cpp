@@ -4,7 +4,7 @@
 
 using namespace yupc;
 
-void msg::errors::log_compiler_err(std::string detail)
+void msg::errors::log_compiler_err(std::string detail, std::string text)
 {
     std::cout
         << termcolor::red
@@ -16,6 +16,10 @@ void msg::errors::log_compiler_err(std::string detail)
         <<"]: "
         << termcolor::reset
         << detail
+        << termcolor::reset
+        << "\n"
+        << termcolor::underline
+        << text
         << termcolor::reset
         << "\n";
 }

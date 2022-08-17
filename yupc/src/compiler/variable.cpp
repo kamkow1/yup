@@ -68,17 +68,17 @@ void cvar::ident_expr_codegen(std::string id, bool is_glob) {
 
 }
 
-void cvar::assignment_codegen(std::string name, Value *val) {
+void cvar::assignment_codegen(std::string name, Value *val, std::string text) {
 
     auto var = variables[name];
 
     if (var.is_const) {
-        msg::errors::log_compiler_err("cannot reassign a constant \"" + name + "\"");
+        msg::errors::log_compiler_err("cannot reassign a constant \"" + name + "\"", text);
         exit(1);
     }
 
     if (var.is_ref) {
-        msg::errors::log_compiler_err("cannot make a reference point to another variable");
+        msg::errors::log_compiler_err("cannot make a reference point to another variable", text);
     }
 
     auto is_local = com_un::comp_units.back()->symbol_table.back().contains(name);
@@ -101,7 +101,7 @@ void cvar::assignment_codegen(std::string name, Value *val) {
 
         com_un::comp_units.back()->value_stack.pop();
     } else {
-        log_compiler_err("cannot reassign \"" + name + "\" because it doesn't exist");
+        log_compiler_err("cannot reassign \"" + name + "\" because it doesn't exist", text);
         exit(1);
     }
 }
@@ -153,14 +153,14 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
     auto is_ref = ctx->REF() != nullptr;
 
     if (is_ref && ctx->var_value() == nullptr) {
-        msg::errors::log_compiler_err("cannot declare a reference that doesn't point to a variable");
+        msg::errors::log_compiler_err("cannot declare a reference that doesn't point to a variable", ctx->getText());
         exit(1);
     }
 
     auto glob_contains = com_un::comp_units.back()->global_variables.contains(name);
 
     if (is_glob && glob_contains) {
-        msg::errors::log_compiler_err("global variable \"" + name + ctx->type_annot()->getText() + "\" already exists");
+        msg::errors::log_compiler_err("global variable \"" + name + ctx->type_annot()->getText() + "\" already exists", ctx->getText());
         exit(1);
     }
 
@@ -170,7 +170,7 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
     }
 
     if (!is_glob && loc_constains) {
-        msg::errors::log_compiler_err("variable \"" + name + ctx->type_annot()->getText() + "\" has already been declared in this scope");
+        msg::errors::log_compiler_err("variable \"" + name + ctx->type_annot()->getText() + "\" has already been declared in this scope", ctx->getText());
         exit(1);
     }
 
@@ -194,7 +194,7 @@ std::any cv::Visitor::visitAssignment(parser::YupParser::AssignmentContext *ctx)
     this->visit(ctx->var_value()->expr());
     auto *val = com_un::comp_units.back()->value_stack.top();
 
-    cvar::assignment_codegen(name, val);
+    cvar::assignment_codegen(name, val, ctx->getText());
     
     return nullptr;
 }
@@ -208,7 +208,7 @@ std::any cv::Visitor::visitIdentifierExpr(parser::YupParser::IdentifierExprConte
     auto is_loc = com_un::comp_units.back()->symbol_table.back().contains(name);
 
     if (!is_glob && !is_loc) {
-        msg::errors::log_compiler_err("symbol \"" + name + "\" is neither a local nor a global variable");
+        msg::errors::log_compiler_err("symbol \"" + name + "\" is neither a local nor a global variable", ctx->getText());
 
         exit(1);
     }

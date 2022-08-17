@@ -46,16 +46,17 @@ void cf::func_def_codegen(Function *function) {
     }
 }
 
-void cf::func_call_codegen(std::string func_name, size_t expr_length, std::vector<Value*> args) {
+void cf::func_call_codegen(std::string func_name, size_t expr_length, 
+                        std::vector<Value*> args, std::string text) {
     Function *function = com_un::comp_units.back()->module->getFunction(func_name);
 
     if (function == nullptr) {
-        log_compiler_err("tried to call function " + func_name + " but it isn't declared");
+        log_compiler_err("tried to call function " + func_name + " but it isn't declared", text);
         exit(1);
     }
 
     if (args.size() != function->arg_size()) {
-        log_compiler_err("found function \"" + func_name + "\" but couldn't match given argument" + " list length to the function signature");
+        log_compiler_err("found function \"" + func_name + "\" but couldn't match given argument" + " list length to the function signature", text);
         exit(1);
     }
 
@@ -83,7 +84,9 @@ void cf::func_call_codegen(std::string func_name, size_t expr_length, std::vecto
     }
 }
 
-void cf::func_sig_codegen(bool is_ext, std::string name, Type *return_type, std::vector<llvm::Type*> param_types, std::vector<FuncParam*> params) {
+void cf::func_sig_codegen(bool is_ext, std::string name, Type *return_type, 
+                        std::vector<llvm::Type*> param_types, 
+                        std::vector<FuncParam*> params, std::string text) {
 
     auto *fn_type = FunctionType::get(return_type, param_types, false);
 
@@ -129,7 +132,7 @@ std::any cv::Visitor::visitFunc_signature(parser::YupParser::Func_signatureConte
 
     auto is_pub = ctx->PUBSYM() != nullptr;
 
-    cf::func_sig_codegen(is_pub, name, return_type, param_types, params);
+    cf::func_sig_codegen(is_pub, name, return_type, param_types, params, ctx->getText());
 
     return nullptr;
 }
@@ -150,7 +153,7 @@ std::any cv::Visitor::visitFunc_def(parser::YupParser::Func_defContext *ctx) {
     auto *function = com_un::comp_units.back()->functions[func_name];
     
     if (!function) {
-        log_compiler_err("cannot resolve the signature for function " + func_name);
+        log_compiler_err("cannot resolve the signature for function " + func_name, ctx->getText());
         exit(1);
     }
 
@@ -183,8 +186,7 @@ std::any cv::Visitor::visitFunc_call(parser::YupParser::Func_callContext *ctx) {
     auto end = com_un::comp_units.back()->symbol_table.back().end();
 
     if (find != end) {
-        log_compiler_err("cannot call function \"" + func_name 
-            + "\" because it doesn't exist in the symbol table");
+        log_compiler_err("cannot call function \"" + func_name + "\" because it doesn't exist in the symbol table", ctx->getText());
         exit(1);
     }
 
@@ -201,7 +203,7 @@ std::any cv::Visitor::visitFunc_call(parser::YupParser::Func_callContext *ctx) {
         com_un::comp_units.back()->value_stack.pop();
     }
 
-    cf::func_call_codegen(func_name, expr_length, args);
+    cf::func_call_codegen(func_name, expr_length, args, ctx->getText());
     
     return nullptr;
 }
