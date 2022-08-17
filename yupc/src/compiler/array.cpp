@@ -2,6 +2,8 @@
 #include <compiler/array.h>
 #include <compiler/type.h>
 #include <compiler/compilation_unit.h>
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/Support/raw_ostream.h>
 #include <msg/errors.h>
 
 #include <llvm/IR/DataLayout.h>
@@ -12,6 +14,7 @@
 #include <cstdint>
 
 #include <boost/lexical_cast.hpp>
+#include <string>
 
 using namespace llvm;
 using namespace yupc;
@@ -58,9 +61,12 @@ Instruction *ca::create_array_const_malloc(Type *elem_type, uint64_t elem_count,
 
 void ca::indexed_access_expr_codegen(Value *array, Value *idxVal) {
 
-    auto *ptr_type = array->getType()->getPointerElementType();
+    auto *ptr_type = array->getType()->getArrayElementType();
 
-    auto *idx_gep = com_un::comp_units.back()->ir_builder->CreateGEP(ptr_type, array, idxVal);
+    auto *arr_ptr = com_un::comp_units.back()->ir_builder->CreateAlloca(array->getType()->getPointerTo());
+    //auto *arr_store = com_un::comp_units.back()->ir_builder->CreateStore(array, arr_ptr);
+
+    auto *idx_gep = com_un::comp_units.back()->ir_builder->CreateGEP(ptr_type, arr_ptr, idxVal);
 
     com_un::comp_units.back()->value_stack.push(idx_gep);
 }
@@ -75,9 +81,11 @@ void ca::arr_elem_assignment_codegen(std::string arr_name, size_t idx_nesting_lv
     Value *val_to_override;
     for (auto i = 0; i < idx_nesting_lvl; i++) { 
 
-        auto *arr_ptr_type = array->getType()->getPointerElementType();
+        auto *arr_ptr_type = array->getType()->getArrayElementType();
+        
+        auto *arr_ptr = com_un::comp_units.back()->ir_builder->CreateAlloca(array->getType()->getPointerTo());
 
-        auto *idx_gep = com_un::comp_units.back()->ir_builder->CreateGEP(arr_ptr_type, array, idx_vals[i]);
+        auto *idx_gep = com_un::comp_units.back()->ir_builder->CreateGEP(arr_ptr_type, arr_ptr, idx_vals[i]);
 
         val_to_override = idx_gep;
     }
@@ -99,7 +107,7 @@ void ca::array_codegen(std::vector<Value*> elems, size_t elem_count) {
     for (auto i = 0; i < elem_count; i++) {
         auto *idx = ConstantInt::get(Type::getInt32Ty(*com_un::comp_units.back()->context), i);
 
-        auto *alloc_ptr_type = array_malloc->getType()->getPointerElementType();
+        auto *alloc_ptr_type = array_malloc->getType()->getArrayElementType();
 
         auto *idx_gep = com_un::comp_units.back()->ir_builder->CreateGEP(alloc_ptr_type, array_malloc, idx);
 
@@ -114,10 +122,12 @@ std::any cv::Visitor::visitIndexedAccessExpr(parser::YupParser::IndexedAccessExp
     this->visit(ctx->expr(0));
     auto *array = com_un::comp_units.back()->value_stack.top();
 
-    this->visit(ctx->expr(1));
-    auto *idx_val = com_un::comp_units.back()->value_stack.top();
+    for (auto i = 1; i < ctx->expr().size(); i++) {
+        this->visit(ctx->expr(i));
+        auto *idx_val = com_un::comp_units.back()->value_stack.top();
 
-    ca::indexed_access_expr_codegen(array, idx_val);
+        ca::indexed_access_expr_codegen(array, idx_val);
+    }
 
     return nullptr;
 }

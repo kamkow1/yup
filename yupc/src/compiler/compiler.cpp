@@ -61,7 +61,7 @@ void compiler::process_source_file(std::string path) {
     fs::path mod_path = bd / f;
 
     com_un::comp_units.back()->module_name = yu::get_ir_fname(mod_path.string());
-    com_un::comp_units.back()->context->setOpaquePointers(false);
+    //com_un::comp_units.back()->context->setOpaquePointers(false);
 
     visitor.visit(ctx);
 

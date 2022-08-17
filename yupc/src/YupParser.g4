@@ -67,7 +67,7 @@ expr                :   constant                        #ConstantExpr
                     |   array                           #ArrayExpr
                     |   array_init                      #ArrayInitExpr
                     |   addr_of                         #AddrOfExpr
-                    |   expr LSQBR expr RSQBR           #IndexedAccessExpr
+                    |   expr (LSQBR expr RSQBR)+        #IndexedAccessExpr
                     |   expr binop expr                 #MathOperExpr
                     |   LPAREN expr RPAREN              #EmphExpr
                     |   ptr_dereference                 #PtrDereferenceExpr;

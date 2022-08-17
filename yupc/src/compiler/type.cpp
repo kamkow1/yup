@@ -1,7 +1,9 @@
-#include "parser/YupParser.h"
 #include <compiler/visitor.h>
 #include <compiler/type.h>
 #include <compiler/compilation_unit.h>
+
+#include <parser/YupParser.h>
+#include <lexer/YupLexer.h>
 
 #include <msg/errors.h>
 #include <util.h>
@@ -190,8 +192,7 @@ std::any cv::Visitor::visitType_annot(parser::YupParser::Type_annotContext *ctx)
         }
 
         if (ext->array_type_ext() != nullptr) {
-
-            if (dynamic_cast<parser::YupParser::ConstantContext*>(ext->array_type_ext()->expr())) {
+            if (dynamic_cast<parser::YupParser::ConstantExprContext*>(ext->array_type_ext()->expr())) {
 
                 auto elem_count = lexical_cast<uint64_t>(ext->array_type_ext()->expr()->getText());
 
