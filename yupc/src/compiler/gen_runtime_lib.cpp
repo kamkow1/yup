@@ -37,7 +37,7 @@ void grlib::init_gc_malloc(Module &mod) {
     mod.getOrInsertFunction(GC_MALLOC_NAME, malloc_ft);
 }
 
-void grlib::init_malloc(llvm::Module &mod) {
+void grlib::init_malloc(Module &mod) {
 
     auto *i8_t = Type::getInt8Ty(mod.getContext());
     auto *void_ptr_t = PointerType::get(i8_t, 0);
