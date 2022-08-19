@@ -64,5 +64,6 @@ void grlib::init_runtime_lib(Module &mod) {
 
     grlib::init_printf(mod);
     grlib::init_malloc(mod);
+    grlib::init_gc_malloc(mod);
     grlib::init_free(mod);
 }

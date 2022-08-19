@@ -168,6 +168,11 @@ std::any cv::Visitor::visitType_decl(parser::YupParser::Type_declContext *ctx) {
     return nullptr;
 }
 
+std::any cv::Visitor::visitTypeAnnotExpr(parser::YupParser::TypeAnnotExprContext *ctx) {
+
+    return this->visit(ctx->type_annot());
+}
+
 std::any cv::Visitor::visitType_annot(parser::YupParser::Type_annotContext *ctx) {
     
     auto base = ctx->type_name()->IDENTIFIER()->getText();
@@ -193,5 +198,8 @@ std::any cv::Visitor::visitType_annot(parser::YupParser::Type_annotContext *ctx)
         }
     }
 
-    return type_base;
+    com_un::comp_units.back()->type_stack.push(type_base);
+
+    return nullptr;
+    //return type_base;
 }

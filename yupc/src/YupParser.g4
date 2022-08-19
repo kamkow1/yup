@@ -55,7 +55,7 @@ func_param          :   IDENTIFIER type_annot;
 
 type_annot          :   COLON type_name;
 
-type_name           :   (type_ext*)? IDENTIFIER;
+type_name           :   type_ext* IDENTIFIER;
 
 type_ext            :   array_type_ext | ASTERISK;
 
@@ -70,7 +70,11 @@ expr                :   constant                        #ConstantExpr
                     |   expr (LSQBR expr RSQBR)+        #IndexedAccessExpr
                     |   expr binop expr                 #MathOperExpr
                     |   LPAREN expr RPAREN              #EmphExpr
-                    |   ptr_dereference                 #PtrDereferenceExpr;
+                    |   ptr_dereference                 #PtrDereferenceExpr
+                    |   operator                        #OperatorExpr
+                    |   AT type_annot                   #TypeAnnotExpr;
+
+operator            :   IDENTIFIER EXCL_MARK expr+;
 
 ptr_dereference     :   ASTERISK expr;
 
@@ -86,4 +90,4 @@ constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_CHAR | null_cons
 
 null_const          :   DOT type_name;
 
-func_call           :   IDENTIFIER LPAREN (expr (COMMA expr)*)? RPAREN;
+func_call           :   IDENTIFIER ((LPAREN RPAREN) | expr+); //IDENTIFIER ((LPAREN (expr (COMMA expr)*)? RPAREN) | ());

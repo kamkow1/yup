@@ -55,12 +55,6 @@ void cf::func_call_codegen(std::string func_name, size_t expr_length,
         exit(1);
     }
 
-    if (args.size() != function->arg_size()) {
-        log_compiler_err("found function \"" + func_name + "\" but couldn't match given argument" + " list length to the function signature", text);
-        exit(1);
-    }
-
-
     auto is_void = function->getFunctionType()->getReturnType()->isVoidTy();
     if (is_void) {
         auto *result = com_un::comp_units.back()->ir_builder->CreateCall(function, args, "");
@@ -117,7 +111,10 @@ std::any cv::Visitor::visitFunc_return(parser::YupParser::Func_returnContext *ct
 
 std::any cv::Visitor::visitFunc_signature(parser::YupParser::Func_signatureContext *ctx) {
     auto name = ctx->IDENTIFIER()->getText();        
-    auto *return_type = std::any_cast<Type*>(this->visit(ctx->type_annot()));
+
+    this->visit(ctx->type_annot());
+    auto *return_type = com_un::comp_units.back()->type_stack.top();
+    //auto *return_type = std::any_cast<Type*>(this->visit(ctx->type_annot()));
 
     std::vector<cf::FuncParam*> params;
     for (auto *const p : ctx->func_param()) {
@@ -138,12 +135,15 @@ std::any cv::Visitor::visitFunc_signature(parser::YupParser::Func_signatureConte
 }
 
 std::any cv::Visitor::visitFunc_param(parser::YupParser::Func_paramContext *ctx) {
-   auto *resolved_type = std::any_cast<Type*>(this->visit(ctx->type_annot()));
 
-   auto name = ctx->IDENTIFIER()->getText();
+   //auto *resolved_type = std::any_cast<Type*>(this->visit(ctx->type_annot()));
+    this->visit(ctx->type_annot());
+    auto *resolved_type = com_un::comp_units.back()->type_stack.top();
 
-   auto *func_param = new cf::FuncParam{resolved_type, name};
-   return func_param;
+    auto name = ctx->IDENTIFIER()->getText();
+
+    auto *func_param = new cf::FuncParam{resolved_type, name};
+    return func_param;
 }
 
 std::any cv::Visitor::visitFunc_def(parser::YupParser::Func_defContext *ctx) {

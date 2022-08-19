@@ -4,7 +4,7 @@ COLON               :   ':';
 ASSIGN              :   ':=';
 TERMINATOR          :   ';';
 RETURN              :   'return';
-COMPILER_FLAG_SYM   :   '@';
+AT                  :   '@';
 CONST               :   'const';
 PUBSYM              :   'public';
 GLOBAL              :   'glob';
@@ -29,6 +29,8 @@ QUEST_MARK          :   '?';
 ASTERISK            :   '*';
 AMPERSAND           :   '&';
 DOT                 :   '.';
+EXCL_MARK           :   '!';
+TILDE               :   '~';
 
 PLUS                :   '+';
 MINUS               :   '-';

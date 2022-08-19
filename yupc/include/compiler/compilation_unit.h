@@ -5,6 +5,7 @@
 
 #include <llvm/IR/Function.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
 #include <llvm/IR/Instruction.h>
 #include <llvm/IR/IRBuilder.h>
@@ -27,6 +28,7 @@ namespace yupc::compiler::compilation_unit {
         std::map<std::string, llvm::GlobalVariable*> global_variables;
         std::map<std::string, llvm::Function*> functions;
         std::stack<llvm::Value*> value_stack;
+        std::stack<llvm::Type*> type_stack;
         std::vector<yupc::compiler::import::ImportDecl> imported_syms;
         std::vector<yupc::compiler::type::AliasType*> alias_types;
     };

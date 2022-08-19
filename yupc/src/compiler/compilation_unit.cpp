@@ -7,6 +7,7 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/Type.h>
 
 #include <stack>
 #include <string>
@@ -32,6 +33,7 @@ void com_un::init_comp_unit(CompilationUnit &comp_unit, std::string source_file)
     comp_unit.global_variables = std::map<std::string, GlobalVariable*>{};
     comp_unit.functions = std::map<std::string, Function*>{};
     comp_unit.value_stack = std::stack<Value*>{};
+    comp_unit.type_stack = std::stack<Type*>{};
     comp_unit.imported_syms = std::vector<ci::ImportDecl>{};
     comp_unit.alias_types = std::vector<ct::AliasType*>{};
 }

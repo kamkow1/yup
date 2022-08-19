@@ -4,6 +4,7 @@ project(yupc)
 set (CXX_STANDARD 20)
 
 set (CONAN_DISABLE_CHECK_COMPILER True CACHE BOOL "" FORCE)
+set (CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 set (CMAKE_CXX_STANDARD 20)
 set (GCC_COVERAGE_LINK_FLAGS "--libs")
@@ -43,6 +44,7 @@ set (SRCS
     src/shell/file_sys.cpp
     src/shell/cmds.cpp
     src/shell/shell.cpp
+    src/compiler/operators.cpp
     src/compiler/gen_runtime_lib.cpp
     src/compiler/ptr_dereference.cpp
     src/compiler/module.cpp

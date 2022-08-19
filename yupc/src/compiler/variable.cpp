@@ -169,7 +169,8 @@ std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ct
         exit(1);
     }
 
-    auto *resolved_type = std::any_cast<Type*>(this->visit(ctx->type_annot()));
+    this->visit(ctx->type_annot());
+    auto *resolved_type = com_un::comp_units.back()->type_stack.top();
 
     Value *val = nullptr;
     if (ctx->var_value() != nullptr) {
