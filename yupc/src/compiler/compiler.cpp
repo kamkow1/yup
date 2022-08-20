@@ -123,7 +123,7 @@ void yupc::build_bitcode(fs::path bc_file, fs::path ll_dir)
     yupc::log_cmd_info(llvm_link);
 
 
-    if (yupc::compiler_opts.give_perms) 
+    if (!yupc::compiler_opts.give_perms) 
     {
         std::string chmod = (std::string("chmod +x ") + bc_file.string()).c_str();
         int rr = std::system(chmod.c_str());

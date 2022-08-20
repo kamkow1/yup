@@ -60,7 +60,7 @@ llvm::Instruction *yupc::create_array_const_malloc(llvm::Type *elem_type, uint64
 void yupc::indexed_access_expr_codegen(llvm::Value *array, llvm::Value *idxVal) 
 {
 
-    llvm::Type *ptr_type = array->getType()->getArrayElementType();
+    llvm::Type *ptr_type = array->getType()->getPointerTo();
 
     llvm::AllocaInst *arr_ptr = yupc::comp_units.back()->ir_builder->CreateAlloca(array->getType()->getPointerTo());
 
@@ -80,8 +80,8 @@ void yupc::arr_elem_assignment_codegen(std::string arr_name, size_t idx_nesting_
     llvm::Value *val_to_override;
     for (size_t i = 0; i < idx_nesting_lvl; i++) 
     { 
-
-        llvm::Type *arr_ptr_type = array->getType()->getArrayElementType();
+        std::cout << "git\n";
+        llvm::Type *arr_ptr_type = array->getType()->getPointerTo();
         
         llvm::AllocaInst *arr_ptr = yupc::comp_units.back()->ir_builder->CreateAlloca(array->getType()->getPointerTo());
 
@@ -109,7 +109,7 @@ void yupc::array_codegen(std::vector<llvm::Value*> elems, size_t elem_count)
     {
         llvm::ConstantInt *idx = llvm::ConstantInt::get(llvm::Type::getInt32Ty(*yupc::comp_units.back()->context), i);
 
-        llvm::Type *alloc_ptr_type = array_malloc->getType()->getArrayElementType();
+        llvm::Type *alloc_ptr_type = array_malloc->getType()->getPointerTo();
 
         llvm::Value *idx_gep = yupc::comp_units.back()->ir_builder->CreateGEP(alloc_ptr_type, array_malloc, idx);
 
@@ -152,6 +152,7 @@ std::any yupc::Visitor::visitArr_elem_assignment(yupc::YupParser::Arr_elem_assig
     }
 
     yupc::arr_elem_assignment_codegen(name, idx_nesting_lvl, idx_vals);
+    std::cout << "good\n";
 
     return nullptr;
 }
