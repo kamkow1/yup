@@ -80,7 +80,6 @@ void yupc::arr_elem_assignment_codegen(std::string arr_name, size_t idx_nesting_
     llvm::Value *val_to_override;
     for (size_t i = 0; i < idx_nesting_lvl; i++) 
     { 
-        std::cout << "git\n";
         llvm::Type *arr_ptr_type = array->getType()->getPointerTo();
         
         llvm::AllocaInst *arr_ptr = yupc::comp_units.back()->ir_builder->CreateAlloca(array->getType()->getPointerTo());
@@ -152,7 +151,6 @@ std::any yupc::Visitor::visitArr_elem_assignment(yupc::YupParser::Arr_elem_assig
     }
 
     yupc::arr_elem_assignment_codegen(name, idx_nesting_lvl, idx_vals);
-    std::cout << "good\n";
 
     return nullptr;
 }

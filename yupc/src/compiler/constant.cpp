@@ -54,9 +54,7 @@ void yupc::char_codegen(std::string text)
 
 void yupc::string_codegen(std::string text) 
 {
-
-    std::string new_string = text.substr(1, text.size() - 2);
-    llvm::Constant *gstrptr = yupc::comp_units.back()->ir_builder->CreateGlobalStringPtr(llvm::StringRef(new_string));
+    llvm::Constant *gstrptr = yupc::comp_units.back()->ir_builder->CreateGlobalStringPtr(llvm::StringRef(text));
 
     yupc::comp_units.back()->value_stack.push(gstrptr);
 }
