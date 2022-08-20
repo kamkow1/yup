@@ -3,6 +3,7 @@ lexer grammar YupLexer;
 COLON               :   ':';
 ASSIGN              :   '=';
 TERMINATOR          :   ';';
+APOSTROPHE          :   '\'';
 RETURN              :   'return';
 AT                  :   '@';
 CONST               :   'const';

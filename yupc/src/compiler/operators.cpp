@@ -41,7 +41,7 @@ std::any yupc::Visitor::visitOperator(yupc::YupParser::OperatorContext *ctx)
 
         auto *oa_un = new yupc::OperArg;
 
-        if (dynamic_cast<yupc::YupParser::TypeAnnotExprContext*>(aa) != nullptr) 
+        if (dynamic_cast<yupc::YupParser::TypeNameExprContext*>(aa) != nullptr) 
         {
             this->visit(aa);
 

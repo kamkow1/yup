@@ -187,10 +187,10 @@ std::any yupc::Visitor::visitType_decl(yupc::YupParser::Type_declContext *ctx)
 std::any yupc::Visitor::visitTypeCastExpr(yupc::YupParser::TypeCastExprContext *ctx) 
 {
     
-    this->visit(ctx->type_annot());
+    this->visit(ctx->expr(0));
     llvm::Type *dest_type = comp_units.back()->type_stack.top();
 
-    this->visit(ctx->expr());
+    this->visit(ctx->expr(1));
     llvm::Value *val = comp_units.back()->value_stack.top();
 
     llvm::Value *cast = comp_units.back()->ir_builder->CreateIntCast(val, dest_type, true);
@@ -200,22 +200,20 @@ std::any yupc::Visitor::visitTypeCastExpr(yupc::YupParser::TypeCastExprContext *
     return nullptr;
 }
 
-std::any yupc::Visitor::visitTypeAnnotExpr(yupc::YupParser::TypeAnnotExprContext *ctx) 
+std::any yupc::Visitor::visitTypeNameExpr(yupc::YupParser::TypeNameExprContext *ctx) 
 {
-
-    return this->visit(ctx->type_annot());
+    return this->visit(ctx->type_name());
 }
 
-std::any yupc::Visitor::visitType_annot(yupc::YupParser::Type_annotContext *ctx) 
+std::any yupc::Visitor::visitType_name(yupc::YupParser::Type_nameContext *ctx)
 {
-    
-    std::string base = ctx->type_name()->IDENTIFIER()->getText();
+    std::string base = ctx->IDENTIFIER()->getText();
     llvm::Type *type_base = yupc::resolve_type(base);
 
-    size_t ext_len = ctx->type_name()->type_ext().size();
+    size_t ext_len = ctx->type_ext().size();
     for (size_t i = 0; i < ext_len; i++) 
     {
-        yupc::YupParser::Type_extContext *ext = ctx->type_name()->type_ext(i);
+        yupc::YupParser::Type_extContext *ext = ctx->type_ext(i);
 
         if (ext->ASTERISK() != nullptr) 
         {
@@ -237,4 +235,9 @@ std::any yupc::Visitor::visitType_annot(yupc::YupParser::Type_annotContext *ctx)
     comp_units.back()->type_stack.push(type_base);
 
     return nullptr;
+}
+
+std::any yupc::Visitor::visitType_annot(yupc::YupParser::Type_annotContext *ctx) 
+{
+    return this->visit(ctx->type_name());
 }

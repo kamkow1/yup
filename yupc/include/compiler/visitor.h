@@ -3,6 +3,8 @@
 #include <parser/YupParser.h>
 #include <parser/YupParserBaseVisitor.h>
 
+#include <any>
+
 namespace yupc 
 {
     class Visitor : public yupc::YupParserBaseVisitor 
@@ -56,8 +58,10 @@ namespace yupc
 
         std::any visitOperator(yupc::YupParser::OperatorContext *ctx) override;
 
-        std::any visitTypeAnnotExpr(yupc::YupParser::TypeAnnotExprContext *ctx) override;
-
         std::any visitTypeCastExpr(yupc::YupParser::TypeCastExprContext *ctx) override;
+
+        std::any visitType_name(yupc::YupParser::Type_nameContext *ctx) override;
+
+        std::any visitTypeNameExpr(yupc::YupParser::TypeNameExprContext *ctx) override;
     };
 }

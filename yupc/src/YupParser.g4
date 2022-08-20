@@ -72,10 +72,10 @@ expr                :   constant                        #ConstantExpr
                     |   LPAREN expr RPAREN              #EmphExpr
                     |   ptr_dereference                 #PtrDereferenceExpr
                     |   operator                        #OperatorExpr
-                    |   AT type_annot                   #TypeAnnotExpr
-                    |   AS type_annot expr              #TypeCastExpr;
+                    |   APOSTROPHE type_name            #TypeNameExpr
+                    |   LPAREN expr RPAREN expr    #TypeCastExpr;
 
-operator            :   IDENTIFIER EXCL_MARK expr+;
+operator            :   IDENTIFIER EXCL_MARK LPAREN expr+ RPAREN;
 
 ptr_dereference     :   ASTERISK expr;
 
