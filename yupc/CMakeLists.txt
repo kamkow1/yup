@@ -16,14 +16,7 @@ set (THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/third_party)
 set (ANTLR_SRC ${THIRD_PARTY_DIR}/antlr4-runtime)
 
 # change this to your own path
-set (ANTLR_INCLUDE_PATH
-        ${ANTLR_SRC}/runtime/src
-        ${ANTLR_SRC}/runtime/src/misc
-        ${ANTLR_SRC}/runtime/src/atn
-        ${ANTLR_SRC}/runtime/src/dfa
-        ${ANTLR_SRC}/runtime/src/tree
-        ${ANTLR_SRC}/runtime/src/support
-        )
+set (ANTLR_INCLUDE_PATH ${ANTLR_SRC}/runtime/src)
 
 set (ANTLR_BUILD_PATH ${ANTLR_SRC}/dist/libantlr4-runtime.a)
 
@@ -41,11 +34,8 @@ add_definitions (${LLVM_DEFINITIONS})
 llvm_map_components_to_libnames(llvm_libs support core)
 
 set (SRCS
-    src/shell/file_sys.cpp
-    src/shell/cmds.cpp
-    src/shell/shell.cpp
     src/compiler/operators.cpp
-    src/compiler/gen_runtime_lib.cpp
+    src/compiler/runtime_lib.cpp
     src/compiler/ptr_dereference.cpp
     src/compiler/module.cpp
     src/compiler/compiler.cpp

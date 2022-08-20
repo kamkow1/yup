@@ -1,6 +1,6 @@
 #pragma once
 
-#include "compiler/compilation_unit.h"
+#include <compiler/compilation_unit.h>
 #include <llvm/IR/Module.h>
 
 #include <string>
@@ -9,9 +9,10 @@
 
 namespace fs = std::filesystem;
 
-namespace yupc::compiler
+namespace yupc
 {
-    struct CompilerOpts {
+    struct CompilerOpts 
+    {
         bool give_perms;
         bool verbose;
         std::vector<std::string> src_path;  
@@ -27,7 +28,7 @@ namespace yupc::compiler
 
     void process_source_file(std::string path);
 
-    std::string init_bin_dir(std::string build_dir);
+    std::string init_bin_dir();
 
     std::string init_build_dir(std::string dir_base);
 

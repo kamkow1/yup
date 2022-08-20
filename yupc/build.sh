@@ -41,4 +41,4 @@ conan install ..
 
 cmake .. -G Ninja -DCMAKE_BUILD_TYPE="$build_mode"
 
-ninja
+ninja -j 8

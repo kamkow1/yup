@@ -72,7 +72,8 @@ expr                :   constant                        #ConstantExpr
                     |   LPAREN expr RPAREN              #EmphExpr
                     |   ptr_dereference                 #PtrDereferenceExpr
                     |   operator                        #OperatorExpr
-                    |   AT type_annot                   #TypeAnnotExpr;
+                    |   AT type_annot                   #TypeAnnotExpr
+                    |   AS type_annot expr              #TypeCastExpr;
 
 operator            :   IDENTIFIER EXCL_MARK expr+;
 
@@ -90,4 +91,4 @@ constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_CHAR | null_cons
 
 null_const          :   DOT type_name;
 
-func_call           :   IDENTIFIER ((LPAREN RPAREN) | expr+); //IDENTIFIER ((LPAREN (expr (COMMA expr)*)? RPAREN) | ());
+func_call           :   IDENTIFIER LPAREN (expr (COMMA expr)*)? RPAREN; //IDENTIFIER ((LPAREN (expr (COMMA expr)*)? RPAREN) | ());

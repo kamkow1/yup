@@ -2,7 +2,8 @@
 
 #include <string>
 
-namespace yupc::msg::errors {
+namespace yupc 
+{
     void log_compiler_err(std::string detail, std::string text);
 
     void log_input_err(std::string detail);

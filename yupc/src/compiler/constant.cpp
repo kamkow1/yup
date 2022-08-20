@@ -2,128 +2,137 @@
 #include <compiler/compilation_unit.h>
 #include <compiler/constant.h>
 #include <compiler/type.h>
+#include <llvm/IR/Type.h>
 #include <msg/errors.h>
 
+#include <llvm/IR/Constant.h>
 #include <llvm/IR/Constants.h>
 
 #include <boost/lexical_cast.hpp>
+#include <string>
+#include <cstdint>
 
-using namespace llvm;
-using namespace boost;
-using namespace yupc;
-using namespace yupc::msg::errors;
 
-namespace cv = compiler::visitor;
-namespace cc = compiler::constant;
-namespace ct = compiler::type;
-namespace com_un = compiler::compilation_unit;
+void yupc::int_codegen(int64_t value) 
+{
 
-void cc::int_codegen(int64_t value) {
+    llvm::ConstantInt *constant = value > INT32_MAX || value < INT32_MIN
+            ? llvm::ConstantInt::get(llvm::Type::getInt64Ty(*yupc::comp_units.back()->context), value)
+            : llvm::ConstantInt::get(llvm::Type::getInt32Ty(*yupc::comp_units.back()->context), value);
 
-    auto *constant = value > INT32_MAX || value < INT32_MIN
-            ? ConstantInt::get(Type::getInt64Ty(*com_un::comp_units.back()->context), value)
-            : ConstantInt::get(Type::getInt32Ty(*com_un::comp_units.back()->context), value);
-
-    com_un::comp_units.back()->value_stack.push(constant);
+    yupc::comp_units.back()->value_stack.push(constant);
 }
 
-void cc::float_codegen(float value) {
+void yupc::float_codegen(float value) 
+{
 
-    auto *constant = ConstantFP::get(*com_un::comp_units.back()->context, APFloat(value));
+    llvm::ConstantFP *constant = llvm::ConstantFP::get(*yupc::comp_units.back()->context, llvm::APFloat(value));
 
-    com_un::comp_units.back()->value_stack.push(constant);
+    yupc::comp_units.back()->value_stack.push(constant);
 }
 
-void cc::bool_codegen(bool value) {
+void yupc::bool_codegen(bool value) 
+{
 
-    auto *constant = ConstantInt::get(Type::getInt8Ty(*com_un::comp_units.back()->context), value);
+    llvm::ConstantInt *constant = llvm::ConstantInt::get(llvm::Type::getInt8Ty(*yupc::comp_units.back()->context), value);
 
-    com_un::comp_units.back()->value_stack.push(constant);
+    yupc::comp_units.back()->value_stack.push(constant);
 }
 
-void cc::char_codegen(std::string text) {
+void yupc::char_codegen(std::string text) 
+{
 
-    auto *cstr = new char[text.length() + 1];
+    char *cstr = new char[text.length() + 1];
     strcpy(cstr, &text.c_str()[1]);
 
-    auto *constant = ConstantInt::get(Type::getInt8Ty(*com_un::comp_units.back()->context), *cstr);
+    llvm::ConstantInt *constant = llvm::ConstantInt::get(llvm::Type::getInt8Ty(*yupc::comp_units.back()->context), *cstr);
 
-    com_un::comp_units.back()->value_stack.push(constant);
+    yupc::comp_units.back()->value_stack.push(constant);
 
     delete []cstr;
 }
 
-void cc::string_codegen(std::string text) {
+void yupc::string_codegen(std::string text) 
+{
 
-    auto *gstrptr = com_un::comp_units.back()->ir_builder->CreateGlobalStringPtr(StringRef(text));
+    std::string new_string = text.substr(1, text.size() - 2);
+    llvm::Constant *gstrptr = yupc::comp_units.back()->ir_builder->CreateGlobalStringPtr(llvm::StringRef(new_string));
 
-    com_un::comp_units.back()->value_stack.push(gstrptr);
+    yupc::comp_units.back()->value_stack.push(gstrptr);
 }
 
-void cc::null_codegen(std::string type_name) {
+void yupc::null_codegen(std::string type_name) 
+{
 
-    auto *ptype = ct::resolve_type(type_name);
+    llvm::Type *ptype = yupc::resolve_type(type_name);
 
-    auto *nullp = ConstantPointerNull::getNullValue(ptype);
+    llvm::Constant *nullp = llvm::ConstantPointerNull::getNullValue(ptype);
 
-    com_un::comp_units.back()->value_stack.push(nullp);
+    yupc::comp_units.back()->value_stack.push(nullp);
 }
 
-std::any cv::Visitor::visitConstant(parser::YupParser::ConstantContext *ctx) {
+std::any yupc::Visitor::visitConstant(yupc::YupParser::ConstantContext *ctx) 
+{
     
-    if (ctx->V_INT() != nullptr) {
-        auto text = ctx->V_INT()->getText();
-        auto value = lexical_cast<int64_t>(text.c_str());
+    if (ctx->V_INT() != nullptr) 
+    {
+        std::string text = ctx->V_INT()->getText();
+        int64_t value = boost::lexical_cast<int64_t>(text.c_str());
         
-        cc::int_codegen(value);
-        
-        return nullptr;
-    }
-
-    if (ctx->V_FLOAT() != nullptr) {
-        auto text = ctx->V_FLOAT()->getText();
-        auto value = std::atof(text.c_str());
-        
-        cc::float_codegen(value);
-
-        return nullptr;
-    }
-
-    if (ctx->V_BOOL() != nullptr) {
-        auto text = ctx->V_BOOL()->getText();
-        auto value = text == "True";
-
-        cc::bool_codegen(value);
+        yupc::int_codegen(value);
         
         return nullptr;
     }
 
-    if (ctx->V_CHAR() != nullptr) {
-        auto text = ctx->V_CHAR()->getText();
+    if (ctx->V_FLOAT() != nullptr) 
+    {
+        std::string text = ctx->V_FLOAT()->getText();
+        double value = std::atof(text.c_str());
+        
+        yupc::float_codegen(value);
 
-        cc::char_codegen(text);
+        return nullptr;
+    }
+
+    if (ctx->V_BOOL() != nullptr) 
+    {
+        std::string text = ctx->V_BOOL()->getText();
+        bool value = text == "True";
+
+        yupc::bool_codegen(value);
         
         return nullptr;
     }
 
-    if (ctx->V_STRING() != nullptr) {
-        auto text = ctx->V_STRING()->getText();
+    if (ctx->V_CHAR() != nullptr) 
+    {
+        std::string text = ctx->V_CHAR()->getText();
+
+        yupc::char_codegen(text);
+        
+        return nullptr;
+    }
+
+    if (ctx->V_STRING() != nullptr) 
+    {
+        std::string text = ctx->V_STRING()->getText();
         text.erase(0, 1);
         text.erase(text.size() - 1);
 
-        cc::string_codegen(text);
+        yupc::string_codegen(text);
 
         return nullptr;
     }
 
-    if (ctx->null_const() != nullptr) {
-        auto type_name = ctx->null_const()->type_name()->getText();
+    if (ctx->null_const() != nullptr) 
+    {
+        std::string type_name = ctx->null_const()->type_name()->getText();
 
-        cc::null_codegen(type_name);
+        yupc::null_codegen(type_name);
 
         return nullptr;
     }
 
-    log_compiler_err("couldn't match type and create a constant", ctx->getText());
+    yupc::log_compiler_err("couldn't match type and create a constant", ctx->getText());
     exit(1);
 }

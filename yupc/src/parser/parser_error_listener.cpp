@@ -4,26 +4,27 @@
 #include <parser/parser_error_listener.h>
 #include <string>
 
-using namespace yupc;
-using namespace yupc::msg::errors;
+#define UNUSED_PARAM(x) (void)(x)
 
-
-namespace pse = parser::parser_syntax_error;
-namespace com_un = compiler::compilation_unit;
-
-void pse::ParserErrorListener::syntaxError(antlr4::Recognizer *recognizer,
+void yupc::ParserErrorListener::syntaxError(antlr4::Recognizer *recognizer,
                                         antlr4::Token *offendingSymbol,
                                         size_t line,
                                         size_t charPositionInLine,
                                         const std::string &msg,
                                         std::exception_ptr e) {
-    auto errorMessage = "unable to parse text \""
+
+    UNUSED_PARAM(recognizer);
+    UNUSED_PARAM(line);
+    UNUSED_PARAM(msg);
+    UNUSED_PARAM(e);
+    
+    std::string errorMessage = "unable to parse text \""
                         + offendingSymbol->getText() + "\" "
                         + "in line no. "
                         + std::to_string(offendingSymbol->getLine())
                         + " near position "
                         + std::to_string(charPositionInLine);
 
-    log_parsing_err(errorMessage, com_un::comp_units.back()->source_file);
+    log_parsing_err(errorMessage, yupc::comp_units.back()->source_file);
     exit(1);
 }

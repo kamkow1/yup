@@ -2,9 +2,7 @@
 #include <termcolor/termcolor.hpp>
 #include <iostream>
 
-using namespace yupc;
-
-void msg::errors::log_compiler_err(std::string detail, std::string text)
+void yupc::log_compiler_err(std::string detail, std::string text)
 {
     std::cout
         << termcolor::red
@@ -24,7 +22,7 @@ void msg::errors::log_compiler_err(std::string detail, std::string text)
         << "\n";
 }
 
-void msg::errors::log_input_err(std::string detail)
+void yupc::log_input_err(std::string detail)
 {
     std::cout
         << termcolor::magenta
@@ -40,7 +38,7 @@ void msg::errors::log_input_err(std::string detail)
         << "\n";
 }
 
-void msg::errors::log_parsing_err(std::string detail, std::string f_path)
+void yupc::log_parsing_err(std::string detail, std::string f_path)
 {
     std::cout
         << termcolor::yellow
@@ -59,7 +57,7 @@ void msg::errors::log_parsing_err(std::string detail, std::string f_path)
         << "\n";
 }
 
-void msg::errors::log_lexing_err(std::string detail, std::string f_path) {
+void yupc::log_lexing_err(std::string detail, std::string f_path) {
     std::cout
         << termcolor::cyan
         << "["
@@ -77,7 +75,7 @@ void msg::errors::log_lexing_err(std::string detail, std::string f_path) {
         << "\n";
 }
 
-void msg::errors::log_cmd_err(std::string detail)
+void yupc::log_cmd_err(std::string detail)
 {
     std::cout
     << termcolor::yellow

@@ -4,7 +4,16 @@
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Type.h"
 
-namespace yupc::compiler::variable {
+namespace yupc 
+{
+
+    struct Variable 
+    {
+        std::string name;
+        bool is_const;
+        bool is_ref;
+    };
+
     void ident_expr_codegen(std::string id, bool is_glob);
 
     void assignment_codegen(std::string name, llvm::Value *val, std::string text);

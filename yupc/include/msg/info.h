@@ -2,6 +2,7 @@
 
 #include <string>
 
-namespace yupc::msg::info {
+namespace yupc 
+{
     void log_cmd_info(std::string detail);
 }

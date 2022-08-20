@@ -4,10 +4,13 @@
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
 
+#include <cstddef>
 #include <map>
 
-namespace yupc::compiler::type {
-    enum BuiltInTypes {
+namespace yupc 
+{
+    enum BuiltInTypes 
+    {
         I32_TYPE,
         I64_TYPE,
         FLOAT_TYPE,
@@ -15,7 +18,8 @@ namespace yupc::compiler::type {
         BYTE_TYPE
     };
 
-    struct AliasType {
+    struct AliasType 
+    {
         std::string type_name;
         std::string destination;
         bool is_public;
@@ -29,7 +33,7 @@ namespace yupc::compiler::type {
 
     llvm::Type *resolve_type(std::string type_name);
 
-    llvm::Type *resolve_fixed_array_type(llvm::Type *base, uint64_t size);
+    llvm::Type *resolve_fixed_array_type(llvm::Type *base, u_int64_t size);
 
     std::string get_readable_type_name(std::string type_name);
 

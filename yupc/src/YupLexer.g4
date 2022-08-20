@@ -1,7 +1,7 @@
 lexer grammar YupLexer;
 
 COLON               :   ':';
-ASSIGN              :   ':=';
+ASSIGN              :   '=';
 TERMINATOR          :   ';';
 RETURN              :   'return';
 AT                  :   '@';
@@ -10,6 +10,7 @@ PUBSYM              :   'public';
 GLOBAL              :   'glob';
 FUNC                :   'func';
 REF                 :   'ref';
+AS                  :   'as';
 
 IMPORT              :   'import';
 FROM                :   'from';

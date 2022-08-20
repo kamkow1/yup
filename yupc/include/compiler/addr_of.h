@@ -1,7 +1,8 @@
 #pragma once
 
-#include "string.h"
+#include <string>
 
-namespace yupc::compiler::addr_of {
+namespace yupc 
+{
     void addr_of_expr_codegen(std::string id);
 }

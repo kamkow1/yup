@@ -1,6 +1,8 @@
 #include <compiler/visitor.h>
 #include <compiler/compilation_unit.h>
 
+#include <parser/YupParser.h>
+
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Value.h>
@@ -10,20 +12,18 @@
 #include <map>
 #include <stack>
 
-using namespace llvm;
-using namespace yupc;
-
 // visitor entry point
-std::any compiler::visitor::Visitor::visitFile(parser::YupParser::FileContext *ctx)
+std::any yupc::Visitor::visitFile(yupc::YupParser::FileContext *ctx)
 {
-    for (auto &statement : ctx->statement()) {
+    for (yupc::YupParser::StatementContext *statement : ctx->statement()) 
+    {
         this->visit(statement);
     }
 
     return ctx;
 }
 
-std::any compiler::visitor::Visitor::visitEmphExpr(parser::YupParser::EmphExprContext *ctx)
+std::any yupc::Visitor::visitEmphExpr(yupc::YupParser::EmphExprContext *ctx)
 {
     return this->visit(ctx->expr());
 }

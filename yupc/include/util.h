@@ -1,8 +1,9 @@
 #pragma once
 
-#include "string.h"
+#include <string>
 
-namespace yupc::util {
+namespace yupc 
+{
     std::string file_to_str(const std::string& path);
 
     std::string get_dir_name(const std::string& fname);

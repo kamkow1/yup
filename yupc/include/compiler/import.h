@@ -8,8 +8,10 @@
 #include <string>
 #include <map>
 
-namespace yupc::compiler::import {
-    struct ImportDecl {
+namespace yupc 
+{
+    struct ImportDecl 
+    {
         std::vector<std::string> sym_names;
         std::string mod_name;
     };
@@ -18,5 +20,5 @@ namespace yupc::compiler::import {
 
     void import_global_var(std::map<std::string, llvm::GlobalVariable*> global_vars, std::string sym, std::string text);
 
-    void import_type_alias(std::vector<yupc::compiler::type::AliasType*> &unit_alias_types, int i);
+    void import_type_alias(std::vector<yupc::AliasType*> &unit_alias_types, int i);
 }

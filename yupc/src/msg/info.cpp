@@ -2,9 +2,7 @@
 #include <termcolor/termcolor.hpp>
 #include <iostream>
 
-using namespace yupc::msg;
-
-void info::log_cmd_info(std::string detail)
+void yupc::log_cmd_info(std::string detail)
 {
     std::cout
         << termcolor::bright_blue

@@ -16,8 +16,10 @@
 #include <stack>
 #include <vector>
 
-namespace yupc::compiler::compilation_unit {
-    struct CompilationUnit {
+namespace yupc 
+{
+    struct CompilationUnit 
+    {
         std::string source_file;
         std::string module_id;
         std::string module_name;
@@ -29,8 +31,8 @@ namespace yupc::compiler::compilation_unit {
         std::map<std::string, llvm::Function*> functions;
         std::stack<llvm::Value*> value_stack;
         std::stack<llvm::Type*> type_stack;
-        std::vector<yupc::compiler::import::ImportDecl> imported_syms;
-        std::vector<yupc::compiler::type::AliasType*> alias_types;
+        std::vector<yupc::ImportDecl> imported_syms;
+        std::vector<yupc::AliasType*> alias_types;
     };
 
     extern std::vector<CompilationUnit*> comp_units;

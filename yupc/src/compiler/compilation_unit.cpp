@@ -13,27 +13,21 @@
 #include <string>
 #include <vector>
 
-using namespace yupc;
-using namespace llvm;
+std::vector<yupc::CompilationUnit*> yupc::comp_units;
 
-namespace com_un = compiler::compilation_unit;
-namespace ct = compiler::type;
-namespace ci = compiler::import;
-
-std::vector<com_un::CompilationUnit*> com_un::comp_units;
-
-void com_un::init_comp_unit(CompilationUnit &comp_unit, std::string source_file) {
+void yupc::init_comp_unit(yupc::CompilationUnit &comp_unit, std::string source_file) 
+{
     comp_unit.source_file = source_file;
     comp_unit.module_id = "";
     comp_unit.module_name = "";
-    comp_unit.context = new LLVMContext;
-    comp_unit.ir_builder = new IRBuilder<>(*comp_unit.context);
-    comp_unit.module = new Module(comp_unit.module_name, *comp_unit.context);
-    comp_unit.symbol_table = std::vector<std::map<std::string, AllocaInst*>>{};
-    comp_unit.global_variables = std::map<std::string, GlobalVariable*>{};
-    comp_unit.functions = std::map<std::string, Function*>{};
-    comp_unit.value_stack = std::stack<Value*>{};
-    comp_unit.type_stack = std::stack<Type*>{};
-    comp_unit.imported_syms = std::vector<ci::ImportDecl>{};
-    comp_unit.alias_types = std::vector<ct::AliasType*>{};
+    comp_unit.context = new llvm::LLVMContext;
+    comp_unit.ir_builder = new llvm::IRBuilder<>(*comp_unit.context);
+    comp_unit.module = new llvm::Module(comp_unit.module_name, *comp_unit.context);
+    comp_unit.symbol_table = std::vector<std::map<std::string, llvm::AllocaInst*>>();
+    comp_unit.global_variables = std::map<std::string, llvm::GlobalVariable*>();
+    comp_unit.functions = std::map<std::string, llvm::Function*>();
+    comp_unit.value_stack = std::stack<llvm::Value*>();
+    comp_unit.type_stack = std::stack<llvm::Type*>();
+    comp_unit.imported_syms = std::vector<yupc::ImportDecl>();
+    comp_unit.alias_types = std::vector<yupc::AliasType*>();
 }

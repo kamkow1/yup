@@ -1,72 +1,63 @@
 #pragma once
-#include "parser/YupParser.h"
-#include "parser/YupParserBaseVisitor.h"
 
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/GlobalVariable.h"
+#include <parser/YupParser.h>
+#include <parser/YupParserBaseVisitor.h>
 
-#include "vector"
-#include "iostream"
-#include "map"
-#include "sstream"
-#include "iostream"
-#include "stack"
-
-namespace yupc::compiler::visitor {
-    namespace parser = yupc::parser;
-
-    class Visitor : public parser::YupParserBaseVisitor {
+namespace yupc 
+{
+    class Visitor : public yupc::YupParserBaseVisitor 
+    {
     public:
-        std::any visitFunc_def(parser::YupParser::Func_defContext *ctx) override;
+        std::any visitFunc_def(yupc::YupParser::Func_defContext *ctx) override;
 
-        std::any visitFile(parser::YupParser::FileContext *ctx) override;
+        std::any visitFile(yupc::YupParser::FileContext *ctx) override;
 
-        std::any visitConstant(parser::YupParser::ConstantContext *ctx) override;
+        std::any visitConstant(yupc::YupParser::ConstantContext *ctx) override;
 
-        std::any visitType_annot(parser::YupParser::Type_annotContext *ctx) override;
+        std::any visitType_annot(yupc::YupParser::Type_annotContext *ctx) override;
 
-        std::any visitFunc_param(parser::YupParser::Func_paramContext *ctx) override;
+        std::any visitFunc_param(yupc::YupParser::Func_paramContext *ctx) override;
 
-        std::any visitFunc_signature(parser::YupParser::Func_signatureContext *ctx) override;
+        std::any visitFunc_signature(yupc::YupParser::Func_signatureContext *ctx) override;
 
-        std::any visitFunc_return(parser::YupParser::Func_returnContext *ctx) override;
+        std::any visitFunc_return(yupc::YupParser::Func_returnContext *ctx) override;
 
-        std::any visitFunc_call(parser::YupParser::Func_callContext *ctx) override;
+        std::any visitFunc_call(yupc::YupParser::Func_callContext *ctx) override;
 
-        std::any visitCode_block(parser::YupParser::Code_blockContext *ctx) override;
+        std::any visitCode_block(yupc::YupParser::Code_blockContext *ctx) override;
 
-        std::any visitAssignment(parser::YupParser::AssignmentContext *ctx) override;
+        std::any visitAssignment(yupc::YupParser::AssignmentContext *ctx) override;
 
-        std::any visitIdentifierExpr(parser::YupParser::IdentifierExprContext *ctx) override;
+        std::any visitIdentifierExpr(yupc::YupParser::IdentifierExprContext *ctx) override;
 
-        std::any visitArray(parser::YupParser::ArrayContext *ctx) override;
+        std::any visitArray(yupc::YupParser::ArrayContext *ctx) override;
 
-        std::any visitVar_declare(parser::YupParser::Var_declareContext *ctx) override;
+        std::any visitVar_declare(yupc::YupParser::Var_declareContext *ctx) override;
 
-        std::any visitAddr_of(parser::YupParser::Addr_ofContext *ctx) override;
+        std::any visitAddr_of(yupc::YupParser::Addr_ofContext *ctx) override;
 
-        std::any visitIndexedAccessExpr(parser::YupParser::IndexedAccessExprContext *ctx) override;
+        std::any visitIndexedAccessExpr(yupc::YupParser::IndexedAccessExprContext *ctx) override;
 
-        std::any visitArr_elem_assignment(parser::YupParser::Arr_elem_assignmentContext *ctx) override;
+        std::any visitArr_elem_assignment(yupc::YupParser::Arr_elem_assignmentContext *ctx) override;
 
-        std::any visitMathOperExpr(parser::YupParser::MathOperExprContext *ctx) override;
+        std::any visitMathOperExpr(yupc::YupParser::MathOperExprContext *ctx) override;
 
-        std::any visitEmphExpr(parser::YupParser::EmphExprContext *ctx) override;
+        std::any visitEmphExpr(yupc::YupParser::EmphExprContext *ctx) override;
 
-        std::any visitArray_init(parser::YupParser::Array_initContext *ctx) override;
+        std::any visitArray_init(yupc::YupParser::Array_initContext *ctx) override;
 
-        std::any visitImport_decl(parser::YupParser::Import_declContext *ctx) override;
+        std::any visitImport_decl(yupc::YupParser::Import_declContext *ctx) override;
 
-        std::any visitModule_decl(parser::YupParser::Module_declContext *ctx) override;
+        std::any visitModule_decl(yupc::YupParser::Module_declContext *ctx) override;
 
-        std::any visitType_decl(parser::YupParser::Type_declContext *ctx) override;
+        std::any visitType_decl(yupc::YupParser::Type_declContext *ctx) override;
 
-        std::any visitPtr_dereference(parser::YupParser::Ptr_dereferenceContext *ctx) override;
+        std::any visitPtr_dereference(yupc::YupParser::Ptr_dereferenceContext *ctx) override;
 
-        std::any visitOperator(parser::YupParser::OperatorContext *ctx) override;
+        std::any visitOperator(yupc::YupParser::OperatorContext *ctx) override;
 
-        std::any visitTypeAnnotExpr(parser::YupParser::TypeAnnotExprContext *ctx) override;
+        std::any visitTypeAnnotExpr(yupc::YupParser::TypeAnnotExprContext *ctx) override;
+
+        std::any visitTypeCastExpr(yupc::YupParser::TypeCastExprContext *ctx) override;
     };
 }

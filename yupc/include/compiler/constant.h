@@ -1,9 +1,9 @@
 #pragma once
 
-#include "string.h"
-#include "cstdint"
+#include <string>
+#include <cstdint>
 
-namespace yupc::compiler::constant
+namespace yupc
 {
     void int_codegen(int64_t value);
 

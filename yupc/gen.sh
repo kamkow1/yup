@@ -32,14 +32,20 @@ echo "$antlr_jar_path"
 
 cd src/
 
-java -jar "$antlr_jar_path" ./YupLexer.g4 -Dlanguage=Cpp -o ./lexer -package yupc::lexer
-java -jar "$antlr_jar_path" ./YupParser.g4 -Dlanguage=Cpp -o ./parser -no-listener -visitor -package yupc::parser
+# clean up
 
-#mv lexer/YupLexer.cpp lexer/YupLexer.cc
+rm -f -- parser/YupParser.cpp
+rm -f -- parser/YupParserBaseVisitor.cpp
+rm -f -- parser/YupParserVisitor.cpp
+rm -f -- parser/YupParser.tokens
+rm -f -- parser/YupParser.interp
 
-#mv parser/YupParser.cpp parser/YupParser.cc
-#mv parser/YupParserBaseVisitor.cpp parser/YupParserBaseVisitor.cc
-#mv parser/YupParserVisitor.cpp parser/YupParserVisitor.cc
+rm -f -- lexer/YupLexer.cpp
+rm -f -- lexer/YupLexer.tokens
+rm -f -- lexer/YupLexer.interp
+
+java -jar "$antlr_jar_path" ./YupLexer.g4 -Dlanguage=Cpp -o ./lexer -package yupc
+java -jar "$antlr_jar_path" ./YupParser.g4 -Dlanguage=Cpp -o ./parser -no-listener -visitor -package yupc
 
 cd ..
 

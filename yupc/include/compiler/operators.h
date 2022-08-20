@@ -3,14 +3,16 @@
 
 #include <string>
 #include <map>
-#include <stdarg.h>
+#include <functional>
 
-namespace yupc::compiler::operators {
+namespace yupc 
+{
 
-    union OperArg {
+    union OperArg 
+    {
         llvm::Value *oper_value;
         llvm::Type *oper_type;
     };
 
-    extern std::map<std::string, llvm::Value *(*)(std::vector<OperArg*>)> opers;
+    extern std::map<std::string, std::function<llvm::Value *(std::vector<yupc::OperArg *>)>> opers;
 }

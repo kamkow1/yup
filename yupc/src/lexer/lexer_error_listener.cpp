@@ -3,25 +3,27 @@
 #include <msg/errors.h>
 #include <string>
 
-using namespace yupc;
+#define UNUSED_PARAM(x) (void)(x)
 
-namespace lse = lexer::lexer_syntax_error;
-namespace com_un = compiler::compilation_unit;
-
-void lse::LexerErrorListener::syntaxError(antlr4::Recognizer *recognizer, 
+void yupc::LexerErrorListener::syntaxError(antlr4::Recognizer *recognizer, 
                                         antlr4::Token *offendingSymbol, 
                                         size_t line, 
                                         size_t charPositionInLine, 
                                         const std::string &msg, 
                                         std::exception_ptr e) {
 
-    auto error_message = "unable to recognize token \""
+    UNUSED_PARAM(recognizer);
+    UNUSED_PARAM(line);
+    UNUSED_PARAM(msg);
+    UNUSED_PARAM(e);
+
+    std::string error_message = "unable to recognize token \""
                         + offendingSymbol->getText() + "\" "
                         + "in line no. "
                         + std::to_string(offendingSymbol->getLine())
                         + " near position "
                         + std::to_string(charPositionInLine);
 
-    msg::errors::log_lexing_err(error_message, com_un::comp_units.back()->source_file);
+    yupc::log_lexing_err(error_message, yupc::comp_units.back()->source_file);
     exit(1);
 }

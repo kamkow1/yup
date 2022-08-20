@@ -9,30 +9,26 @@
 
 #include <any>
 
-using namespace llvm;
-using namespace yupc;
+void yupc::ptr_deref_codegen(llvm::Value *value, std::string text) 
+{
 
-namespace cv = compiler::visitor;
-namespace ptr_deref = compiler::ptr_dereference;
-namespace com_un = compiler::compilation_unit;
-
-void ptr_deref::ptr_deref_codegen(Value *value, std::string text) {
-
-    if (!value->getType()->isPointerTy()) {
-        msg::errors::log_compiler_err("cannot dereference a non pointer type expression", text);
+    if (!value->getType()->isPointerTy()) 
+    {
+        yupc::log_compiler_err("cannot dereference a non pointer type expression", text);
         exit(1);
     }
 
-    auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(value->getType()->getPointerTo(), value);
-    com_un::comp_units.back()->value_stack.push(load);
+    llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(value->getType()->getPointerTo(), value);
+    yupc::comp_units.back()->value_stack.push(load);
 }
 
-std::any cv::Visitor::visitPtr_dereference(parser::YupParser::Ptr_dereferenceContext *ctx) {
+std::any yupc::Visitor::visitPtr_dereference(yupc::YupParser::Ptr_dereferenceContext *ctx) 
+{
 
     this->visit(ctx->expr());
-    auto *value = com_un::comp_units.back()->value_stack.top();
+    llvm::Value *value = yupc::comp_units.back()->value_stack.top();
 
-    ptr_deref::ptr_deref_codegen(value, ctx->getText());
+    yupc::ptr_deref_codegen(value, ctx->getText());
 
     return nullptr;
 }

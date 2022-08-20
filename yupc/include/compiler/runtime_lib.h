@@ -2,7 +2,8 @@
 
 #include <llvm/IR/Module.h>
 
-namespace yupc::compiler::gen_runtime_lib {
+namespace yupc 
+{
 
     void init_runtime_lib(llvm::Module &mod);
 

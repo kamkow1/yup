@@ -4,6 +4,7 @@
 
 #include <string>
 
-namespace yupc::compiler::module {
+namespace yupc 
+{
     void set_module_id(std::string new_id);
 }

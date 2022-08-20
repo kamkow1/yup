@@ -4,24 +4,18 @@
 
 #include <boost/algorithm/string.hpp>
 
-using namespace llvm;
-using namespace boost;
-using namespace yupc;
+void yupc::addr_of_expr_codegen(std::string id) 
+{
+    llvm::Value *val = yupc::comp_units.back()->symbol_table.back()[id];
 
-namespace cv = compiler::visitor;
-namespace cao = compiler::addr_of;
-namespace com_un = compiler::compilation_unit;
-
-void cao::addr_of_expr_codegen(std::string id) {
-    auto *val = com_un::comp_units.back()->symbol_table.back()[id];
-
-    com_un::comp_units.back()->value_stack.push(val);
+    yupc::comp_units.back()->value_stack.push(val);
 }
 
-std::any cv::Visitor::visitAddr_of(parser::YupParser::Addr_ofContext *ctx) {
+std::any yupc::Visitor::visitAddr_of(yupc::YupParser::Addr_ofContext *ctx) 
+{
 
-    auto text = ctx->IDENTIFIER()->getText();
-    cao::addr_of_expr_codegen(text);
+    std::string text = ctx->IDENTIFIER()->getText();
+    yupc::addr_of_expr_codegen(text);
     
     return nullptr;
 }

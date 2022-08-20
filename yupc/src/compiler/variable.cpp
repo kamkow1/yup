@@ -3,7 +3,11 @@
 #include <compiler/variable.h>
 #include <compiler/compilation_unit.h>
 
+#include <llvm/IR/Instructions.h>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Value.h>
 #include <msg/errors.h>
+#include <string>
 #include <util.h>
 
 #include <llvm/Support/TypeName.h>
@@ -16,201 +20,202 @@
 
 #include <cstdlib>
 
-using namespace llvm;
-using namespace yupc;
-using namespace yupc::msg::errors;
+static std::map<std::string, yupc::Variable> variables;
 
-namespace cv = compiler::visitor;
-namespace cvar = compiler::variable;
-namespace ct = compiler::type;
-namespace com_un = compiler::compilation_unit;
+void yupc::ident_expr_codegen(std::string id, bool is_glob) 
+{
 
-struct Variable {
-    std::string name;
-    bool is_const;
-    bool is_ref;
-};
+    bool contains_id = yupc::comp_units.back()->symbol_table.back().contains(id);
 
-static std::map<std::string, Variable> variables;
+    if (contains_id) 
+    {
+        llvm::AllocaInst *value =yupc::comp_units.back()->symbol_table.back()[id];
+        llvm::Type *type = value->getAllocatedType();
 
-void cvar::ident_expr_codegen(std::string id, bool is_glob) {
+        llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(type, value);
 
-    auto contains_id = com_un::comp_units.back()->symbol_table.back().contains(id);
+        yupc::comp_units.back()->value_stack.push(load);
+    } 
+    else if (is_glob) 
+    {
+        llvm::GlobalVariable *gv = yupc::comp_units.back()->global_variables[id];
+        llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(gv->getValueType(), gv);
 
-    if (contains_id) {
+        yupc::comp_units.back()->value_stack.push(load);
 
-        auto *value =com_un::comp_units.back()->symbol_table.back()[id];
+    } 
+    else 
+    {
+        llvm::GlobalVariable *gv = yupc::comp_units.back()->global_variables[id];
+        llvm::Type *type = gv->getValueType();
 
-        auto *type = value->getAllocatedType();
+        llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(type, gv);
 
-        auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(type, value);
-
-        com_un::comp_units.back()->value_stack.push(load);
-    } else if (is_glob) {
-        
-        auto *gv = com_un::comp_units.back()->global_variables[id];
-
-        auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(gv->getValueType(), gv);
-
-        com_un::comp_units.back()->value_stack.push(load);
-
-    } else {
-
-        auto *gv = com_un::comp_units.back()->global_variables[id];
-
-        auto *type = gv->getValueType();
-
-        auto *load = com_un::comp_units.back()->ir_builder->CreateLoad(type, gv);
-
-        com_un::comp_units.back()->value_stack.push(load);
+        yupc::comp_units.back()->value_stack.push(load);
     }
 
 }
 
-void cvar::assignment_codegen(std::string name, Value *val, std::string text) {
+void yupc::assignment_codegen(std::string name, llvm::Value *val, std::string text) 
+{
 
     auto var = variables[name];
 
-    if (var.is_const) {
-        msg::errors::log_compiler_err("cannot reassign a constant \"" + name + "\"", text);
+    if (var.is_const) 
+    {
+        yupc::log_compiler_err("cannot reassign a constant \"" + name + "\"", text);
         exit(1);
     }
 
-    if (var.is_ref) {
-        msg::errors::log_compiler_err("cannot make a reference point to another variable", text);
+    if (var.is_ref) 
+    {
+        yupc::log_compiler_err("cannot make a reference point to another variable", text);
     }
 
-    auto is_local = com_un::comp_units.back()->symbol_table.back().contains(name);
-    auto is_global = com_un::comp_units.back()->global_variables.contains(name);
+    bool is_local = yupc::comp_units.back()->symbol_table.back().contains(name);
+    bool is_global = yupc::comp_units.back()->global_variables.contains(name);
 
-    if (is_local) {
-        auto *stored = com_un::comp_units.back()->symbol_table.back()[name];
+    if (is_local) 
+    {
+        llvm::AllocaInst *stored = yupc::comp_units.back()->symbol_table.back()[name];
+        yupc::check_value_type(val, name);
 
-        ct::check_value_type(val, name);
+        yupc::comp_units.back()->ir_builder->CreateStore(val, stored, false);
 
-        com_un::comp_units.back()->ir_builder->CreateStore(val, stored, false);
+        yupc::comp_units.back()->value_stack.pop();
+    } 
+    else if (is_global) 
+    {
+        llvm::GlobalVariable *gv = yupc::comp_units.back()->global_variables[name];
 
-        com_un::comp_units.back()->value_stack.pop();
-    } else if (is_global) {
-        auto *gv = com_un::comp_units.back()->global_variables[name];
+        yupc::check_value_type(val, name);
 
-        ct::check_value_type(val, name);
+        yupc::comp_units.back()->ir_builder->CreateStore(val, gv, false);
 
-        com_un::comp_units.back()->ir_builder->CreateStore(val, gv, false);
-
-        com_un::comp_units.back()->value_stack.pop();
-    } else {
-        log_compiler_err("cannot reassign \"" + name + "\" because it doesn't exist", text);
+        yupc::comp_units.back()->value_stack.pop();
+    }
+    else 
+    {
+        yupc::log_compiler_err("cannot reassign \"" + name + "\" because it doesn't exist", text);
         exit(1);
     }
 }
 
-void cvar::var_declare_codegen(std::string name, Type *resolved_type, bool is_const, 
-                            bool is_glob, bool is_ext, bool is_ref, Value *val) {
+void yupc::var_declare_codegen(std::string name, llvm::Type *resolved_type, bool is_const, 
+                            bool is_glob, bool is_ext, bool is_ref, llvm::Value *val) 
+{
 
-    if (is_glob) {
-        auto lt = is_ext ? GlobalValue::ExternalLinkage : GlobalValue::InternalLinkage;
+    if (is_glob) 
+    {
+        llvm::GlobalValue::LinkageTypes lt = is_ext ? llvm::GlobalValue::ExternalLinkage : llvm::GlobalValue::InternalLinkage;
 
-        auto *gv = new GlobalVariable(*com_un::comp_units.back()->module, resolved_type, is_const, lt, 0);
+        llvm::GlobalVariable *gv = new llvm::GlobalVariable(*yupc::comp_units.back()->module, resolved_type, is_const, lt, 0);
 
         gv->setDSOLocal(true);
 
-        gv->setInitializer((Constant*) val);
+        gv->setInitializer((llvm::Constant*) val);
 
-        com_un::comp_units.back()->global_variables[name] = gv;
-        com_un::comp_units.back()->value_stack.push(gv);
+        yupc::comp_units.back()->global_variables[name] = gv;
+        yupc::comp_units.back()->value_stack.push(gv);
 
         Variable var{name, is_const, is_ref};
         variables[name] = var;
-    } else {
-        auto *ptr = com_un::comp_units.back()->ir_builder->CreateAlloca(resolved_type, 0, "");
+    } 
+    else 
+    {
+        llvm::AllocaInst *ptr = yupc::comp_units.back()->ir_builder->CreateAlloca(resolved_type, 0, "");
 
-        if (val != nullptr) {
-            com_un::comp_units.back()->ir_builder->CreateStore(val, ptr, false);
+        if (val != nullptr) 
+        {
+            yupc::comp_units.back()->ir_builder->CreateStore(val, ptr, false);
         }
 
-        com_un::comp_units.back()->symbol_table.back()[name] = ptr;
-
-        com_un::comp_units.back()->value_stack.push(ptr);
+        yupc::comp_units.back()->symbol_table.back()[name] = ptr;
+        yupc::comp_units.back()->value_stack.push(ptr);
 
         Variable var{name, is_const, is_ref};
         variables[name] = var;
     }
 }
 
-std::any cv::Visitor::visitVar_declare(parser::YupParser::Var_declareContext *ctx) {
-
-    auto name = ctx->IDENTIFIER()->getText();
+std::any yupc::Visitor::visitVar_declare(yupc::YupParser::Var_declareContext *ctx) 
+{
+    std::string name = ctx->IDENTIFIER()->getText();
     
-    auto is_const = ctx->CONST() != nullptr;
-    auto is_glob = ctx->GLOBAL() != nullptr;
-    auto is_pub = ctx->PUBSYM() != nullptr;
-    auto is_ref = ctx->REF() != nullptr;
+    bool is_const = ctx->CONST() != nullptr;
+    bool is_glob = ctx->GLOBAL() != nullptr;
+    bool is_pub = ctx->PUBSYM() != nullptr;
+    bool is_ref = ctx->REF() != nullptr;
 
-    if (is_ref && ctx->var_value() == nullptr) {
-        msg::errors::log_compiler_err("cannot declare a reference that doesn't point to a variable", ctx->getText());
+    if (is_ref && ctx->var_value() == nullptr) 
+    {
+        yupc::log_compiler_err("cannot declare a reference that doesn't point to a variable", ctx->getText());
         exit(1);
     }
 
-    auto glob_contains = com_un::comp_units.back()->global_variables.contains(name);
+    bool glob_contains = yupc::comp_units.back()->global_variables.contains(name);
 
-    if (is_glob && glob_contains) {
-        msg::errors::log_compiler_err("global variable \"" + name + ctx->type_annot()->getText() + "\" already exists", ctx->getText());
+    if (is_glob && glob_contains) 
+    {
+        yupc::log_compiler_err("global variable \"" + name + ctx->type_annot()->getText() + "\" already exists", ctx->getText());
         exit(1);
     }
 
-    auto loc_constains = false;
-    if (com_un::comp_units.back()->symbol_table.size() != 0) {
-        com_un::comp_units.back()->symbol_table.back().contains(name);
+    bool loc_constains = false;
+    if (yupc::comp_units.back()->symbol_table.size() != 0) 
+    {
+        yupc::comp_units.back()->symbol_table.back().contains(name);
     }
 
-    if (!is_glob && loc_constains) {
-        msg::errors::log_compiler_err("variable \"" + name + ctx->type_annot()->getText() + "\" has already been declared in this scope", ctx->getText());
+    if (!is_glob && loc_constains) 
+    {
+        yupc::log_compiler_err("variable \"" + name + ctx->type_annot()->getText() + "\" has already been declared in this scope", ctx->getText());
         exit(1);
     }
 
     this->visit(ctx->type_annot());
-    auto *resolved_type = com_un::comp_units.back()->type_stack.top();
+    llvm::Type *resolved_type = yupc::comp_units.back()->type_stack.top();
 
-    Value *val = nullptr;
-    if (ctx->var_value() != nullptr) {
-        this->visit(ctx->var_value()->expr());
-        val = com_un::comp_units.back()->value_stack.top();
-    }
+    llvm::Value *val = ctx->var_value() != nullptr 
+        ? [&]() 
+        {
+            this->visit(ctx->var_value()->expr());
+            return yupc::comp_units.back()->value_stack.top();
+        }()
+        : nullptr;
 
-    cvar::var_declare_codegen(name, resolved_type, is_const, is_glob, is_pub, is_ref, val);
+    yupc::var_declare_codegen(name, resolved_type, is_const, is_glob, is_pub, is_ref, val);
 
     return nullptr;
 }
 
-std::any cv::Visitor::visitAssignment(parser::YupParser::AssignmentContext *ctx) {
-
-    auto name = ctx->IDENTIFIER()->getText();
+std::any yupc::Visitor::visitAssignment(yupc::YupParser::AssignmentContext *ctx) 
+{
+    std::string name = ctx->IDENTIFIER()->getText();
 
     this->visit(ctx->var_value()->expr());
-    auto *val = com_un::comp_units.back()->value_stack.top();
+    llvm::Value *val = yupc::comp_units.back()->value_stack.top();
 
-    cvar::assignment_codegen(name, val, ctx->getText());
+    yupc::assignment_codegen(name, val, ctx->getText());
     
     return nullptr;
 }
 
-std::any cv::Visitor::visitIdentifierExpr(parser::YupParser::IdentifierExprContext *ctx) {
+std::any yupc::Visitor::visitIdentifierExpr(yupc::YupParser::IdentifierExprContext *ctx) 
+{
+    std::string name = ctx->IDENTIFIER()->getText();
 
-    auto name = ctx->IDENTIFIER()->getText();
+    bool is_glob = yupc::comp_units.back()->global_variables.contains(name);
 
-    auto is_glob = com_un::comp_units.back()->global_variables.contains(name);
+    bool is_loc = yupc::comp_units.back()->symbol_table.back().contains(name);
 
-    auto is_loc = com_un::comp_units.back()->symbol_table.back().contains(name);
-
-    if (!is_glob && !is_loc) {
-        msg::errors::log_compiler_err("symbol \"" + name + "\" is neither a local nor a global variable", ctx->getText());
-
+    if (!is_glob && !is_loc) 
+    {
+        yupc::log_compiler_err("symbol \"" + name + "\" is neither a local nor a global variable", ctx->getText());
         exit(1);
     }
 
-
-    cvar::ident_expr_codegen(name, is_glob);
+    yupc::ident_expr_codegen(name, is_glob);
     
     return nullptr;
 }

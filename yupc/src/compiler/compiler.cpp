@@ -1,7 +1,7 @@
 #include <compiler/compiler.h>
 #include <compiler/compilation_unit.h>
 #include <compiler/visitor.h>
-#include <compiler/gen_runtime_lib.h>
+#include <compiler/runtime_lib.h>
 
 #include <filesystem>
 #include <msg/errors.h>
@@ -22,130 +22,122 @@
 #include <llvm/IR/Module.h>
 #include <llvm/Support/FileSystem.h>
 
-using namespace yupc;
-using namespace llvm;
+#define UNUSED(x) (void)(x)
 
-namespace yu = util;
-namespace cv = compiler::visitor;
-namespace pse = parser::parser_syntax_error;
-namespace lse = lexer::lexer_syntax_error;
-namespace com_un = compiler::compilation_unit;
-namespace grlib = compiler::gen_runtime_lib;
+std::string yupc::build_dir;
+yupc::CompilerOpts yupc::compiler_opts;
 
-std::string compiler::build_dir;
-compiler::CompilerOpts compiler::compiler_opts;
+void yupc::process_source_file(std::string path) 
+{
 
-void compiler::process_source_file(std::string path) {
-
-    auto abs_src_path = fs::absolute(path);
-    auto src_content = yu::file_to_str(abs_src_path);
+    fs::path abs_src_path = fs::absolute(path);
+    std::string src_content = yupc::file_to_str(abs_src_path);
 
     antlr4::ANTLRInputStream input(src_content);
-    lexer::YupLexer lexer(&input);
+    yupc::YupLexer lexer(&input);
 
-    lse::LexerErrorListener lexer_error_listener;
+    yupc::LexerErrorListener lexer_error_listener;
     lexer.removeErrorListeners();
     lexer.addErrorListener(&lexer_error_listener);
 
     antlr4::CommonTokenStream tokens(&lexer);
 
-    parser::YupParser parser(&tokens);
+    yupc::YupParser parser(&tokens);
 
-    pse::ParserErrorListener parser_error_listener;
+    yupc::ParserErrorListener parser_error_listener;
     parser.removeErrorListeners();
     parser.addErrorListener(&parser_error_listener);
 
-    auto *ctx = parser.file();
-    cv::Visitor visitor;
+    yupc::YupParser::FileContext *ctx = parser.file();
+    yupc::Visitor visitor;
 
     fs::path bd(build_dir);
-    fs::path f(yu::base_name(abs_src_path));
+    fs::path f(yupc::base_name(abs_src_path));
     fs::path mod_path = bd / f;
 
-    com_un::comp_units.back()->module_name = yu::get_ir_fname(mod_path.string());
+    yupc::comp_units.back()->module_name = yupc::get_ir_fname(mod_path.string());
 
-    grlib::init_runtime_lib(*com_un::comp_units.back()->module);
+    yupc::init_runtime_lib(*yupc::comp_units.back()->module);
 
     visitor.visit(ctx);
 
     // dump module to .ll
-    //verifyModule(*com_un::comp_units.back()->module, &outs());
-    dump_module(com_un::comp_units.back()->module, com_un::comp_units.back()->module_name);
+    //verifyModule(*yupc::comp_units.back()->module, &outs());
+    dump_module(yupc::comp_units.back()->module, yupc::comp_units.back()->module_name);
 }
 
-std::string compiler::init_build_dir(std::string dir_base) {
+std::string yupc::init_build_dir(std::string dir_base) 
+{
 
     fs::path b(dir_base);
     fs::path bd("build");
-    auto f_path = b / bd;
-    auto succ = true;
+    fs::path f_path = b / bd;
 
-    if (!fs::is_directory(f_path.string()) || !fs::exists(f_path.string())) {
-        succ = fs::create_directory(f_path.string());
-    }
-
-    if (compiler_opts.verbose) {
-        if (succ) {
-            msg::info::log_cmd_info("created build directory");
-        } else {
-            msg::errors::log_cmd_err("failed to create build directory");
-        }
+    if (!fs::is_directory(f_path.string()) || !fs::exists(f_path.string())) 
+    {
+        fs::create_directory(f_path.string());
     }
 
     return f_path.string();
 }
 
-std::string compiler::init_bin_dir(std::string build_dir) {
-    fs::path bin(compiler::build_dir);
+std::string yupc::init_bin_dir() 
+{
+    fs::path bin(yupc::build_dir);
     fs::path dir("bin");
 
-    auto bin_dir = bin / dir;
+    fs::path bin_dir = bin / dir;
     fs::create_directory(bin_dir.string());
 
-    fs::path p(compiler::compiler_opts.binary_name + ".bc");
-    auto bc_file = bin_dir / p;
+    fs::path p(yupc::compiler_opts.binary_name + ".bc");
+    fs::path bc_file = bin_dir / p;
 
     return bc_file;
 }
 
-void compiler::dump_module(Module *module, std::string module_name) {
+void yupc::dump_module(llvm::Module *module, std::string module_name) 
+{
     std::error_code ec;
-    raw_fd_ostream os(module_name, ec, sys::fs::OF_None);
+    llvm::raw_fd_ostream os(module_name, ec, llvm::sys::fs::OF_None);
     module->print(os, nullptr);
     os.flush();
 
-    if (compiler::compiler_opts.verbose) {
-        std::string info = "dumped module " + com_un::comp_units.back()->module_name;
-
-        msg::info::log_cmd_info(info);
-    }
+    std::string info = "module " + yupc::comp_units.back()->module_name;
+    yupc::log_cmd_info(info);
 }
 
-void compiler::build_bitcode(fs::path bc_file, fs::path ll_dir) {
+void yupc::build_bitcode(fs::path bc_file, fs::path ll_dir) 
+{
 
-    auto llvm_link = "llvm-link -o " + bc_file.string();
-    for (const auto &entry : fs::directory_iterator(ll_dir)) {
-        if (!fs::is_directory(entry)) {
+    std::string llvm_link = "llvm-link -o " + bc_file.string();
+    for (fs::directory_entry entry : fs::directory_iterator(ll_dir)) 
+    {
+        if (!fs::is_directory(entry)) 
+        {
             llvm_link += " " + entry.path().string();
         }
     }
 
-    std::system(llvm_link.c_str());
+    int r = std::system(llvm_link.c_str());
+    UNUSED(r);
+    yupc::log_cmd_info(llvm_link);
 
-    if (compiler::compiler_opts.give_perms) {
-        std::system((std::string("chmod +x ") + bc_file.string()).c_str());
 
-        if (compiler::compiler_opts.verbose) {
-            msg::info::log_cmd_info("gave permissions to the executable");
-        }
+    if (yupc::compiler_opts.give_perms) 
+    {
+        std::string chmod = (std::string("chmod +x ") + bc_file.string()).c_str();
+        int rr = std::system(chmod.c_str());
+        UNUSED(rr);
+        yupc::log_cmd_info(chmod);
     }
 
 }
 
-void compiler::process_path(std::string path) {
-    auto *comp_unit = new com_un::CompilationUnit;
-    com_un::init_comp_unit(*comp_unit, path);
-    com_un::comp_units.push_back(comp_unit);
+void yupc::process_path(std::string path) 
+{
+    yupc::CompilationUnit *comp_unit = new yupc::CompilationUnit;
+    yupc::init_comp_unit(*comp_unit, path);
+    yupc::comp_units.push_back(comp_unit);
 
-    compiler::process_source_file(path);
+    yupc::process_source_file(path);
 }
