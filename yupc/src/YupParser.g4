@@ -39,7 +39,7 @@ arr_elem_assignment :   IDENTIFIER arr_index* var_value;
 
 arr_index           :   LSQBR expr RSQBR;
 
-var_declare         :   PUBSYM? GLOBAL? CONST? REF? IDENTIFIER type_annot var_value?;
+var_declare         :   PUBSYM? GLOBAL? CONST? REF? LET IDENTIFIER type_annot var_value?;
 
 var_value           :   ASSIGN expr;
 

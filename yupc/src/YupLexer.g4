@@ -11,7 +11,7 @@ PUBSYM              :   'public';
 GLOBAL              :   'glob';
 FUNC                :   'func';
 REF                 :   'ref';
-AS                  :   'as';
+LET                 :   'let';
 
 IMPORT              :   'import';
 FROM                :   'from';
