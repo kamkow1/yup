@@ -21,8 +21,6 @@ type_decl           :   PUBSYM? TYPE IDENTIFIER type_def;
 
 type_def            :   type_alias;
 
-type_alias          :   ALIAS ASSIGN type_annot;
-
 module_decl         :   MODULE IDENTIFIER;
 
 import_decl         :   IMPORT import_list FROM lib_path? IDENTIFIER;
@@ -72,8 +70,12 @@ expr                :   constant                        #ConstantExpr
                     |   LPAREN expr RPAREN              #EmphExpr
                     |   ptr_dereference                 #PtrDereferenceExpr
                     |   operator                        #OperatorExpr
-                    |   APOSTROPHE type_name            #TypeNameExpr
-                    |   LPAREN expr RPAREN expr    #TypeCastExpr;
+                    |   type_name_expr                  #TypeNameExpr
+                    |   LPAREN expr RPAREN expr         #TypeCastExpr;
+
+type_name_expr      :   APOSTROPHE type_name;
+
+type_alias          :   ALIAS type_name;
 
 operator            :   IDENTIFIER EXCL_MARK LPAREN expr+ RPAREN;
 

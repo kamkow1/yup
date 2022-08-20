@@ -166,12 +166,22 @@ void yupc::check_value_type(llvm::Value *val, std::string name)
     }
 }
 
+std::any yupc::Visitor::visitTypeNameExpr(yupc::YupParser::TypeNameExprContext *ctx)
+{
+    return this->visit(ctx->type_name_expr());
+}
+
+std::any yupc::Visitor::visitType_name_expr(yupc::YupParser::Type_name_exprContext *ctx)
+{
+    return this->visit(ctx->type_name());
+}
+
 std::any yupc::Visitor::visitType_decl(yupc::YupParser::Type_declContext *ctx) 
 {
     if (ctx->type_def()->type_alias() != nullptr) 
     {
         std::string alias_name = ctx->IDENTIFIER()->getText();
-        std::string old_name = ctx->type_def()->type_alias()->type_annot()->getText();
+        std::string old_name = ctx->type_def()->type_alias()->type_name()->getText();
 
         auto *type = new AliasType;
         type->type_name = alias_name;
@@ -200,14 +210,20 @@ std::any yupc::Visitor::visitTypeCastExpr(yupc::YupParser::TypeCastExprContext *
     return nullptr;
 }
 
-std::any yupc::Visitor::visitTypeNameExpr(yupc::YupParser::TypeNameExprContext *ctx) 
-{
-    return this->visit(ctx->type_name());
-}
-
 std::any yupc::Visitor::visitType_name(yupc::YupParser::Type_nameContext *ctx)
 {
     std::string base = ctx->IDENTIFIER()->getText();
+
+    for (size_t i = 0; i < yupc::comp_units.back()->alias_types.size(); i++) 
+    {
+        yupc::AliasType *at = yupc::comp_units.back()->alias_types[i];
+        
+        if (at->type_name == base)
+        {
+            base = at->destination;
+        }
+    }    
+
     llvm::Type *type_base = yupc::resolve_type(base);
 
     size_t ext_len = ctx->type_ext().size();

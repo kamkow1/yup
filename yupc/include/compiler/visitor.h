@@ -62,6 +62,8 @@ namespace yupc
 
         std::any visitType_name(yupc::YupParser::Type_nameContext *ctx) override;
 
+        std::any visitType_name_expr(yupc::YupParser::Type_name_exprContext *ctx) override;
+
         std::any visitTypeNameExpr(yupc::YupParser::TypeNameExprContext *ctx) override;
     };
 }
