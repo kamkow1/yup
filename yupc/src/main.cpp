@@ -1,4 +1,3 @@
-#include <bits/types/FILE.h>
 #include <compiler/visitor.h>
 #include <compiler/compilation_unit.h>
 #include <compiler/compiler.h>
@@ -62,6 +61,7 @@ void setup_cmds(CLI::App &cli) {
 int main(int argc, char *argv[]) 
 {
     CLI::App cli{"a compiler for the yup programming language"};
+    cli.allow_windows_style_options(true);
 
     setup_cmds(cli);
     CLI11_PARSE(cli, argc, argv);
