@@ -6,14 +6,29 @@
 			"include": "#keywords"
 		},
 		{
+			"include": "#type_name_expr"
+		},
+		{
+			"include": "#type_annot"
+		},
+		{
+			"include": "#identifier"
+		},
+		{
 			"include": "#strings"
+		},
+		{
+			"include": "#chars"
+		},
+		{
+			"include": "#nums"
 		}
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.yup",
-				"match": "\\b(if|while|for|return)\\b"
+				"match": "\\b(module|func|cosnt|glob|public|import|from|return|ref|let|type|alias)\\b"
 			}]
 		},
 		"strings": {
@@ -26,6 +41,27 @@
 					"match": "\\\\."
 				}
 			]
+		},
+		"type_name_expr": {
+			"name": "support.type",
+			"match": "'[a-zA-Z][a-zA-Z_0-9]+"
+		},
+		"type_annot": {
+			"name": "support.type",
+			"match": ":\\s*[*]?[a-zA-Z][a-zA-Z_0-9]+"
+		},
+		"identifier": {
+			"name": "variable.name",
+			"match": "[a-zA-Z][a-zA-Z_0-9]*"
+		},
+		"chars": {
+			"name": "constant.character",
+			"begin": "'",
+			"end": "'"
+		},
+		"nums": {
+			"name": "constant.numeric",
+			"match": "[+-]?\\d+(?:\\.\\d+)?"
 		}
 	},
 	"scopeName": "source.yup"
