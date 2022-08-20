@@ -23,4 +23,4 @@ if you want (and know how to), you can make a better extension yourself and cont
 
 ## small demo
 
-![alt 'demo of the extension'](https://imgur.com/a/ZMErXBA)
+![alt 'demo of the extension'](https://github.com/kamkow1/yup/blob/master/support/yup-vscode-syntax-support/tiny_demo.png?raw=true)
