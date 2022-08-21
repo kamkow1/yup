@@ -6,6 +6,17 @@ Yup is an imperative programming language. It borrows syntax from
 Go, Rust and C. <br>
 It's compiler is implemented using LLVM.
 
+# running tests
+requires Python 3.10 or newer
+
+run the tests:
+```bash
+cd tests
+python3 tests.py
+```
+
+tests are to prevent regressions in the compiler's development
+
 # building from source
 
 As of now, Yup doesn't provide prebuilt binaries so you will 
