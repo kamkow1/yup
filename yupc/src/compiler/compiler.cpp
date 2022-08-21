@@ -48,6 +48,8 @@ void yupc::process_source_file(std::string path)
     parser.removeErrorListeners();
     parser.addErrorListener(&parser_error_listener);
 
+    yupc::comp_units.back()->context->setOpaquePointers(false);
+
     yupc::YupParser::FileContext *ctx = parser.file();
     yupc::Visitor visitor;
 

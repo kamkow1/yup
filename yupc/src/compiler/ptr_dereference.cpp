@@ -2,6 +2,9 @@
 #include <compiler/ptr_dereference.h>
 #include <compiler/compilation_unit.h>
 
+#include <llvm/IR/DerivedTypes.h>
+#include <llvm/Support/Casting.h>
+#include <llvm/Support/raw_ostream.h>
 #include <msg/errors.h>
 
 #include <llvm/IR/Value.h>
@@ -18,7 +21,8 @@ void yupc::ptr_deref_codegen(llvm::Value *value, std::string text)
         exit(1);
     }
 
-    llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(value->getType()->getPointerTo(), value);
+    llvm::Type *type = value->getType()->getNonOpaquePointerElementType();
+    llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(type, value);
     yupc::comp_units.back()->value_stack.push(load);
 }
 
