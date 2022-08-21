@@ -1,0 +1,28 @@
+module functions;
+
+// return constant
+func f1(): i32 {
+
+    return 0;
+}
+
+// return parameter
+func f2(x: i32): i32 {
+    return x;
+}
+
+// return adress
+func f3(x: i32): *i32 {
+    return &x;
+}
+
+// return dereference
+func f4(x: *i32): i32 {
+    return *x;
+}
+
+func call_f4(): void {
+
+    let yy: i32 = 9;
+    f4( &yy );
+}

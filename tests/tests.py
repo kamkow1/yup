@@ -5,6 +5,7 @@
 import os
 import pathlib
 import time
+import subprocess
 
 class Colors:
     reset = '\033[0m'
@@ -60,6 +61,7 @@ def merge_options(opts: list[CompilerOption]):
         compiler_cmd = compiler_cmd + o.value
 
 for test in os.listdir(test_dir):
+
     t0 = time.time()
 
     f = os.path.join(test_dir, test)
@@ -67,8 +69,13 @@ for test in os.listdir(test_dir):
     ext = pathlib.Path(f).suffix
     if os.path.isfile(f) and ext == '.yup':
         base_name = os.path.basename(f)
+
         fname_wo_ext = os.path.splitext(base_name)[0]
-        print(f'RUNNING TEST: {Colors().FG().orange}{Colors().underline} {fname_wo_ext} {Colors().reset}')
+
+        is_failing_test = fname_wo_ext.split('.').__len__() > 1
+
+        test_name = f'{Colors().FG().orange}{Colors().underline} {fname_wo_ext} {Colors().reset}'
+        print(f'{Colors().FG().red}RUNNING {"FAILING" if is_failing_test else ""} TEST: {test_name}')
 
         s_option = CompilerOption('-s', f)
         v_option = CompilerOption('-v', '')
@@ -83,10 +90,8 @@ for test in os.listdir(test_dir):
         print(f'BUILD CMD: {Colors().FG().darkgrey}{compiler_cmd}{Colors().reset}')
 
         EC = os.system(compiler_cmd)
-
         compiler_cmd = COMPILER_BUILD_CMD_BASE
         compiler_options.clear()
-
         t1 = time.time()
         finish_time = t1 - t0
 
