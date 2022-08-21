@@ -1,0 +1,19 @@
+module std_memory;
+
+// all of these are just wrappers for libc memory management functions
+// they're prefixed with `__` because THEY AREN'T from yupcstdlib 
+// nor defined in a user's program
+// in the user's program functions like `malloc` or `free` can still
+// be called but shouldn't be
+
+func __malloc(size: i64): *byte {
+    return malloc(size);
+}
+
+func __free(ptr: *byte): void {
+    free(ptr);
+}
+
+func __GC_malloc(size: i64): *byte {
+    return GC_malloc(size);
+}
