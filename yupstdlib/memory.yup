@@ -6,14 +6,17 @@ module std_memory;
 // in the user's program functions like `malloc` or `free` can still
 // be called but shouldn't be
 
-func __malloc(size: i64): *byte {
-    return malloc(size);
-}
+/* public func __malloc(size: i64): *byte {
+    let aa: byte = 0;
+    let bb: *byte = &aa;
 
-func __free(ptr: *byte): void {
-    free(ptr);
-}
 
-func __GC_malloc(size: i64): *byte {
-    return GC_malloc(size);
-}
+} */
+
+//public func __free(ptr: *byte): void {
+//    free(ptr);
+//}
+//
+//public func __GC_malloc(size: i64): *byte {
+//    return GC_malloc(size);
+//}
