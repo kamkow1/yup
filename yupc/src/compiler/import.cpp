@@ -1,8 +1,10 @@
+#include "compiler/compiler.h"
 #include <compiler/visitor.h>
 #include <compiler/import.h>
 #include <compiler/compilation_unit.h>
 #include <compiler/module.h>
 #include <compiler/type.h>
+#include <llvm/IR/Module.h>
 #include <msg/errors.h>
 #include <tree/TerminalNode.h>
 
@@ -19,44 +21,40 @@
 #include <string>
 #include <vector>
 
-void yupc::import_func(std::map<std::string, llvm::Function*> &funcs, std::string sym, std::string text) 
+void yupc::import_funcs(llvm::Module &current_mod, llvm::Module &prev_mod, std::string text) 
 {
-    if (!funcs.contains(sym)) 
-    {
-        yupc::log_compiler_err("cannot import function \"" + sym + "\" because it doesn't exist", text);
-        exit(1);
+
+    for (llvm::Function &func : current_mod.functions()) {
+
+        if (func.isPrivateLinkage(func.getLinkage())) {
+            continue;
+        }
+
+        std::string return_type_str;
+        llvm::raw_string_ostream return_type_rso(return_type_str);
+
+        func.getReturnType()->print(return_type_rso);
+        llvm::Type *return_type = yupc::resolve_type(return_type_rso.str());
+
+        std::vector<llvm::Type*> param_types;
+        for (size_t i = 0; i < func.arg_size(); i++) 
+        {
+            std::string type_name;
+            llvm::raw_string_ostream param_type_rso(type_name);
+            
+            func.getFunctionType()->getParamType(i)->print(param_type_rso);
+
+            llvm::Type *param_type = yupc::resolve_type(param_type_rso.str());
+
+            param_types.push_back(param_type);
+        }
+
+        llvm::FunctionType *func_type = llvm::FunctionType::get(return_type, param_types, false);
+        llvm::Function::LinkageTypes linkage_type = llvm::Function::ExternalLinkage;
+        llvm::Function *created_func = llvm::Function::Create(func_type, linkage_type, func.getName(), prev_mod);
+
+        yupc::comp_units.back()->functions[func.getName().str()] = created_func;
     }
-
-    std::string return_type_str;
-    llvm::raw_string_ostream return_type_rso(return_type_str);
-
-    funcs[sym]->getFunctionType()->getReturnType()->print(return_type_rso);
-
-    llvm::Type *return_type = yupc::resolve_type(return_type_rso.str());
-
-    std::vector<llvm::Type*> param_types;
-    for (size_t i = 0; i < funcs[sym]->arg_size(); i++) 
-    {
-        std::string type_name;
-        llvm::raw_string_ostream param_type_rso(type_name);
-        
-        funcs[sym]->getFunctionType()->getParamType(i)->print(param_type_rso);
-
-        auto *param_type = yupc::resolve_type(param_type_rso.str());
-
-        param_types.push_back(param_type);
-    }
-
-    llvm::FunctionType *func_type = llvm::FunctionType::get(return_type, param_types, false);
-    llvm::Function::LinkageTypes linkage_type = llvm::Function::ExternalLinkage;
-    llvm::Function *func = llvm::Function::Create(func_type, linkage_type, sym, yupc::comp_units.back()->module);
-
-    for (size_t i = 0; i < func->arg_size(); i++) 
-    {
-        func->addParamAttr(i, llvm::Attribute::NoUndef);
-    }     
-
-    yupc::comp_units.back()->functions[sym] = func;
 }
 
 void yupc::import_global_var(std::map<std::string, llvm::GlobalVariable*> global_vars, std::string sym, std::string text) 
@@ -89,46 +87,14 @@ void yupc::import_type_alias(std::vector<yupc::AliasType*> &unit_alias_types, in
 
 std::any yupc::Visitor::visitImport_decl(yupc::YupParser::Import_declContext *ctx) {
     
-    std::string module_name = ctx->IDENTIFIER()->getText();
+    std::string module_name = ctx->V_STRING()->getText();
+    module_name = module_name.substr(1, module_name.size() - 2);
 
-    yupc::ImportDecl import_decl {
-        std::vector<std::string>(),
-        module_name
-    };        
+    yupc::process_path(module_name);
 
-    for (antlr4::tree::TerminalNode *import_item : ctx->import_list()->IDENTIFIER()) {
-        import_decl.sym_names.push_back(import_item->getText());
-    }
+    yupc::import_funcs(*yupc::comp_units.back()->module, *yupc::comp_units[yupc::comp_units.size() - 2]->module, ctx->getText());
 
-    for (std::string &sym : import_decl.sym_names) {
-
-        for (yupc::CompilationUnit *unit : yupc::comp_units) {
-
-            if (unit->module_id == import_decl.mod_name) {
-
-                for (auto &func : unit->functions) {
-                    if (func.first == sym) {
-                        yupc::import_func(unit->functions, sym, ctx->getText());
-                    }
-                }
-
-                for (auto &global_var : unit->global_variables) {
-                    if (global_var.first == sym) {
-                        yupc::import_global_var(unit->global_variables, sym, ctx->getText());
-                    }
-                }
-
-                int i = 0;
-                for (yupc::AliasType *type_alias : unit->alias_types) {
-                    if (type_alias->type_name == sym) {
-                        yupc::import_type_alias(unit->alias_types, i);
-                    }
-
-                    i++;
-                }
-            }
-        }
-    }
+    yupc::comp_units.pop_back();
 
     return nullptr;
 }

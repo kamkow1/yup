@@ -59,7 +59,7 @@ void yupc::process_source_file(std::string path)
 
     yupc::comp_units.back()->module_name = yupc::get_ir_fname(mod_path.string());
 
-    yupc::init_runtime_lib(*yupc::comp_units.back()->module);
+    //yupc::init_runtime_lib(*yupc::comp_units.back()->module);
 
     visitor.visit(ctx);
 

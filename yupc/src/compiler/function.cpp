@@ -91,8 +91,8 @@ void yupc::func_sig_codegen(bool is_ext, std::string name, llvm::Type *return_ty
     llvm::FunctionType *fn_type = llvm::FunctionType::get(return_type, param_types, false);
 
     llvm::GlobalValue::LinkageTypes linkage_type = is_ext || name == MAIN_FUNC_NAME 
-                                                    ? llvm::GlobalValue::ExternalLinkage 
-                                                    : llvm::GlobalValue::InternalLinkage;
+                                                    ? llvm::GlobalValue::WeakAnyLinkage 
+                                                    : llvm::GlobalValue::PrivateLinkage;
 
     llvm::Function *function = llvm::Function::Create(fn_type, linkage_type, name, yupc::comp_units.back()->module);
 

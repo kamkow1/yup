@@ -107,7 +107,7 @@ void yupc::var_declare_codegen(std::string name, llvm::Type *resolved_type, bool
 
     if (is_glob) 
     {
-        llvm::GlobalValue::LinkageTypes lt = is_ext ? llvm::GlobalValue::ExternalLinkage : llvm::GlobalValue::InternalLinkage;
+        llvm::GlobalValue::LinkageTypes lt = is_ext ? llvm::GlobalValue::WeakAnyLinkage : llvm::GlobalValue::PrivateLinkage;
 
         llvm::GlobalVariable *gv = new llvm::GlobalVariable(*yupc::comp_units.back()->module, resolved_type, is_const, lt, 0);
 

@@ -23,7 +23,7 @@ type_def            :   type_alias;
 
 module_decl         :   MODULE IDENTIFIER;
 
-import_decl         :   IMPORT import_list FROM lib_path? IDENTIFIER;
+import_decl         :   IMPORT V_STRING;
 
 lib_path            :   IDENTIFIER COLON;
 
