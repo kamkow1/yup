@@ -1,6 +1,6 @@
 module variables;
 
-func main(): i32 {
+func vars(): i32 {
 
     let a: i32 = 1;
     let b: i64 = ('i64)a;

@@ -84,6 +84,9 @@ for test in os.listdir(test_dir):
 
         EC = os.system(compiler_cmd)
 
+        compiler_cmd = COMPILER_BUILD_CMD_BASE
+        compiler_options.clear()
+
         t1 = time.time()
         finish_time = t1 - t0
 
