@@ -6,6 +6,22 @@ Yup is an imperative programming language. It borrows syntax from
 Go, Rust and C. <br>
 It's compiler is implemented using LLVM.
 
+# installing the standard library
+
+run:
+```bash
+cd /root/of/project/yup
+chmod +x ./install_stdlib.sh
+./install_stdlib.sh
+```
+
+now you can refer to the stdlib in your code using "```@std```"
+small example:
+
+```
+
+```
+
 # running tests
 requires Python 3.10 or newer
 
@@ -93,38 +109,18 @@ arguments: <br>
     - [&#10799;] for loop
     - [&#10799;] while loop
     - [&#10799;] conditional statements ( if + elif + else )
-    - [&#10799;] basic module system
+    - [&check;] basic module system
         * [&check;] exports
         * [&check;] imports
-        * [&#10799;] namespaces
 * OOP [&#10799;]
     - [&#10799;] structs
     - [&#10799;] access modifiers
 * standard libary [&#10799;]
+    - [&#10799;] memory 
+        * [&check;] __malloc()
+        * [&check;] __free()
 * meta programming [&#10799;]
     - [&#10799;] interpreted blocks
     - [&#10799;] generics
     - [&#10799;] reflection
     - [&#10799;] built in yup interpreter
-
-## example code snippet
-
-```text
-
-module main;
-
-import { EXIT_SUCCESS, string } from x;
-
-main() i32 {
-
-    a i32 := 56;
-    b *i32 := &a;
-
-    c i32 := *b;
-
-    sss string := "eoeooe";
-
-    return *EXIT_SUCCESS;
-}
-
-```
