@@ -10,12 +10,12 @@ func f2(x: i32): i32 {
 }
 
 // return adress
-func f3(x: i32): *i32 {
+func f3(x: i32): i32* {
     return &x;
 }
 
 // return dereference
-func f4(x: *i32): i32 {
+func f4(x: i32*): i32 {
     return *x;
 }
 
