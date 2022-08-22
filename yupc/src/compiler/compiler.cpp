@@ -15,8 +15,6 @@
 #include <lexer/lexer_error_listener.h>
 
 #include <string>
-#include <util.h>
-#include <dirent.h>
 
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/LLVMContext.h>

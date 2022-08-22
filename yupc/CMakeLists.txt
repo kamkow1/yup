@@ -60,7 +60,6 @@ set (SRCS
     src/parser/YupParserVisitor.cpp
     src/main.cpp
     src/parser/parser_error_listener.cpp
-    src/util.cpp
 )
 
 

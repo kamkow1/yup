@@ -6,7 +6,6 @@
 #include <lexer/YupLexer.h>
 
 #include <msg/errors.h>
-#include <util.h>
 
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/InstrTypes.h>

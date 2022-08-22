@@ -3,15 +3,14 @@
 #include <compiler/variable.h>
 #include <compiler/compilation_unit.h>
 
-#include <llvm/IR/Instructions.h>
-#include <llvm/IR/Type.h>
-#include <llvm/IR/Value.h>
 #include <msg/errors.h>
 #include <string>
-#include <util.h>
 
 #include <llvm/Support/TypeName.h>
 #include <llvm/Support/Alignment.h>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Instructions.h>
+#include <llvm/IR/Value.h>
 #include <llvm/IR/Constant.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/GlobalValue.h>

@@ -1,13 +1,12 @@
-#include "parser/YupParser.h"
 #include <compiler/visitor.h>
 #include <compiler/type.h>
 #include <compiler/function.h>
 #include <compiler/compilation_unit.h>
-#include <llvm/IR/Value.h>
-#include <llvm/Support/raw_ostream.h>
 #include <msg/errors.h>
-#include <util.h>
 
+#include <parser/YupParser.h>
+
+#include <llvm/IR/Value.h>
 #include <llvm/IR/GlobalValue.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Argument.h>
@@ -18,6 +17,7 @@
 #include <llvm/IR/Comdat.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
+#include <llvm/Support/raw_ostream.h>
 
 #include <string>
 #include <any>
