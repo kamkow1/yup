@@ -23,7 +23,7 @@ import "@std/memory/memlib_wrap.yup";
 
 func main(): i32  
 {
-    let a: *i8 = __malloc(('i64) 8);
+    let a: i8* = __malloc(('i64) 8);
 
     __free(a);
 
