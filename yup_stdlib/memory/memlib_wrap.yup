@@ -1,9 +1,9 @@
 import "@std/memory/memlib.ll";
 
-public func __malloc(size: i64): *i8 {
+public func __malloc(size: i64): i8* {
     return malloc(size);
 }
 
-public func __free(ptr: *i8): void {
+public func __free(ptr: i8*): void {
     free(ptr);
 }
