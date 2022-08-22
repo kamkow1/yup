@@ -1,8 +1,6 @@
-#include "boost/algorithm/string/replace.hpp"
 #include <compiler/compiler.h>
 #include <compiler/compilation_unit.h>
 #include <compiler/visitor.h>
-#include <compiler/runtime_lib.h>
 #include <compiler/file_sys.h>
 #include <compiler/config.h>
 
@@ -22,6 +20,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/LLVMContext.h>
