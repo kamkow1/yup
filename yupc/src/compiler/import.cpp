@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-void yupc::import_funcs(llvm::Module &current_mod, llvm::Module &prev_mod, std::string text) 
+void yupc::import_funcs(llvm::Module &current_mod, llvm::Module &prev_mod) 
 {
 
     for (llvm::Function &func : current_mod.functions()) {
@@ -60,24 +60,28 @@ void yupc::import_funcs(llvm::Module &current_mod, llvm::Module &prev_mod, std::
     }
 }
 
-void yupc::import_global_var(std::map<std::string, llvm::GlobalVariable*> global_vars, std::string sym, std::string text) 
+void yupc::import_global_var(llvm::Module &current_mod, llvm::Module &prev_mod) 
 {
-    /*if (!global_vars.contains(sym)) 
+    for (llvm::GlobalVariable &gvar : current_mod.globals())
     {
-        yupc::log_compiler_err("cannot import global variable \"" + sym + "\" because it doesn't exist", text);
+        if (gvar.isPrivateLinkage(gvar.getLinkage()))
+        {
+            continue;
+        }
+
+        std::string gvar_type_str;  
+        llvm::raw_string_ostream rso(gvar_type_str);
+        gvar.getType()->print(rso);
+        auto *gvar_type = yupc::resolve_type(rso.str(), prev_mod.getContext());
+
+        bool is_const = gvar.isConstant();
+
+        llvm::GlobalValue::LinkageTypes linkage_type = llvm::GlobalValue::ExternalLinkage;
+        llvm::GlobalVariable *global_var = new llvm::GlobalVariable(prev_mod, gvar_type, is_const, 
+                                                        linkage_type, nullptr, gvar.getName());
+
+        yupc::comp_units[yupc::comp_units.size() - 2]->global_variables[gvar.getName().str()] = global_var;
     }
-
-    std::string gvar_type_str;
-    llvm::raw_string_ostream rso(gvar_type_str);
-    global_vars[sym]->getType()->print(rso);
-    auto *gvar_type = yupc::resolve_type(rso.str());
-
-    bool is_const = global_vars[sym]->isConstant();
-
-    llvm::GlobalValue::LinkageTypes linkage_type = llvm::GlobalValue::ExternalLinkage;
-    llvm::GlobalVariable *global_var = new llvm::GlobalVariable(*yupc::comp_units.back()->module, gvar_type, is_const, linkage_type, nullptr, sym);
-
-    yupc::comp_units.back()->global_variables[sym] = global_var;*/
 }
 
 void yupc::import_type_alias(std::vector<yupc::AliasType*> &unit_alias_types, int i) {
@@ -94,8 +98,11 @@ std::any yupc::Visitor::visitImport_decl(yupc::YupParser::Import_declContext *ct
 
     yupc::process_path(module_name);
 
-    yupc::import_funcs(*yupc::comp_units.back()->module, *yupc::comp_units[yupc::comp_units.size() - 2]->module, ctx->getText());
+    yupc::import_funcs(*yupc::comp_units.back()->module, 
+                    *yupc::comp_units[yupc::comp_units.size() - 2]->module);
 
+    yupc::import_global_var(*yupc::comp_units.back()->module, 
+                    *yupc::comp_units[yupc::comp_units.size() - 2]->module);
     yupc::comp_units.pop_back();
 
     return nullptr;
