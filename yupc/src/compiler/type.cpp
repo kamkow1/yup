@@ -110,6 +110,7 @@ llvm::Type* yupc::resolve_type(std::string type_name, llvm::LLVMContext &ctx_ref
     }
 
     yupc::log_compiler_err("couldn't match type \"" + type_name + "\"", "");
+    exit(1);
 
     return nullptr;
 }
@@ -160,6 +161,7 @@ void yupc::check_value_type(llvm::Value *val, std::string name)
     if (expr_type != og_type) 
     {
         yupc::log_compiler_err("mismatch of types \"" + og_type + "\" and \"" + expr_type + "\"", "");
+        exit(1);
     }
 }
 
@@ -200,7 +202,12 @@ std::any yupc::Visitor::visitTypeCastExpr(yupc::YupParser::TypeCastExprContext *
     this->visit(ctx->expr(1));
     llvm::Value *val = comp_units.back()->value_stack.top();
 
-    llvm::Value *cast = comp_units.back()->ir_builder->CreateIntCast(val, dest_type, true);
+    llvm::Value *cast;
+
+    if (val->getType()->isIntegerTy() && dest_type->isIntegerTy())
+    {
+        cast = comp_units.back()->ir_builder->CreateIntCast(val, dest_type, true);
+    }
 
     comp_units.back()->value_stack.push(cast);
 

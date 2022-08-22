@@ -7,6 +7,7 @@
 #include <string>
 
 #include <llvm/Support/TypeName.h>
+#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/Alignment.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Instructions.h>
@@ -62,11 +63,13 @@ void yupc::assignment_codegen(std::string name, llvm::Value *val, std::string te
     if (var.is_const) 
     {
         yupc::log_compiler_err("cannot reassign a constant \"" + name + "\"", text);
+        exit(1);
     }
 
     if (var.is_ref) 
     {
         yupc::log_compiler_err("cannot make a reference point to another variable", text);
+        exit(1);
     }
 
     bool is_local = yupc::comp_units.back()->symbol_table.back().contains(name);
@@ -94,13 +97,13 @@ void yupc::assignment_codegen(std::string name, llvm::Value *val, std::string te
     else 
     {
         yupc::log_compiler_err("cannot reassign \"" + name + "\" because it doesn't exist", text);
+        exit(1);
     }
 }
 
 void yupc::var_declare_codegen(std::string name, llvm::Type *resolved_type, bool is_const, 
                             bool is_glob, bool is_ext, bool is_ref, llvm::Value *val) 
 {
-
     if (is_glob) 
     {
         llvm::GlobalValue::LinkageTypes lt = is_ext ? llvm::GlobalValue::ExternalLinkage : llvm::GlobalValue::PrivateLinkage;
@@ -147,6 +150,7 @@ std::any yupc::Visitor::visitVar_declare(yupc::YupParser::Var_declareContext *ct
     if (is_ref && ctx->var_value() == nullptr) 
     {
         yupc::log_compiler_err("cannot declare a reference that doesn't point to a variable", ctx->getText());
+        exit(1);
     }
 
     bool glob_contains = yupc::comp_units.back()->global_variables.contains(name);
@@ -154,6 +158,7 @@ std::any yupc::Visitor::visitVar_declare(yupc::YupParser::Var_declareContext *ct
     if (is_glob && glob_contains) 
     {
         yupc::log_compiler_err("global variable \"" + name + ctx->type_annot()->getText() + "\" already exists", ctx->getText());
+        exit(1);
     }
 
     bool loc_constains = false;
@@ -165,6 +170,7 @@ std::any yupc::Visitor::visitVar_declare(yupc::YupParser::Var_declareContext *ct
     if (!is_glob && loc_constains) 
     {
         yupc::log_compiler_err("variable \"" + name + ctx->type_annot()->getText() + "\" has already been declared in this scope", ctx->getText());
+        exit(1);
     }
 
     this->visit(ctx->type_annot());
@@ -177,6 +183,23 @@ std::any yupc::Visitor::visitVar_declare(yupc::YupParser::Var_declareContext *ct
             return yupc::comp_units.back()->value_stack.top();
         }()
         : nullptr;
+
+    if (val != nullptr)
+    {
+        if (resolved_type != val->getType())
+        {
+            std::string rt_str;
+            llvm::raw_string_ostream rt_rso(rt_str);
+            resolved_type->print(rt_rso);
+
+            std::string vt_str;
+            llvm::raw_string_ostream vt_rso(vt_str);
+            val->getType()->print(vt_rso);
+
+            yupc::log_compiler_err("mismatch of types " + rt_str + " and " + vt_str, ctx->getText());
+            exit(1);
+        }
+    }
 
     yupc::var_declare_codegen(name, resolved_type, is_const, is_glob, is_pub, is_ref, val);
 
@@ -206,6 +229,7 @@ std::any yupc::Visitor::visitIdentifierExpr(yupc::YupParser::IdentifierExprConte
     if (!is_glob && !is_loc) 
     {
         yupc::log_compiler_err("symbol \"" + name + "\" is neither a local nor a global variable", ctx->getText());
+        exit(1);
     }
 
     yupc::ident_expr_codegen(name, is_glob);

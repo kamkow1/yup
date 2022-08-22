@@ -128,5 +128,6 @@ std::any yupc::Visitor::visitConstant(yupc::YupParser::ConstantContext *ctx)
     }
 
     yupc::log_compiler_err("couldn't match type and create a constant", ctx->getText());
+    exit(1);
     return nullptr;
 }

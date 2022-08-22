@@ -55,6 +55,7 @@ void yupc::func_call_codegen(std::string func_name, std::vector<llvm::Value*> ar
     if (function == nullptr) 
     {
         yupc::log_compiler_err("tried to call function " + func_name + " but it isn't declared", text);
+        exit(1);
     }
 
     bool is_void = function->getReturnType()->isVoidTy();
@@ -148,6 +149,7 @@ std::any yupc::Visitor::visitFunc_def(yupc::YupParser::Func_defContext *ctx)
     if (!function) 
     {
         yupc::log_compiler_err("cannot resolve the signature for function " + func_name, ctx->getText());
+        exit(1);
     }
 
     yupc::func_def_codegen(function);
@@ -185,6 +187,7 @@ std::any yupc::Visitor::visitFunc_call(yupc::YupParser::Func_callContext *ctx)
     if (find != end) 
     {
         yupc::log_compiler_err("cannot call function \"" + func_name + "\" because it doesn't exist in the symbol table", ctx->getText());
+        exit(1);
     }
 
     std::vector<llvm::Value*> args;

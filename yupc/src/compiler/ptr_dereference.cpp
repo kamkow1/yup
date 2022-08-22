@@ -18,6 +18,7 @@ void yupc::ptr_deref_codegen(llvm::Value *value, std::string text)
     if (!value->getType()->isPointerTy()) 
     {
         yupc::log_compiler_err("cannot dereference a non pointer type expression", text);
+        exit(1);
     }
 
     llvm::Type *type = value->getType()->getNonOpaquePointerElementType();
