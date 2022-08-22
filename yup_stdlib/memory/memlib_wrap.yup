@@ -7,3 +7,10 @@ public func __malloc(size: i64): i8* {
 public func __free(ptr: i8*): void {
     free(ptr);
 }
+
+public func init_memory(ptr: i8*, value: i32, sz: i64): i8* {
+
+    let bind: i8* = memset(ptr, value, sz);
+
+    return bind;
+}
