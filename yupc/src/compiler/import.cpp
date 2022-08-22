@@ -21,6 +21,9 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 void yupc::import_funcs(llvm::Module &current_mod, llvm::Module &prev_mod) 
 {
@@ -90,19 +93,35 @@ void yupc::import_type_alias(std::vector<yupc::AliasType*> &unit_alias_types, in
     yupc::comp_units.back()->alias_types.push_back(alias_type);
 }
 
+void yupc::import_path_recursive(std::string path)
+{
+    if (fs::is_directory(path))
+    {
+        for (auto &entry : fs::directory_iterator(path))
+        {
+            yupc::import_path_recursive(entry.path().string());
+        }
+    }
+    else
+    {
+        yupc::process_path(path);
+
+        yupc::import_funcs(*yupc::comp_units.back()->module, 
+                    *yupc::comp_units[yupc::comp_units.size() - 2]->module);
+
+        yupc::import_global_var(*yupc::comp_units.back()->module, 
+                        *yupc::comp_units[yupc::comp_units.size() - 2]->module);
+
+        yupc::comp_units.pop_back();
+    }
+}
+
 std::any yupc::Visitor::visitImport_decl(yupc::YupParser::Import_declContext *ctx) {
     
     std::string module_name = ctx->V_STRING()->getText();
     module_name = module_name.substr(1, module_name.size() - 2);
 
-    yupc::process_path(module_name);
-
-    yupc::import_funcs(*yupc::comp_units.back()->module, 
-                    *yupc::comp_units[yupc::comp_units.size() - 2]->module);
-
-    yupc::import_global_var(*yupc::comp_units.back()->module, 
-                    *yupc::comp_units[yupc::comp_units.size() - 2]->module);
-    yupc::comp_units.pop_back();
+    yupc::import_path_recursive(module_name);
 
     return nullptr;
 }

@@ -20,4 +20,6 @@ namespace yupc
     void import_global_var(llvm::Module &current_mod, llvm::Module &prev_mod);
 
     void import_type_alias(std::vector<yupc::AliasType*> &unit_alias_types, int i);
+
+    void import_path_recursive(std::string path);
 }

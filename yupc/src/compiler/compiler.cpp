@@ -24,6 +24,8 @@
 
 #define UNUSED(x) (void)(x)
 
+namespace fs = std::filesystem;
+
 std::string yupc::build_dir;
 yupc::CompilerOpts yupc::compiler_opts;
 
@@ -137,9 +139,12 @@ void yupc::build_bitcode(fs::path bc_file, fs::path ll_dir)
 
 void yupc::process_path(std::string path) 
 {
-    yupc::CompilationUnit *comp_unit = new yupc::CompilationUnit;
-    yupc::init_comp_unit(*comp_unit, path);
-    yupc::comp_units.push_back(comp_unit);
+    if (fs::path(path).extension().string() == ".yup")
+    {
+        yupc::CompilationUnit *comp_unit = new yupc::CompilationUnit;
+        yupc::init_comp_unit(*comp_unit, path);
+        yupc::comp_units.push_back(comp_unit);
 
-    yupc::process_source_file(path);
+        yupc::process_source_file(path);
+    }
 }
