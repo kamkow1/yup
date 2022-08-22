@@ -42,7 +42,6 @@ void yupc::ident_expr_codegen(std::string id, bool is_glob)
         llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(gv->getValueType(), gv);
 
         yupc::comp_units.back()->value_stack.push(load);
-
     } 
     else 
     {

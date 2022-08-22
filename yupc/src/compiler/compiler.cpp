@@ -22,6 +22,8 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/SourceMgr.h>
+#include <llvm/IRReader/IRReader.h>
 
 #define UNUSED(x) (void)(x)
 
@@ -106,5 +108,19 @@ void yupc::process_path(std::string path)
         yupc::comp_units.push_back(comp_unit);
 
         yupc::process_source_file(path);
+    }
+    else if (fs::path(path).extension().string() == ".ll")
+    {
+        yupc::CompilationUnit *comp_unit = new yupc::CompilationUnit;
+        yupc::init_comp_unit(*comp_unit, path);
+
+        llvm::LLVMContext *new_ctx = new llvm::LLVMContext;
+        llvm::SMDiagnostic error;
+        llvm::Module *imported_mod = llvm::parseIRFile(path, error, *new_ctx).release();
+
+        comp_unit->module = imported_mod;
+        comp_unit->context = new_ctx;
+
+        yupc::comp_units.push_back(comp_unit);
     }
 }
