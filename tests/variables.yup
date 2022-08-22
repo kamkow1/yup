@@ -1,5 +1,3 @@
-module variables;
-
 glob let GLOBAL_VAR: i32 = 6;
 
 func vars(): i32 {

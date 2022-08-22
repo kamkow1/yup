@@ -1,5 +1,3 @@
-module functions;
-
 // return constant
 func f1(): i32 {
 
