@@ -59,12 +59,10 @@ void yupc::string_codegen(std::string text)
     yupc::comp_units.back()->value_stack.push(gstrptr);
 }
 
-void yupc::null_codegen(std::string type_name) 
+void yupc::null_codegen() 
 {
-
-    llvm::Type *ptype = yupc::resolve_type(type_name, yupc::comp_units.back()->module->getContext());
-
-    llvm::Constant *nullp = llvm::ConstantPointerNull::getNullValue(ptype);
+    llvm::Type *void_ptr_type = llvm::Type::getInt8Ty(*yupc::comp_units.back()->context)->getPointerTo();
+    llvm::Constant *nullp = llvm::ConstantPointerNull::getNullValue(void_ptr_type);
 
     yupc::comp_units.back()->value_stack.push(nullp);
 }
@@ -122,11 +120,9 @@ std::any yupc::Visitor::visitConstant(yupc::YupParser::ConstantContext *ctx)
         return nullptr;
     }
 
-    if (ctx->null_const() != nullptr) 
+    if (ctx->V_NULL() != nullptr) 
     {
-        std::string type_name = ctx->null_const()->type_name()->getText();
-
-        yupc::null_codegen(type_name);
+        yupc::null_codegen();
 
         return nullptr;
     }

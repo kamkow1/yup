@@ -50,9 +50,9 @@ func_param          :   IDENTIFIER type_annot;
 
 type_annot          :   COLON type_name;
 
-type_name           :   type_ext* IDENTIFIER;
+type_name           :   IDENTIFIER type_ext*;
 
-type_ext            :   array_type_ext | ASTERISK;
+type_ext            :   array_type_ext | ASTERISK | QUEST_MARK;
 
 array_type_ext      :   LSQBR expr RSQBR;
 
@@ -86,8 +86,6 @@ array               :   LSQBR (expr (COMMA expr)*)? RSQBR;
 
 array_init          :   LPAREN expr COMMA type_name RPAREN;
 
-constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_CHAR | null_const;
-
-null_const          :   DOT type_name;
+constant            :   V_STRING | V_INT | V_FLOAT | V_BOOL | V_CHAR | V_NULL;
 
 func_call           :   IDENTIFIER LPAREN (expr (COMMA expr)*)? RPAREN; //IDENTIFIER ((LPAREN (expr (COMMA expr)*)? RPAREN) | ());

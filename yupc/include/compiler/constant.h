@@ -15,5 +15,5 @@ namespace yupc
 
     void string_codegen(std::string text);
 
-    void null_codegen(std::string type_name);
+    void null_codegen();
 }
