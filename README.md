@@ -19,7 +19,16 @@ now you can refer to the stdlib in your code using "```@std```"
 small example:
 
 ```
+import "@std/memory/memlib_wrap.yup";
 
+func main(): i32  
+{
+    let a: *i8 = __malloc(('i64) 8);
+
+    __free(a);
+
+    return 0;
+}
 ```
 
 # running tests
