@@ -1,10 +1,11 @@
+#include "boost/algorithm/string/replace.hpp"
 #include <compiler/compiler.h>
 #include <compiler/compilation_unit.h>
 #include <compiler/visitor.h>
 #include <compiler/runtime_lib.h>
 #include <compiler/file_sys.h>
+#include <compiler/config.h>
 
-#include <filesystem>
 #include <msg/errors.h>
 #include <msg/info.h>
 
@@ -15,6 +16,12 @@
 #include <lexer/lexer_error_listener.h>
 
 #include <string>
+#include <filesystem>
+#include <cstddef>
+#include <vector>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/LLVMContext.h>
@@ -31,9 +38,7 @@ yupc::CompilerOpts yupc::compiler_opts;
 
 void yupc::process_source_file(std::string path) 
 {
-
-    fs::path abs_src_path = fs::absolute(path);
-    std::string src_content = yupc::file_to_str(abs_src_path);
+    std::string src_content = yupc::file_to_str(path);
 
     antlr4::ANTLRInputStream input(src_content);
     yupc::YupLexer lexer(&input);
@@ -56,7 +61,7 @@ void yupc::process_source_file(std::string path)
     yupc::Visitor visitor;
 
     fs::path bd(yupc::build_dir);
-    fs::path f(yupc::base_name(abs_src_path));
+    fs::path f(yupc::base_name(path));
     fs::path mod_path = bd / f;
 
     yupc::comp_units.back()->module_name = yupc::get_ir_fname(mod_path.string());
@@ -99,6 +104,20 @@ void yupc::build_bitcode(fs::path bc_file, fs::path ll_dir)
 
 void yupc::process_path(std::string path) 
 {
+    std::vector<std::string> path_elems;
+    std::string tmp_path = path;
+    boost::split(path_elems, tmp_path, boost::is_any_of("/"));
+    for (size_t i = 0; i < tmp_path.size(); i++)
+    {
+        for (auto &pv : yupc::path_vars)
+        {
+            if (path_elems[i] == pv.first)
+            {
+                boost::replace_all(path, pv.first, pv.second);
+            }
+        }
+    }
+
     if (fs::path(path).extension().string() == ".yup")
     {
         yupc::CompilationUnit *comp_unit = new yupc::CompilationUnit;

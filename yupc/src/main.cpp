@@ -2,6 +2,7 @@
 #include <compiler/compilation_unit.h>
 #include <compiler/compiler.h>
 #include <compiler/file_sys.h>
+#include <compiler/config.h>
 
 #include <CLI/CLI.hpp>
 
@@ -20,8 +21,7 @@ void init_build_opts(CLI::App *build_cmd, yupc::CompilerOpts *compiler_opts)
 
 void process_build_cmd() 
 {
-    fs::path cwd = fs::current_path();
-    yupc::build_dir = yupc::init_build_dir(cwd.string());
+    yupc::build_dir = yupc::init_build_dir(yupc::path_vars["@root"]);
 
     for (std::string &path : yupc::compiler_opts.src_path) 
     {
