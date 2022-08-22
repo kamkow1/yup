@@ -1,14 +1,16 @@
-#include "compiler/compiler.h"
+#include <compiler/compiler.h>
 #include <compiler/visitor.h>
 #include <compiler/import.h>
 #include <compiler/compilation_unit.h>
 #include <compiler/module.h>
 #include <compiler/type.h>
-#include <llvm/IR/Module.h>
+#include <llvm/Support/Casting.h>
 #include <msg/errors.h>
 #include <tree/TerminalNode.h>
 
+#include <llvm/ADT/StringRef.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/IR/Module.h>
 #include <llvm/IR/GlobalValue.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>
@@ -34,7 +36,7 @@ void yupc::import_funcs(llvm::Module &current_mod, llvm::Module &prev_mod, std::
         llvm::raw_string_ostream return_type_rso(return_type_str);
 
         func.getReturnType()->print(return_type_rso);
-        llvm::Type *return_type = yupc::resolve_type(return_type_rso.str());
+        llvm::Type *return_type = yupc::resolve_type(return_type_rso.str(), prev_mod.getContext());
 
         std::vector<llvm::Type*> param_types;
         for (size_t i = 0; i < func.arg_size(); i++) 
@@ -44,25 +46,25 @@ void yupc::import_funcs(llvm::Module &current_mod, llvm::Module &prev_mod, std::
             
             func.getFunctionType()->getParamType(i)->print(param_type_rso);
 
-            llvm::Type *param_type = yupc::resolve_type(param_type_rso.str());
+            llvm::Type *param_type = yupc::resolve_type(param_type_rso.str(), prev_mod.getContext());
 
             param_types.push_back(param_type);
         }
 
         llvm::FunctionType *func_type = llvm::FunctionType::get(return_type, param_types, false);
         llvm::Function::LinkageTypes linkage_type = llvm::Function::ExternalLinkage;
-        llvm::Function *created_func = llvm::Function::Create(func_type, linkage_type, func.getName(), prev_mod);
+        llvm::FunctionCallee fn_callee = prev_mod.getOrInsertFunction(func.getName(), func_type);
+        llvm::Function *created_func = llvm::cast<llvm::Function*>(fn_callee);
 
-        yupc::comp_units.back()->functions[func.getName().str()] = created_func;
+        yupc::comp_units[yupc::comp_units.size() - 2]->functions[func.getName().str()] = created_func;
     }
 }
 
 void yupc::import_global_var(std::map<std::string, llvm::GlobalVariable*> global_vars, std::string sym, std::string text) 
 {
-    if (!global_vars.contains(sym)) 
+    /*if (!global_vars.contains(sym)) 
     {
         yupc::log_compiler_err("cannot import global variable \"" + sym + "\" because it doesn't exist", text);
-        exit(1);
     }
 
     std::string gvar_type_str;
@@ -75,7 +77,7 @@ void yupc::import_global_var(std::map<std::string, llvm::GlobalVariable*> global
     llvm::GlobalValue::LinkageTypes linkage_type = llvm::GlobalValue::ExternalLinkage;
     llvm::GlobalVariable *global_var = new llvm::GlobalVariable(*yupc::comp_units.back()->module, gvar_type, is_const, linkage_type, nullptr, sym);
 
-    yupc::comp_units.back()->global_variables[sym] = global_var;
+    yupc::comp_units.back()->global_variables[sym] = global_var;*/
 }
 
 void yupc::import_type_alias(std::vector<yupc::AliasType*> &unit_alias_types, int i) {

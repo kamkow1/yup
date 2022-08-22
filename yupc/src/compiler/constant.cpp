@@ -62,7 +62,7 @@ void yupc::string_codegen(std::string text)
 void yupc::null_codegen(std::string type_name) 
 {
 
-    llvm::Type *ptype = yupc::resolve_type(type_name);
+    llvm::Type *ptype = yupc::resolve_type(type_name, yupc::comp_units.back()->module->getContext());
 
     llvm::Constant *nullp = llvm::ConstantPointerNull::getNullValue(ptype);
 
@@ -132,5 +132,5 @@ std::any yupc::Visitor::visitConstant(yupc::YupParser::ConstantContext *ctx)
     }
 
     yupc::log_compiler_err("couldn't match type and create a constant", ctx->getText());
-    exit(1);
+    return nullptr;
 }

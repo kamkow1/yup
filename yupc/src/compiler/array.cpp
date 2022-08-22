@@ -177,7 +177,8 @@ std::any yupc::Visitor::visitArray(yupc::YupParser::ArrayContext *ctx)
 std::any yupc::Visitor::visitArray_init(yupc::YupParser::Array_initContext *ctx) 
 {
 
-    llvm::Type *elem_type = yupc::resolve_type(ctx->type_name()->getText());
+    llvm::Type *elem_type = yupc::resolve_type(ctx->type_name()->getText(), 
+                                            yupc::comp_units.back()->module->getContext());
 
     this->visit(ctx->expr());
     llvm::Value *array_size = yupc::comp_units.back()->value_stack.top();

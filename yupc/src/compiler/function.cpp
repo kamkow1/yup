@@ -55,31 +55,18 @@ void yupc::func_call_codegen(std::string func_name, std::vector<llvm::Value*> ar
     if (function == nullptr) 
     {
         yupc::log_compiler_err("tried to call function " + func_name + " but it isn't declared", text);
-        exit(1);
     }
 
-    bool is_void = function->getFunctionType()->getReturnType()->isVoidTy();
+    bool is_void = function->getReturnType()->isVoidTy();
     if (is_void) 
     {
         llvm::CallInst *result = yupc::comp_units.back()->ir_builder->CreateCall(function, args, "");
-
-        for (size_t i = 0; i < function->arg_size(); i++) 
-        {
-            result->addParamAttr(i, llvm::Attribute::NoUndef);
-        }
-
         yupc::comp_units.back()->value_stack.push(result);
 
     } 
     else 
     {
         llvm::CallInst *result = yupc::comp_units.back()->ir_builder->CreateCall(function, args);
-
-        for (size_t i = 0; i < function->arg_size(); i++) 
-        {
-            result->addParamAttr(i, llvm::Attribute::NoUndef);
-        }
-
         yupc::comp_units.back()->value_stack.push(result);
     }
 }
@@ -91,17 +78,10 @@ void yupc::func_sig_codegen(bool is_ext, std::string name, llvm::Type *return_ty
     llvm::FunctionType *fn_type = llvm::FunctionType::get(return_type, param_types, false);
 
     llvm::GlobalValue::LinkageTypes linkage_type = is_ext || name == MAIN_FUNC_NAME 
-                                                    ? llvm::GlobalValue::WeakAnyLinkage 
+                                                    ? llvm::GlobalValue::ExternalLinkage 
                                                     : llvm::GlobalValue::PrivateLinkage;
 
     llvm::Function *function = llvm::Function::Create(fn_type, linkage_type, name, yupc::comp_units.back()->module);
-
-    for (size_t i = 0; i < function->arg_size(); i++) 
-    {
-        function->addParamAttr(i, llvm::Attribute::NoUndef);
-    }
-
-    function->setDSOLocal(!is_ext);
 
     size_t arg_max = function->arg_size();
     for (size_t i = 0; i < arg_max; ++i) 
@@ -168,7 +148,6 @@ std::any yupc::Visitor::visitFunc_def(yupc::YupParser::Func_defContext *ctx)
     if (!function) 
     {
         yupc::log_compiler_err("cannot resolve the signature for function " + func_name, ctx->getText());
-        exit(1);
     }
 
     yupc::func_def_codegen(function);
@@ -206,7 +185,6 @@ std::any yupc::Visitor::visitFunc_call(yupc::YupParser::Func_callContext *ctx)
     if (find != end) 
     {
         yupc::log_compiler_err("cannot call function \"" + func_name + "\" because it doesn't exist in the symbol table", ctx->getText());
-        exit(1);
     }
 
     std::vector<llvm::Value*> args;
