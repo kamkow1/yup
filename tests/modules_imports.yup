@@ -1,5 +1,5 @@
-import "./modules_exports.yup";
+import "@root/modules_exports.yup";
 
 public func ii(): void {
-    hello(*MY_CONSTANT_NUM);
+    hello(MY_CONSTANT_NUM);
 }
