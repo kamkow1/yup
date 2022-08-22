@@ -1,3 +1,5 @@
-public func hello(): void {
-    
+public glob const let MY_CONSTANT_NUM: i32 = 666;
+
+public func hello(ss: i32): void {
+
 }
