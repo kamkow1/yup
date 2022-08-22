@@ -15,7 +15,7 @@ chmod +x ./install_stdlib.sh
 ./install_stdlib.sh
 ```
 
-now you can refer to the stdlib in your code using "```@std```"
+now you can refer to the stdlib in your code using "```@std```" <br>
 small example:
 
 ```
