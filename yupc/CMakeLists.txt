@@ -38,7 +38,6 @@ set (SRCS
     src/compiler/operators.cpp
     src/compiler/runtime_lib.cpp
     src/compiler/ptr_dereference.cpp
-    src/compiler/module.cpp
     src/compiler/compiler.cpp
     src/compiler/compilation_unit.cpp
     src/compiler/code_block.cpp

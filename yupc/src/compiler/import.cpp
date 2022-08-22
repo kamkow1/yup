@@ -2,7 +2,6 @@
 #include <compiler/visitor.h>
 #include <compiler/import.h>
 #include <compiler/compilation_unit.h>
-#include <compiler/module.h>
 #include <compiler/type.h>
 #include <llvm/Support/Casting.h>
 #include <msg/errors.h>

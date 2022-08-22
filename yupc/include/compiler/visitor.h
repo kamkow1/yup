@@ -50,8 +50,6 @@ namespace yupc
 
         std::any visitImport_decl(yupc::YupParser::Import_declContext *ctx) override;
 
-        std::any visitModule_decl(yupc::YupParser::Module_declContext *ctx) override;
-
         std::any visitType_decl(yupc::YupParser::Type_declContext *ctx) override;
 
         std::any visitPtr_dereference(yupc::YupParser::Ptr_dereferenceContext *ctx) override;

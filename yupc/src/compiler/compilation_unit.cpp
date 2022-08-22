@@ -18,7 +18,6 @@ std::vector<yupc::CompilationUnit*> yupc::comp_units;
 void yupc::init_comp_unit(yupc::CompilationUnit &comp_unit, std::string source_file) 
 {
     comp_unit.source_file = source_file;
-    comp_unit.module_id = "";
     comp_unit.module_name = "";
     comp_unit.context = new llvm::LLVMContext;
     comp_unit.ir_builder = new llvm::IRBuilder<>(*comp_unit.context);

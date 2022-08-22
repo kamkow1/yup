@@ -21,7 +21,6 @@ namespace yupc
     struct CompilationUnit 
     {
         std::string source_file;
-        std::string module_id;
         std::string module_name;
         llvm::LLVMContext *context;
         llvm::IRBuilder<> *ir_builder;

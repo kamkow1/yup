@@ -14,14 +14,11 @@ statement           :   expr                    TERMINATOR
                     |   arr_elem_assignment     TERMINATOR
                     |   func_signature          TERMINATOR
                     |   import_decl             TERMINATOR
-                    |   module_decl             TERMINATOR
                     |   type_decl               TERMINATOR;
 
 type_decl           :   PUBSYM? TYPE IDENTIFIER type_def;
 
 type_def            :   type_alias;
-
-module_decl         :   MODULE IDENTIFIER;
 
 import_decl         :   IMPORT V_STRING;
 
