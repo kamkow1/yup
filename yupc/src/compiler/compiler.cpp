@@ -2,6 +2,7 @@
 #include <compiler/compilation_unit.h>
 #include <compiler/visitor.h>
 #include <compiler/runtime_lib.h>
+#include <compiler/file_sys.h>
 
 #include <filesystem>
 #include <msg/errors.h>
@@ -26,7 +27,6 @@
 
 namespace fs = std::filesystem;
 
-std::string yupc::build_dir;
 yupc::CompilerOpts yupc::compiler_opts;
 
 void yupc::process_source_file(std::string path) 
@@ -55,7 +55,7 @@ void yupc::process_source_file(std::string path)
     yupc::YupParser::FileContext *ctx = parser.file();
     yupc::Visitor visitor;
 
-    fs::path bd(build_dir);
+    fs::path bd(yupc::build_dir);
     fs::path f(yupc::base_name(abs_src_path));
     fs::path mod_path = bd / f;
 
@@ -68,46 +68,6 @@ void yupc::process_source_file(std::string path)
     // dump module to .ll
     //verifyModule(*yupc::comp_units.back()->module, &outs());
     dump_module(yupc::comp_units.back()->module, yupc::comp_units.back()->module_name);
-}
-
-std::string yupc::init_build_dir(std::string dir_base) 
-{
-
-    fs::path b(dir_base);
-    fs::path bd("build");
-    fs::path f_path = b / bd;
-
-    if (!fs::is_directory(f_path.string()) || !fs::exists(f_path.string())) 
-    {
-        fs::create_directory(f_path.string());
-    }
-
-    return f_path.string();
-}
-
-std::string yupc::init_bin_dir() 
-{
-    fs::path bin(yupc::build_dir);
-    fs::path dir("bin");
-
-    fs::path bin_dir = bin / dir;
-    fs::create_directory(bin_dir.string());
-
-    fs::path p(yupc::compiler_opts.binary_name + ".bc");
-    fs::path bc_file = bin_dir / p;
-
-    return bc_file;
-}
-
-void yupc::dump_module(llvm::Module *module, std::string module_name) 
-{
-    std::error_code ec;
-    llvm::raw_fd_ostream os(module_name, ec, llvm::sys::fs::OF_None);
-    module->print(os, nullptr);
-    os.flush();
-
-    std::string info = "module " + yupc::comp_units.back()->module_name;
-    yupc::log_cmd_info(info);
 }
 
 void yupc::build_bitcode(fs::path bc_file, fs::path ll_dir) 

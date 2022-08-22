@@ -1,6 +1,7 @@
 #include <compiler/visitor.h>
 #include <compiler/compilation_unit.h>
 #include <compiler/compiler.h>
+#include <compiler/file_sys.h>
 
 #include <util.h>
 
