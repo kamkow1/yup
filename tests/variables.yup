@@ -4,8 +4,8 @@ func vars(): i32 {
 
     let a: i32 = 1;
     let b: i64 = ('i64)a;
-    let c: byte = 'a';
-    let e: *byte = "hello!";
+    let c: i8 = 'a';
+    let e: *i8 = "hello!";
     let f: float = 1.34;
 
     let x: i32 = GLOBAL_VAR;
