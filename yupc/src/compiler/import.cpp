@@ -73,7 +73,7 @@ void yupc::import_global_var(llvm::Module &current_mod, llvm::Module &prev_mod)
 
         std::string gvar_type_str;  
         llvm::raw_string_ostream rso(gvar_type_str);
-        gvar.getType()->print(rso);
+        gvar.getValueType()->print(rso);
         auto *gvar_type = yupc::resolve_type(rso.str(), prev_mod.getContext());
 
         bool is_const = gvar.isConstant();
