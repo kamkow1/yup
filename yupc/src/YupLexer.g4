@@ -34,6 +34,7 @@ AMPERSAND           :   '&';
 DOT                 :   '.';
 EXCL_MARK           :   '!';
 TILDE               :   '~';
+ARROW               :   '->';
 
 PLUS                :   '+';
 MINUS               :   '-';

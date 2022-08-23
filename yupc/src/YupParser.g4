@@ -40,7 +40,7 @@ var_value           :   ASSIGN expr;
 
 func_def            :   func_signature code_block;
 
-func_signature      :   PUBSYM? FUNC IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN type_annot;
+func_signature      :   PUBSYM? IDENTIFIER LPAREN (func_param (COMMA func_param)*)? RPAREN ARROW type_name;
 
 func_return         :   RETURN expr;
 

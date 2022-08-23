@@ -105,7 +105,7 @@ std::any yupc::Visitor::visitFunc_signature(yupc::YupParser::Func_signatureConte
 {
     std::string name = ctx->IDENTIFIER()->getText();        
 
-    this->visit(ctx->type_annot());
+    this->visit(ctx->type_name());
     llvm::Type *return_type = yupc::comp_units.back()->type_stack.top();
 
     std::vector<yupc::FuncParam*> params;
