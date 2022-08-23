@@ -14,5 +14,6 @@ namespace yupc
         llvm::Type *oper_type;
     };
 
-    extern std::map<std::string, std::function<llvm::Value *(std::vector<yupc::OperArg *>)>> opers;
+    extern std::map<std::string, std::function<llvm::Value*(std::vector<yupc::OperArg*>&)>> value_operators;
+    extern std::map<std::string, std::function<llvm::Type*(std::vector<yupc::OperArg*>&)>> type_operators;
 }

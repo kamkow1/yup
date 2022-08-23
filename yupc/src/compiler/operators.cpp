@@ -2,8 +2,10 @@
 #include <compiler/compilation_unit.h>
 #include <compiler/operators.h>
 
+#include <cstddef>
 #include <parser/YupParser.h>
 
+#include <llvm/IR/Type.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Constant.h>
 #include <llvm/IR/InstrTypes.h>
@@ -16,7 +18,7 @@
 #include <map>
 #include <string>
 
-llvm::Value *size_oper(std::vector<yupc::OperArg*> args) 
+llvm::Value *sizeof_oper(std::vector<yupc::OperArg*> &args) 
 {
     yupc::OperArg *base_sz = args[0];
     llvm::Constant *size = llvm::ConstantExpr::getSizeOf(base_sz->oper_type);
@@ -24,43 +26,81 @@ llvm::Value *size_oper(std::vector<yupc::OperArg*> args)
     return size;
 }
 
-
-std::map<std::string, std::function<llvm::Value *(std::vector<yupc::OperArg *>)>> yupc::opers 
+llvm::Type *typeof_oper(std::vector<yupc::OperArg*> &args)
 {
-    { "size", &size_oper }
+    yupc::OperArg *base_sz = args[0];
+    llvm::Type *type = base_sz->oper_value->getType();
+
+    return type;
+}
+
+
+std::map<std::string, std::function<llvm::Value*(std::vector<yupc::OperArg*>&)>> yupc::value_operators 
+{
+    { "sizeof", &sizeof_oper },
+    //{ "typeof", &typeof_oper }
+};
+
+std::map<std::string, std::function<llvm::Type*(std::vector<yupc::OperArg*>&)>> yupc::type_operators 
+{
+    { "typeof", &typeof_oper }
 };
 
 std::any yupc::Visitor::visitOperator(yupc::YupParser::OperatorContext *ctx) 
 {
 
-    auto oper_name = ctx->IDENTIFIER()->getText();
+    std::string oper_name = ctx->IDENTIFIER()->getText();
 
     std::vector<yupc::OperArg*> args;
-    for (yupc::YupParser::ExprContext *aa : ctx->expr()) 
+    for (size_t i = 0; i < ctx->expr().size(); i++) 
     {
 
-        auto *oa_un = new yupc::OperArg;
+        yupc::OperArg *oa_un = new yupc::OperArg;
 
-        if (dynamic_cast<yupc::YupParser::TypeNameExprContext*>(aa) != nullptr) 
+        if (dynamic_cast<yupc::YupParser::TypeNameExprContext*>(ctx->expr(i)) != nullptr) 
         {
-            this->visit(aa);
-
-            oa_un->oper_type = yupc::comp_units.back()->type_stack.top();
-            args.push_back(oa_un);
+            this->visit(ctx->expr(i));
+            oa_un->oper_type = yupc::comp_units.back()->type_stack.top();            
         } 
-        else 
+        else if (dynamic_cast<yupc::YupParser::IdentifierExprContext*>(ctx->expr(i)) != nullptr)
         {
-            this->visit(aa);
-
+            this->visit(ctx->expr(i));
             oa_un->oper_value = yupc::comp_units.back()->value_stack.top();
-            args.push_back(oa_un);
         }
+        else
+        {
+            std::cout << "oper\n";
+            std::any result = this->visit(ctx->expr(i));
+            try 
+            {
+                llvm::Value *v = std::any_cast<llvm::Value*>(result);
+                oa_un->oper_value = v;
+            } 
+            catch (std::bad_any_cast) { }
+
+            try 
+            {
+                llvm::Type *t = std::any_cast<llvm::Type*>(result);
+                oa_un->oper_type = t;
+            } 
+            catch (std::bad_any_cast) {}
+        }
+
+        args.push_back(oa_un);
     }
 
-    std::function<llvm::Value *(std::vector<yupc::OperArg *>)> oper = yupc::opers[oper_name];
-    auto *result = oper(args);
-
-    yupc::comp_units.back()->value_stack.push(result);
+    if (value_operators.contains(oper_name))
+    {
+        llvm::Value *value = value_operators[oper_name](args);
+        yupc::comp_units.back()->value_stack.push(value);
+        return value;
+    }
+    else
+    {
+        llvm::Type *type = type_operators[oper_name](args);
+        yupc::comp_units.back()->type_stack.push(type);
+        return type;
+    }
 
     return nullptr;
 }
