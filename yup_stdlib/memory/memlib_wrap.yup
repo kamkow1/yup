@@ -9,8 +9,9 @@ public func __free(ptr: i8*): void {
 }
 
 public func init_memory(ptr: i8*, value: i32, sz: i64): i8* {
+    return memset(ptr, value, sz);
+}
 
-    let bind: i8* = memset(ptr, value, sz);
-
-    return bind;
+public func copy_memory(dest: i8*, src: i8*, cnt: i64): i8* {
+    return memcpy(dest, src, cnt);
 }
