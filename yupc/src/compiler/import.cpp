@@ -53,7 +53,7 @@ void yupc::import_funcs(llvm::Module &current_mod, llvm::Module &prev_mod)
             param_types.push_back(param_type);
         }
 
-        llvm::FunctionType *func_type = llvm::FunctionType::get(return_type, param_types, false);
+        llvm::FunctionType *func_type = llvm::FunctionType::get(return_type, param_types, func.isVarArg());
         llvm::Function::LinkageTypes linkage_type = llvm::Function::ExternalLinkage;
         llvm::FunctionCallee fn_callee = prev_mod.getOrInsertFunction(func.getName(), func_type);
         llvm::Function *created_func = llvm::cast<llvm::Function*>(fn_callee);
