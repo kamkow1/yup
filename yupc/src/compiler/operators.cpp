@@ -68,7 +68,6 @@ std::any yupc::Visitor::visitOperator(yupc::YupParser::OperatorContext *ctx)
         }
         else
         {
-            std::cout << "oper\n";
             std::any result = this->visit(ctx->expr(i));
             try 
             {

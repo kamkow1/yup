@@ -187,7 +187,7 @@ std::any yupc::Visitor::visitType_decl(yupc::YupParser::Type_declContext *ctx)
         type->destination = old_name;
         type->is_public = ctx->PUBSYM() != nullptr;
 
-        comp_units.back()->alias_types.push_back(type);
+        yupc::comp_units.back()->alias_types.push_back(type);
     }
 
     return nullptr;
@@ -197,16 +197,28 @@ std::any yupc::Visitor::visitTypeCastExpr(yupc::YupParser::TypeCastExprContext *
 {
     
     this->visit(ctx->expr(0));
-    llvm::Type *dest_type = comp_units.back()->type_stack.top();
+    llvm::Type *dest_type = yupc::comp_units.back()->type_stack.top();
 
     this->visit(ctx->expr(1));
-    llvm::Value *val = comp_units.back()->value_stack.top();
+    llvm::Value *val = yupc::comp_units.back()->value_stack.top();
 
     llvm::Value *cast;
 
     if (val->getType()->isIntegerTy() && dest_type->isIntegerTy())
     {
-        cast = comp_units.back()->ir_builder->CreateIntCast(val, dest_type, true);
+        cast = yupc::comp_units.back()->ir_builder->CreateIntCast(val, dest_type, true);
+    }
+    else if (val->getType()->isIntegerTy() && dest_type->isPointerTy())
+    {
+        cast = yupc::comp_units.back()->ir_builder->CreateIntToPtr(val, dest_type);
+    }
+    else if (val->getType()->isPointerTy() && dest_type->isPointerTy())
+    {
+        cast = yupc::comp_units.back()->ir_builder->CreatePointerCast(val, dest_type);
+    }
+    else
+    {
+        cast = yupc::comp_units.back()->ir_builder->CreateBitCast(val, dest_type);
     }
 
     comp_units.back()->value_stack.push(cast);
