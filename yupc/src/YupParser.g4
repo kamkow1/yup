@@ -46,7 +46,7 @@ func_return         :   RETURN expr;
 
 code_block          :   (LBRACE statement* RBRACE) | statement;
 
-func_param          :   IDENTIFIER type_annot;
+func_param          :   (IDENTIFIER type_annot ) | VAR_ARGS;
 
 type_annot          :   COLON type_name;
 

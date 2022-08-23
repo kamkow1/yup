@@ -11,12 +11,13 @@ namespace yupc
     {
         llvm::Type *param_type;
         std::string param_name;
+        bool is_var_arg;
     };
 
     void func_def_codegen(llvm::Function *function);
 
     void func_call_codegen(std::string func_name, std::vector<llvm::Value*> args, std::string text);
 
-    void func_sig_codegen(bool is_external, std::string name, llvm::Type *return_type, 
+    void func_sig_codegen(bool is_var_arg, bool is_external, std::string name, llvm::Type *return_type, 
                         std::vector<llvm::Type*> param_types, std::vector<FuncParam*> params);
 }

@@ -12,6 +12,7 @@ GLOBAL              :   'glob';
 FUNC                :   'func';
 REF                 :   'ref';
 LET                 :   'let';
+VAR_ARGS            :   '...';
 
 IMPORT              :   'import';
 FROM                :   'from';

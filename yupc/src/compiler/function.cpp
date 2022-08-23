@@ -22,6 +22,7 @@
 #include <string>
 #include <any>
 #include <cstddef>
+#include <iostream>
 
 #define MAIN_FUNC_NAME "main"
 
@@ -72,17 +73,17 @@ void yupc::func_call_codegen(std::string func_name, std::vector<llvm::Value*> ar
     }
 }
 
-void yupc::func_sig_codegen(bool is_ext, std::string name, llvm::Type *return_type, 
+void yupc::func_sig_codegen(bool is_var_arg, bool is_ext, std::string name, llvm::Type *return_type, 
                             std::vector<llvm::Type*> param_types, std::vector<FuncParam*> params) 
 {
-
-    llvm::FunctionType *fn_type = llvm::FunctionType::get(return_type, param_types, false);
+    llvm::FunctionType *fn_type = llvm::FunctionType::get(return_type, param_types, is_var_arg);
 
     llvm::GlobalValue::LinkageTypes linkage_type = is_ext || name == MAIN_FUNC_NAME 
                                                     ? llvm::GlobalValue::ExternalLinkage 
                                                     : llvm::GlobalValue::PrivateLinkage;
 
-    llvm::Function *function = llvm::Function::Create(fn_type, linkage_type, name, yupc::comp_units.back()->module);
+    llvm::Function *function = llvm::Function::Create(fn_type, linkage_type, 
+                                                    name, yupc::comp_units.back()->module);
 
     size_t arg_max = function->arg_size();
     for (size_t i = 0; i < arg_max; ++i) 
@@ -115,28 +116,37 @@ std::any yupc::Visitor::visitFunc_signature(yupc::YupParser::Func_signatureConte
     }
 
     std::vector<llvm::Type*> param_types;
-    for (auto const *pt : params) 
+    size_t i = 0;
+    while (i < params.size() && !params[i]->is_var_arg)
     {
-        param_types.push_back(pt->param_type);
+        param_types.push_back(params[i]->param_type);
+        i++;
     }
 
     bool is_pub = ctx->PUBSYM() != nullptr;
-
-    yupc::func_sig_codegen(is_pub, name, return_type, param_types, params);
+    bool is_var_arg = !params.empty() && params.back()->is_var_arg;
+    yupc::func_sig_codegen(is_var_arg, is_pub, name, return_type, param_types, params);
 
     return nullptr;
 }
 
 std::any yupc::Visitor::visitFunc_param(yupc::YupParser::Func_paramContext *ctx) 
 {
+    if (ctx->IDENTIFIER() != nullptr)
+    {
+        std::string name = ctx->IDENTIFIER()->getText();    
+        this->visit(ctx->type_annot());
+        llvm::Type *resolved_type = yupc::comp_units.back()->type_stack.top();
+        yupc::FuncParam *func_param = new yupc::FuncParam{resolved_type, name, false};
 
-    this->visit(ctx->type_annot());
-    llvm::Type *resolved_type = yupc::comp_units.back()->type_stack.top();
+        return func_param;
+    }
+    else
+    {
+        yupc::FuncParam *func_param = new yupc::FuncParam{nullptr, "", true};  
 
-    std::string name = ctx->IDENTIFIER()->getText();
-
-    yupc::FuncParam *func_param = new yupc::FuncParam{resolved_type, name};
-    return func_param;
+        return func_param;
+    }
 }
 
 std::any yupc::Visitor::visitFunc_def(yupc::YupParser::Func_defContext *ctx) 
