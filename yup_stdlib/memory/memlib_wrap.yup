@@ -1,17 +1,14 @@
 import "@std/memory/memlib.ll";
 
-public func __malloc(size: i64): i8* {
-    return malloc(size);
-}
+public func _malloc(size: i64): i8* 
+    malloc(size);
 
-public func __free(ptr: i8*): void {
+public func _free(ptr: i8*): void 
     free(ptr);
-}
 
-public func init_memory(ptr: i8*, value: i32, sz: i64): i8* {
-    return memset(ptr, value, sz);
-}
 
-public func copy_memory(dest: i8*, src: i8*, cnt: i64): i8* {
-    return memcpy(dest, src, cnt);
-}
+public func _memset(ptr: i8*, value: i32, sz: i64): i8* 
+    memset(ptr, value, sz);
+
+public func _memcpy(dest: i8*, src: i8*, cnt: i64): void
+    memcpy(dest, src, cnt);
