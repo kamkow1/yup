@@ -38,7 +38,6 @@ llvm::Type *typeof_oper(std::vector<yupc::OperArg*> &args)
 std::map<std::string, std::function<llvm::Value*(std::vector<yupc::OperArg*>&)>> yupc::value_operators 
 {
     { "sizeof", &sizeof_oper },
-    //{ "typeof", &typeof_oper }
 };
 
 std::map<std::string, std::function<llvm::Type*(std::vector<yupc::OperArg*>&)>> yupc::type_operators 
