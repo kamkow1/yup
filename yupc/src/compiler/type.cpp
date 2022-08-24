@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <compiler/visitor.h>
 #include <compiler/type.h>
 #include <compiler/compilation_unit.h>
@@ -30,29 +31,14 @@ llvm::Type *yupc::resolve_ptr_type(llvm::Type *base)
     return llvm::PointerType::get(base, 0);
 }
 
-static std::map<std::string, size_t> types 
+std::map<std::string, yupc::BuiltInTypes> yupc::builtin_llvm_types
 {
-    { "i32",    yupc::LLVM_I32_TYPE },
-    { "i64",    yupc::LLVM_I64_TYPE },
-    { "float",  yupc::LLVM_FLOAT_TYPE },
-    { "void",   yupc::LLVM_VOID_TYPE },
-    { "i8",     yupc::LLVM_I8_TYPE } // for LLVM
+    {"i32", yupc::LLVM_I32_TYPE},
+    {"i64", yupc::LLVM_I64_TYPE},
+    {"float", yupc::LLVM_FLOAT_TYPE},
+    {"void", yupc::LLVM_VOID_TYPE},
+    {"i8", yupc::LLVM_I8_TYPE}
 };
-
-size_t yupc::resolve_basic_type(std::string match) 
-{
-    auto itr = types.find(match);
-    if (itr != types.end()) {
-        return itr->second;
-    } else {
-        return SIZE_MAX;
-    }
-}
-
-void appendTypeID(size_t n, std::string id_str) 
-{
-    types[id_str] = n;
-}
 
 std::string yupc::type_to_string(llvm::Type *type)
 {
@@ -60,6 +46,23 @@ std::string yupc::type_to_string(llvm::Type *type)
     llvm::raw_string_ostream rso(str);
     type->print(rso);
     return str;
+}
+
+llvm::Type *yupc::get_builtin_llvm_type(std::string type_name, llvm::LLVMContext &ctx_ref)
+{
+    switch (yupc::builtin_llvm_types[type_name]) 
+    {
+        case yupc::LLVM_I32_TYPE:
+            return llvm::Type::getInt32Ty(ctx_ref);
+        case yupc::LLVM_I64_TYPE:
+            return llvm::Type::getInt64Ty(ctx_ref);
+        case yupc::LLVM_I8_TYPE:
+            return llvm::Type::getInt8Ty(ctx_ref);
+        case yupc::LLVM_FLOAT_TYPE:
+            return llvm::Type::getFloatTy(ctx_ref);
+        case yupc::LLVM_VOID_TYPE:
+            return llvm::Type::getVoidTy(ctx_ref);
+    }
 }
 
 llvm::Type* yupc::resolve_type(std::string type_name, llvm::LLVMContext &ctx_ref) 
@@ -77,51 +80,31 @@ llvm::Type* yupc::resolve_type(std::string type_name, llvm::LLVMContext &ctx_ref
         }
     }
 
-    switch (yupc::resolve_basic_type(type_name)) 
+    if (yupc::builtin_llvm_types.contains(type_name))
     {
-        case yupc::LLVM_I32_TYPE: // i32
-            return llvm::Type::getInt32Ty(ctx_ref);
-
-        case yupc::LLVM_I64_TYPE: // i64
-            return llvm::Type::getInt64Ty(ctx_ref);
-
-        case yupc::LLVM_FLOAT_TYPE: // float
-            return llvm::Type::getFloatTy(ctx_ref);
-
-        case yupc::LLVM_VOID_TYPE: // void
-            return llvm::Type::getVoidTy(ctx_ref);
-
-        case yupc::LLVM_I8_TYPE:
-            return llvm::Type::getInt8Ty(ctx_ref);
-
-        case SIZE_MAX: 
-        {
-            std::string base_str = type_name;
-            boost::algorithm::erase_all(base_str, "*");
-
-            llvm::Type *base = yupc::resolve_type(base_str, ctx_ref);
-
-            std::string suffixes = type_name;
-            boost::algorithm::erase_all(suffixes, base_str);
-            
-            for (size_t i = 0; i < suffixes.size(); i++) 
-            {
-                auto c = suffixes[i];
-
-                if (c == '*') 
-                {
-                    base = yupc::resolve_ptr_type(base);
-                }
-            }
-
-            return base;
-        }
+        return yupc::get_builtin_llvm_type(type_name, ctx_ref);
     }
+    else
+    {
+        std::string base_str = type_name;
+        boost::algorithm::erase_all(base_str, "*");
 
-    yupc::log_compiler_err("couldn't match type \"" + type_name + "\"", "");
-    exit(1);
+        llvm::Type *base = yupc::resolve_type(base_str, ctx_ref);
 
-    return nullptr;
+        std::string suffixes = type_name;
+        boost::algorithm::erase_all(suffixes, base_str);
+            
+        for (size_t i = 0; i < suffixes.size(); i++) 
+        {
+            auto c = suffixes[i];
+            if (c == '*') 
+            {
+                base = yupc::resolve_ptr_type(base);
+            }
+        }
+
+        return base;
+    }
 }
 
 llvm::Type *yupc::resolve_fixed_array_type(llvm::Type *base, uint64_t size) 
@@ -129,11 +112,6 @@ llvm::Type *yupc::resolve_fixed_array_type(llvm::Type *base, uint64_t size)
     llvm::ArrayType *array_type = llvm::ArrayType::get(base, size);    
     
     return array_type;
-}
-
-std::string yupc::get_readable_type_name(std::string type_name) 
-{    
-    return type_name;
 }
 
 bool yupc::check_value_type(llvm::Value *val1, llvm::Value *val2) 
@@ -146,40 +124,6 @@ bool yupc::check_value_type(llvm::Value *val1, llvm::Value *val2)
     {
         return val1->getType()->getPointerTo()->getTypeID() == val2->getType()->getTypeID();
     }
-    /*std::string expr_type;
-    llvm::raw_string_ostream rso(expr_type);
-
-    val->getType()->print(rso);
-    expr_type = yupc::get_readable_type_name(rso.str());
-
-    llvm::Value *og_val;
-    bool is_local = yupc::comp_units.back()->symbol_table.back().contains(name);
-
-    if (is_local) 
-    {
-        og_val = yupc::comp_units.back()->symbol_table.back()[name];
-    } 
-    else 
-    {
-        og_val = yupc::comp_units.back()->global_variables[name];
-    }
-
-    std::string og_type;
-    llvm::raw_string_ostream og_rso(og_type);
-
-    og_val->getType()->print(og_rso);
-    og_type = yupc::get_readable_type_name(og_rso.str());
-
-    if (!is_local) 
-    {
-        og_type.pop_back();
-    }
-
-    if (expr_type != og_type) 
-    {
-        yupc::log_compiler_err("mismatch of types \"" + og_type + "\" and \"" + expr_type + "\"", "");
-        exit(1);
-    }*/
 }
 
 std::any yupc::Visitor::visitTypeNameExpr(yupc::YupParser::TypeNameExprContext *ctx)

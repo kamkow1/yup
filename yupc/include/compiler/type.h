@@ -7,16 +7,17 @@
 
 #include <cstddef>
 #include <map>
+#include <vector>
 
 namespace yupc 
 {
-    enum BuiltInTypes 
+    enum BuiltInTypes
     {
         LLVM_I32_TYPE,
         LLVM_I64_TYPE,
+        LLVM_I8_TYPE,
         LLVM_FLOAT_TYPE,
-        LLVM_VOID_TYPE,
-        LLVM_I8_TYPE
+        LLVM_VOID_TYPE
     };
 
     struct AliasType 
@@ -26,17 +27,15 @@ namespace yupc
         bool is_public;
     };
 
+    extern std::map<std::string, BuiltInTypes> builtin_llvm_types;
+
     llvm::Type *resolve_ptr_type(llvm::Type *base);
     
-    size_t resolve_basic_type(std::string match);
-
-    void appendTypeID(size_t n, std::string id_str);
-
     llvm::Type *resolve_type(std::string type_name, llvm::LLVMContext &ctx_ref);
 
     llvm::Type *resolve_fixed_array_type(llvm::Type *base, u_int64_t size);
 
-    std::string get_readable_type_name(std::string type_name);
+    llvm::Type *get_builtin_llvm_type(std::string type_name, llvm::LLVMContext &ctx_ref);
 
     bool check_value_type(llvm::Value *val1, llvm::Value *val2);
 
