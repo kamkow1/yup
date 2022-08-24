@@ -29,6 +29,5 @@ std::any yupc::Visitor::visitCode_block(yupc::YupParser::Code_blockContext *ctx)
     }
 
     yupc::drop_scope();
-
     return nullptr;
 }

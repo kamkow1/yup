@@ -26,6 +26,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/IRReader/IRReader.h>
 
@@ -65,12 +66,10 @@ void yupc::process_source_file(std::string path)
 
     yupc::comp_units.back()->module_name = yupc::get_ir_fname(mod_path.string());
 
-    //yupc::init_runtime_lib(*yupc::comp_units.back()->module);
-
     visitor.visit(ctx);
 
     // dump module to .ll
-    //verifyModule(*yupc::comp_units.back()->module, &outs());
+    verifyModule(*yupc::comp_units.back()->module, &llvm::errs());
     dump_module(yupc::comp_units.back()->module, yupc::comp_units.back()->module_name);
 }
 
@@ -129,14 +128,11 @@ void yupc::process_path(std::string path)
     {
         yupc::CompilationUnit *comp_unit = new yupc::CompilationUnit;
         yupc::init_comp_unit(*comp_unit, path);
-
         llvm::LLVMContext *new_ctx = new llvm::LLVMContext;
         llvm::SMDiagnostic error;
         llvm::Module *imported_mod = llvm::parseIRFile(path, error, *new_ctx).release();
-
         comp_unit->module = imported_mod;
         comp_unit->context = new_ctx;
-
         yupc::comp_units.push_back(comp_unit);
     }
 }
