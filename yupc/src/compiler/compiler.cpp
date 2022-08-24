@@ -36,6 +36,15 @@ namespace fs = std::filesystem;
 
 yupc::CompilerOpts yupc::compiler_opts;
 
+std::string yupc::create_module_name(std::string base_path)
+{
+    fs::path bd(yupc::build_dir);
+    fs::path f(yupc::base_name(base_path));
+    fs::path mod_path = bd / f;
+
+    return yupc::get_ir_fname(mod_path.string());
+}
+
 void yupc::process_source_file(std::string path) 
 {
     std::string src_content = yupc::file_to_str(path);
@@ -55,17 +64,12 @@ void yupc::process_source_file(std::string path)
     parser.removeErrorListeners();
     parser.addErrorListener(&parser_error_listener);
 
+    yupc::YupParser::FileContext *ctx = parser.file();
+
+    yupc::comp_units.back()->module_name = yupc::create_module_name(path);
     yupc::comp_units.back()->context->setOpaquePointers(false);
 
-    yupc::YupParser::FileContext *ctx = parser.file();
     yupc::Visitor visitor;
-
-    fs::path bd(yupc::build_dir);
-    fs::path f(yupc::base_name(path));
-    fs::path mod_path = bd / f;
-
-    yupc::comp_units.back()->module_name = yupc::get_ir_fname(mod_path.string());
-
     visitor.visit(ctx);
 
     // dump module to .ll

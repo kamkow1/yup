@@ -26,4 +26,6 @@ namespace yupc
     void process_source_file(std::string path);
 
     void process_path(std::string path);
+
+    std::string create_module_name(std::string base_path);
 };
