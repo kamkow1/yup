@@ -21,32 +21,6 @@
 #include <cstddef>
 #include <string>
 
-llvm::Instruction *yupc::create_array_dyn_malloc(llvm::Type *elem_type, llvm::Value *elem_count, llvm::DataLayout dl) 
-{
-
-    llvm::IntegerType *i32 = llvm::Type::getInt32Ty(*yupc::comp_units.back()->context);
-    llvm::ConstantInt *size_of_element = llvm::ConstantInt::get(i32, dl.getTypeAllocSize(elem_type));
-    llvm::Value *array_size = yupc::comp_units.back()->ir_builder->CreateMul(size_of_element, elem_count);
-    llvm::BasicBlock *basic_block = yupc::comp_units.back()->ir_builder->GetInsertBlock();
-    llvm::Instruction *array_malloc = llvm::CallInst::CreateMalloc(basic_block, elem_type, elem_type, 
-                                                                    array_size, nullptr, nullptr, ""); 
-    yupc::comp_units.back()->ir_builder->Insert(array_malloc);
-    return array_malloc;
-}
-
-llvm::Instruction *yupc::create_array_const_malloc(llvm::Type *elem_type, uint64_t elem_count, llvm::DataLayout dl) 
-{
-    llvm::IntegerType *i32 = llvm::Type::getInt32Ty(*yupc::comp_units.back()->context);
-    llvm::ConstantInt *size_of_element = llvm::ConstantInt::get(i32, dl.getTypeAllocSize(elem_type));
-    llvm::ConstantInt *length = llvm::ConstantInt::get(i32, elem_count);
-    llvm::Constant *array_size = llvm::ConstantExpr::getMul(size_of_element, length);
-    llvm::BasicBlock *basic_block = yupc::comp_units.back()->ir_builder->GetInsertBlock();
-    llvm::Instruction *array_malloc = llvm::CallInst::CreateMalloc(basic_block, elem_type, elem_type, 
-                                                                    array_size, nullptr, nullptr, ""); 
-    yupc::comp_units.back()->ir_builder->Insert(array_malloc);
-    return array_malloc;
-}
-
 void yupc::indexed_access_expr_codegen(llvm::Value *array, llvm::Value *idxVal) 
 {
     llvm::Type *ptr_type = array->getType()->getPointerTo();
@@ -71,21 +45,13 @@ void yupc::arr_elem_assignment_codegen(std::string arr_name, size_t idx_nesting_
     yupc::comp_units.back()->ir_builder->CreateStore(val, ptr);
 }
 
-void yupc::array_codegen(std::vector<llvm::Value*> elems, size_t elem_count) 
+void yupc::array_codegen(std::vector<llvm::Constant*> elems, size_t elem_count) 
 {
     llvm::Type *elem_type = elems[0]->getType();
-    llvm::DataLayout dl = yupc::comp_units.back()->module->getDataLayout();
-    llvm::Instruction *array_malloc = yupc::create_array_const_malloc(elem_type, elem_count, dl);
+    llvm::ArrayType *array_type = llvm::ArrayType::get(elem_type, elems.size());
+    llvm::Constant *const_array = llvm::ConstantArray::get(array_type, elems);
 
-    for (size_t i = 0; i < elem_count; i++) 
-    {
-        llvm::ConstantInt *idx = llvm::ConstantInt::get(llvm::Type::getInt32Ty(*yupc::comp_units.back()->context), i);
-        llvm::Type *alloc_ptr_type = array_malloc->getType()->getPointerTo();
-        llvm::Value *idx_gep = yupc::comp_units.back()->ir_builder->CreateGEP(alloc_ptr_type, array_malloc, idx);
-        yupc::comp_units.back()->ir_builder->CreateStore(elems[i], idx_gep);
-    }
-
-    yupc::comp_units.back()->value_stack.push(array_malloc);
+    yupc::comp_units.back()->value_stack.push(const_array);
 }
 
 std::any yupc::Visitor::visitIndexedAccessExpr(yupc::YupParser::IndexedAccessExprContext *ctx) 
@@ -97,7 +63,10 @@ std::any yupc::Visitor::visitIndexedAccessExpr(yupc::YupParser::IndexedAccessExp
         this->visit(ctx->expr(i));
         llvm::Value *idx_val = yupc::comp_units.back()->value_stack.top();
         yupc::indexed_access_expr_codegen(array, idx_val);
+        yupc::comp_units.back()->value_stack.pop();
     }
+
+    yupc::comp_units.back()->value_stack.pop();
 
     return nullptr;
 }
@@ -120,28 +89,16 @@ std::any yupc::Visitor::visitArr_elem_assignment(yupc::YupParser::Arr_elem_assig
 
 std::any yupc::Visitor::visitArray(yupc::YupParser::ArrayContext *ctx) 
 {
-    std::vector<llvm::Value*> elems;
+    std::vector<llvm::Constant*> elems;
     size_t elem_count = ctx->expr().size();
     for (size_t i = 0; i < elem_count; i++) 
     {
         this->visit(ctx->expr(i));
-        llvm::Value *elem = yupc::comp_units.back()->value_stack.top();
+        llvm::Constant *elem = llvm::cast<llvm::Constant>(yupc::comp_units.back()->value_stack.top());
         elems.push_back(elem);
+        yupc::comp_units.back()->value_stack.pop();
     }
 
     yupc::array_codegen(elems, elem_count);
-    return nullptr;
-}
-
-std::any yupc::Visitor::visitArray_init(yupc::YupParser::Array_initContext *ctx) 
-{
-
-    llvm::Type *elem_type = yupc::resolve_type(ctx->type_name()->getText(), 
-                                            yupc::comp_units.back()->module->getContext());
-    this->visit(ctx->expr());
-    llvm::Value *array_size = yupc::comp_units.back()->value_stack.top();
-    llvm::DataLayout dl = yupc::comp_units.back()->module->getDataLayout();
-    llvm::Instruction *array_malloc = yupc::create_array_dyn_malloc(elem_type, array_size, dl);
-    yupc::comp_units.back()->value_stack.push(array_malloc);
     return nullptr;
 }

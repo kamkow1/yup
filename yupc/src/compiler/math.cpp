@@ -53,6 +53,8 @@ std::any yupc::Visitor::visitMathOperExpr(yupc::YupParser::MathOperExprContext *
     llvm::Value *rhs = yupc::comp_units.back()->value_stack.top();
 
     yupc::math_oper_expr_codegen(lhs, rhs, op);
+    yupc::comp_units.back()->value_stack.pop();
+    yupc::comp_units.back()->value_stack.pop();
 
     return nullptr;
 }

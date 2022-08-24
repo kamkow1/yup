@@ -33,6 +33,7 @@ std::any yupc::Visitor::visitPtr_dereference(yupc::YupParser::Ptr_dereferenceCon
     llvm::Value *value = yupc::comp_units.back()->value_stack.top();
 
     yupc::ptr_deref_codegen(value, ctx->getText());
+    yupc::comp_units.back()->value_stack.pop();
 
     return nullptr;
 }

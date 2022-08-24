@@ -46,8 +46,6 @@ namespace yupc
 
         std::any visitEmphExpr(yupc::YupParser::EmphExprContext *ctx) override;
 
-        std::any visitArray_init(yupc::YupParser::Array_initContext *ctx) override;
-
         std::any visitImport_decl(yupc::YupParser::Import_declContext *ctx) override;
 
         std::any visitType_decl(yupc::YupParser::Type_declContext *ctx) override;

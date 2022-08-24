@@ -180,6 +180,9 @@ std::any yupc::Visitor::visitTypeCastExpr(yupc::YupParser::TypeCastExprContext *
         cast = yupc::comp_units.back()->ir_builder->CreateBitCast(val, dest_type);
     }
 
+    yupc::comp_units.back()->value_stack.pop();
+    yupc::comp_units.back()->type_stack.pop();
+
     comp_units.back()->value_stack.push(cast);
 
     return nullptr;
