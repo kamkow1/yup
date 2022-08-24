@@ -1,6 +1,5 @@
 [requires]
 cli11/2.2.0
-termcolor/2.1.0
 boost/1.79.0
 
 [generators]
