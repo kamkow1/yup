@@ -2,6 +2,7 @@
 #include <compiler/type.h>
 #include <compiler/compilation_unit.h>
 
+#include <llvm/Support/raw_ostream.h>
 #include <parser/YupParser.h>
 #include <lexer/YupLexer.h>
 
@@ -51,6 +52,14 @@ size_t yupc::resolve_basic_type(std::string match)
 void appendTypeID(size_t n, std::string id_str) 
 {
     types[id_str] = n;
+}
+
+std::string yupc::type_to_string(llvm::Type *type)
+{
+    std::string str;
+    llvm::raw_string_ostream rso(str);
+    type->print(rso);
+    return str;
 }
 
 llvm::Type* yupc::resolve_type(std::string type_name, llvm::LLVMContext &ctx_ref) 
@@ -127,9 +136,17 @@ std::string yupc::get_readable_type_name(std::string type_name)
     return type_name;
 }
 
-void yupc::check_value_type(llvm::Value *val, std::string name) 
+bool yupc::check_value_type(llvm::Value *val1, llvm::Value *val2) 
 {
-    std::string expr_type;
+    if (val1->getType()->isPointerTy())
+    {
+        return val1->getType()->getTypeID() == val2->getType()->getTypeID();
+    }
+    else
+    {
+        return val1->getType()->getPointerTo()->getTypeID() == val2->getType()->getTypeID();
+    }
+    /*std::string expr_type;
     llvm::raw_string_ostream rso(expr_type);
 
     val->getType()->print(rso);
@@ -162,7 +179,7 @@ void yupc::check_value_type(llvm::Value *val, std::string name)
     {
         yupc::log_compiler_err("mismatch of types \"" + og_type + "\" and \"" + expr_type + "\"", "");
         exit(1);
-    }
+    }*/
 }
 
 std::any yupc::Visitor::visitTypeNameExpr(yupc::YupParser::TypeNameExprContext *ctx)

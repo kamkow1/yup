@@ -38,5 +38,7 @@ namespace yupc
 
     std::string get_readable_type_name(std::string type_name);
 
-    void check_value_type(llvm::Value *val, std::string name);
+    bool check_value_type(llvm::Value *val1, llvm::Value *val2);
+
+    std::string type_to_string(llvm::Type *type);
 }

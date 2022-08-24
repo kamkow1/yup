@@ -59,35 +59,6 @@ void yupc::ident_expr_codegen(std::string id, bool is_glob)
         llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(type, variable);
         yupc::comp_units.back()->value_stack.push(load);
     }
-
-    /*bool contains_id = yupc::comp_units.back()->symbol_table.back().contains(id);
-
-    if (contains_id) 
-    {
-        llvm::AllocaInst *value =yupc::comp_units.back()->symbol_table.back()[id];
-        llvm::Type *type = value->getAllocatedType();
-
-        llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(type, value);
-
-        yupc::comp_units.back()->value_stack.push(load);
-    } 
-    else if (is_glob) 
-    {
-        llvm::GlobalVariable *gv = yupc::comp_units.back()->global_variables[id];
-        llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(gv->getValueType(), gv);
-
-        yupc::comp_units.back()->value_stack.push(load);
-    } 
-    else 
-    {
-        llvm::GlobalVariable *gv = yupc::comp_units.back()->global_variables[id];
-        llvm::Type *type = gv->getValueType();
-
-        llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(type, gv);
-
-        yupc::comp_units.back()->value_stack.push(load);
-    }*/
-
 }
 
 void yupc::assignment_codegen(std::string name, llvm::Value *val, std::string text) 
@@ -113,20 +84,29 @@ void yupc::assignment_codegen(std::string name, llvm::Value *val, std::string te
     if (is_local) 
     {
         llvm::AllocaInst *stored = yupc::comp_units.back()->symbol_table.back()[name];
-        yupc::check_value_type(val, name);
+        if (!yupc::check_value_type(val, stored))
+        {
+            std::string val_type_str = yupc::type_to_string(val->getType());
+            std::string stored_type_str = yupc::type_to_string(stored->getType());
+            yupc::log_compiler_err("cannot assign type " + val_type_str + " to " + stored_type_str, text);
+            exit(1);
+        }
 
         yupc::comp_units.back()->ir_builder->CreateStore(val, stored, false);
-
         yupc::comp_units.back()->value_stack.pop();
     } 
     else if (is_global) 
     {
         llvm::GlobalVariable *gv = yupc::comp_units.back()->global_variables[name];
-
-        yupc::check_value_type(val, name);
+        if (!yupc::check_value_type(val, gv))
+        {
+            std::string gv_type_str = yupc::type_to_string(gv->getValueType());
+            std::string val_type_str = yupc::type_to_string(val->getType());
+            yupc::log_compiler_err("cannot assign type " + val_type_str + " to " + gv_type_str, text);
+            exit(1);
+        }
 
         yupc::comp_units.back()->ir_builder->CreateStore(val, gv, false);
-
         yupc::comp_units.back()->value_stack.pop();
     }
     else 
