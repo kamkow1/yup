@@ -18,8 +18,6 @@
 #include <llvm/IR/Instruction.h>
 #include <llvm/IR/GlobalVariable.h>
 
-#include <boost/lexical_cast.hpp>
-
 #include <cstddef>
 #include <string>
 

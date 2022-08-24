@@ -3,9 +3,9 @@
 #include <compiler/visitor.h>
 #include <compiler/file_sys.h>
 #include <compiler/config.h>
+#include <utils.h>
 
-#include <llvm/Support/MemoryBuffer.h>
-#include <llvm/Support/MemoryBufferRef.h>
+#include <cstring>
 #include <memory>
 #include <msg/errors.h>
 #include <msg/info.h>
@@ -21,14 +21,11 @@
 #include <cstddef>
 #include <system_error>
 #include <vector>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/replace.hpp>
 
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <llvm/Support/MemoryBufferRef.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/FileSystem.h>
@@ -101,16 +98,15 @@ void yupc::build_bitcode(fs::path bc_file)
 
 void yupc::process_path(std::string path) 
 {
-    std::vector<std::string> path_elems;
     std::string tmp_path = path;
-    boost::split(path_elems, tmp_path, boost::is_any_of("/"));
+    std::vector<std::string> path_elems = yupc::split_string(tmp_path, '/');;
     for (size_t i = 0; i < tmp_path.size(); i++)
     {
         for (auto &pv : yupc::path_vars)
         {
             if (path_elems[i] == pv.first)
             {
-                boost::replace_all(path, pv.first, pv.second);
+                path = yupc::string_replace_all(path, pv.first, pv.second);
             }
         }
     }

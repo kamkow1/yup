@@ -2,8 +2,6 @@
 #include <compiler/addr_of.h>
 #include <compiler/compilation_unit.h>
 
-#include <boost/algorithm/string.hpp>
-
 void yupc::addr_of_expr_codegen(std::string id) 
 {
     llvm::Value *val = yupc::comp_units.back()->symbol_table.back()[id];

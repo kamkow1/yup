@@ -2,13 +2,13 @@
 #include <compiler/compilation_unit.h>
 #include <compiler/constant.h>
 #include <compiler/type.h>
-#include <llvm/IR/Type.h>
 #include <msg/errors.h>
+#include <utils.h>
 
 #include <llvm/IR/Constant.h>
+#include <llvm/IR/Type.h>
 #include <llvm/IR/Constants.h>
 
-#include <boost/lexical_cast.hpp>
 #include <string>
 #include <cstdint>
 
@@ -62,7 +62,7 @@ std::any yupc::Visitor::visitConstant(yupc::YupParser::ConstantContext *ctx)
     if (ctx->V_INT() != nullptr) 
     {
         std::string text = ctx->V_INT()->getText();
-        int64_t value = boost::lexical_cast<int64_t>(text.c_str());
+        int64_t value = yupc::string_to_int64_t(text);
         yupc::int_codegen(value);
         return nullptr;
     }

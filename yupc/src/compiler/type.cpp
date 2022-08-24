@@ -8,6 +8,7 @@
 #include <lexer/YupLexer.h>
 
 #include <msg/errors.h>
+#include <utils.h>
 
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/InstrTypes.h>
@@ -16,15 +17,12 @@
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
 
-
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include <any>
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <map>
+#include <algorithm>
 
 llvm::Type *yupc::resolve_ptr_type(llvm::Type *base) 
 {
@@ -87,12 +85,12 @@ llvm::Type* yupc::resolve_type(std::string type_name, llvm::LLVMContext &ctx_ref
     else
     {
         std::string base_str = type_name;
-        boost::algorithm::erase_all(base_str, "*");
+        base_str.erase(std::remove(base_str.begin(), base_str.end(), '*'), base_str.end());
 
         llvm::Type *base = yupc::resolve_type(base_str, ctx_ref);
 
         std::string suffixes = type_name;
-        boost::algorithm::erase_all(suffixes, base_str);
+        yupc::string_remove_all(base_str, suffixes);
             
         for (size_t i = 0; i < suffixes.size(); i++) 
         {
@@ -218,7 +216,7 @@ std::any yupc::Visitor::visitType_name(yupc::YupParser::Type_nameContext *ctx)
         {
             if (dynamic_cast<yupc::YupParser::ConstantExprContext*>(ext->array_type_ext()->expr())) 
             {
-                unsigned long elem_count = boost::lexical_cast<uint64_t>(ext->array_type_ext()->expr()->getText());
+                uint32_t elem_count = yupc::string_to_uint64_t(ext->array_type_ext()->expr()->getText());
 
                 type_base = yupc::resolve_fixed_array_type(type_base, elem_count);
             }

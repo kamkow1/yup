@@ -58,8 +58,9 @@ set (SRCS
     src/parser/YupParser.cpp
     src/parser/YupParserBaseVisitor.cpp
     src/parser/YupParserVisitor.cpp
-    src/main.cpp
     src/parser/parser_error_listener.cpp
+    src/main.cpp
+    src/utils.cpp
 )
 
 
