@@ -14,7 +14,8 @@ statement           :   expr                    TERMINATOR
                     |   arr_elem_assignment     TERMINATOR
                     |   func_signature          TERMINATOR
                     |   import_decl             TERMINATOR
-                    |   type_decl               TERMINATOR;
+                    |   type_decl               TERMINATOR
+                    |   code_block;
 
 type_decl           :   PUBSYM? TYPE IDENTIFIER type_def;
 
@@ -44,7 +45,7 @@ func_signature      :   PUBSYM? IDENTIFIER LPAREN (func_param (COMMA func_param)
 
 func_return         :   RETURN expr;
 
-code_block          :   (LBRACE statement* RBRACE) | statement;
+code_block          :   LBRACE statement* RBRACE;
 
 func_param          :   (IDENTIFIER type_annot ) | VAR_ARGS;
 

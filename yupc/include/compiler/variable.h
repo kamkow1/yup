@@ -1,8 +1,14 @@
 #pragma once
 
-#include "string.h"
-#include "llvm/IR/Value.h"
-#include "llvm/IR/Type.h"
+#include <llvm/IR/GlobalVariable.h>
+#include <llvm/IR/Value.h>
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Instructions.h>
+
+#include <string>
+#include <cstddef>
+#include <map>
+#include <vector>
 
 namespace yupc 
 {
@@ -13,6 +19,9 @@ namespace yupc
         bool is_const;
         bool is_ref;
     };
+
+    llvm::AllocaInst *find_local_variable(std::string name, size_t i,
+        std::vector<std::map<std::string, llvm::AllocaInst*>> &symbol_table, std::string text);
 
     void ident_expr_codegen(std::string id, bool is_glob);
 

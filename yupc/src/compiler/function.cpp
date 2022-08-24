@@ -2,6 +2,7 @@
 #include <compiler/type.h>
 #include <compiler/function.h>
 #include <compiler/compilation_unit.h>
+#include <compiler/code_block.h>
 #include <msg/errors.h>
 
 #include <parser/YupParser.h>
@@ -29,12 +30,7 @@
 void yupc::func_def_codegen(llvm::Function *function) 
 {
     llvm::BasicBlock *block = llvm::BasicBlock::Create(yupc::comp_units.back()->module->getContext(), "entry", function);
-
     yupc::comp_units.back()->ir_builder->SetInsertPoint(block);
-
-    std::map<std::string, llvm::AllocaInst*> map;
-
-    yupc::comp_units.back()->symbol_table.push_back(map);
 
     size_t len = function->arg_size();
     for (size_t i = 0; i < len; ++i) 
@@ -42,9 +38,7 @@ void yupc::func_def_codegen(llvm::Function *function)
         llvm::Argument &arg = *function->getArg(i);
 
         llvm::AllocaInst *alloca = yupc::comp_units.back()->ir_builder->CreateAlloca(arg.getType(), 0, arg.getName());
-
         yupc::comp_units.back()->symbol_table.back()[arg.getName().str()] = alloca;
-
         yupc::comp_units.back()->ir_builder->CreateStore(&arg, alloca);
     }
 }
@@ -77,11 +71,9 @@ void yupc::func_sig_codegen(bool is_var_arg, bool is_ext, std::string name, llvm
                             std::vector<llvm::Type*> param_types, std::vector<FuncParam*> params) 
 {
     llvm::FunctionType *fn_type = llvm::FunctionType::get(return_type, param_types, is_var_arg);
-
     llvm::GlobalValue::LinkageTypes linkage_type = is_ext || name == MAIN_FUNC_NAME 
                                                     ? llvm::GlobalValue::ExternalLinkage 
                                                     : llvm::GlobalValue::PrivateLinkage;
-
     llvm::Function *function = llvm::Function::Create(fn_type, linkage_type, 
                                                     name, yupc::comp_units.back()->module);
 
@@ -162,6 +154,7 @@ std::any yupc::Visitor::visitFunc_def(yupc::YupParser::Func_defContext *ctx)
         exit(1);
     }
 
+    yupc::create_new_scope();
     yupc::func_def_codegen(function);
 
     bool is_void = function->getReturnType()->isVoidTy();
@@ -169,9 +162,7 @@ std::any yupc::Visitor::visitFunc_def(yupc::YupParser::Func_defContext *ctx)
     {
         this->visit(ctx->code_block());
         llvm::Value *ret_value = yupc::comp_units.back()->value_stack.top();
-
         yupc::comp_units.back()->ir_builder->CreateRet(ret_value);
-
         yupc::comp_units.back()->value_stack.pop();
     } 
     else 
@@ -180,9 +171,8 @@ std::any yupc::Visitor::visitFunc_def(yupc::YupParser::Func_defContext *ctx)
         yupc::comp_units.back()->ir_builder->CreateRetVoid();
     }
 
-
+    yupc::drop_scope();
     verifyFunction(*function, &llvm::errs());
-    yupc::comp_units.back()->symbol_table.pop_back();
 
     return nullptr;
 }
@@ -208,9 +198,7 @@ std::any yupc::Visitor::visitFunc_call(yupc::YupParser::Func_callContext *ctx)
 
         this->visit(expr);
         llvm::Value *arg_val = yupc::comp_units.back()->value_stack.top();
-
         args.push_back(arg_val);
-
         yupc::comp_units.back()->value_stack.pop();
     }
 

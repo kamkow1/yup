@@ -3,6 +3,7 @@
 #include <compiler/variable.h>
 #include <compiler/compilation_unit.h>
 
+#include <cstddef>
 #include <msg/errors.h>
 #include <string>
 
@@ -22,10 +23,44 @@
 
 static std::map<std::string, yupc::Variable> variables;
 
+llvm::AllocaInst *yupc::find_local_variable(std::string name, size_t i,
+    std::vector<std::map<std::string, llvm::AllocaInst*>> &symbol_table, std::string text)
+{
+    if (symbol_table[i].contains(name))
+    {
+        return symbol_table[i][name];
+    }
+    else if (i > 0)
+    {
+        return yupc::find_local_variable(name, --i, symbol_table, text);
+    }
+    else
+    {
+        yupc::log_compiler_err("unknown variable " + name, text);
+        exit(1);
+    }
+}
+
 void yupc::ident_expr_codegen(std::string id, bool is_glob) 
 {
+    if (is_glob)
+    {
+        llvm::GlobalVariable *global_var = yupc::comp_units.back()->global_variables[id];
+        llvm::Type *type = global_var->getValueType();
+        llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(type, global_var);
+        yupc::comp_units.back()->value_stack.push(load);
+    }
+    else
+    {
+        llvm::AllocaInst *variable = yupc::find_local_variable(id, yupc::comp_units.back()->symbol_table.size() - 1,
+                                                                yupc::comp_units.back()->symbol_table, "");
 
-    bool contains_id = yupc::comp_units.back()->symbol_table.back().contains(id);
+        llvm::Type *type = variable->getAllocatedType();
+        llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(type, variable);
+        yupc::comp_units.back()->value_stack.push(load);
+    }
+
+    /*bool contains_id = yupc::comp_units.back()->symbol_table.back().contains(id);
 
     if (contains_id) 
     {
@@ -51,7 +86,7 @@ void yupc::ident_expr_codegen(std::string id, bool is_glob)
         llvm::LoadInst *load = yupc::comp_units.back()->ir_builder->CreateLoad(type, gv);
 
         yupc::comp_units.back()->value_stack.push(load);
-    }
+    }*/
 
 }
 
@@ -223,14 +258,6 @@ std::any yupc::Visitor::visitIdentifierExpr(yupc::YupParser::IdentifierExprConte
     std::string name = ctx->IDENTIFIER()->getText();
 
     bool is_glob = yupc::comp_units.back()->global_variables.contains(name);
-
-    bool is_loc = yupc::comp_units.back()->symbol_table.back().contains(name);
-
-    if (!is_glob && !is_loc) 
-    {
-        yupc::log_compiler_err("symbol \"" + name + "\" is neither a local nor a global variable", ctx->getText());
-        exit(1);
-    }
 
     yupc::ident_expr_codegen(name, is_glob);
     
