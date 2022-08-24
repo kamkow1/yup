@@ -21,7 +21,7 @@ namespace yupc
 
     extern CompilerOpts compiler_opts;
 
-    void build_bitcode(fs::path bin_file, fs::path ll_dir);
+    void build_bitcode(fs::path bin_file);
 
     void process_source_file(std::string path);
 

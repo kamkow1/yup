@@ -34,17 +34,15 @@ void process_build_cmd()
                     yupc::process_path(entry.path().string());
                 }
             }
-
         } 
         else 
         {
-
             yupc::process_path(path);
         }
     }
 
     std::string bc_file = yupc::init_bin_dir();
-    yupc::build_bitcode(bc_file, yupc::build_dir);
+    yupc::build_bitcode(bc_file);
 }
 
 void setup_cmds(CLI::App &cli) {

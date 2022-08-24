@@ -4,6 +4,9 @@
 #include <compiler/file_sys.h>
 #include <compiler/config.h>
 
+#include <llvm/Support/MemoryBuffer.h>
+#include <llvm/Support/MemoryBufferRef.h>
+#include <memory>
 #include <msg/errors.h>
 #include <msg/info.h>
 
@@ -16,6 +19,7 @@
 #include <string>
 #include <filesystem>
 #include <cstddef>
+#include <system_error>
 #include <vector>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -27,8 +31,12 @@
 #include <llvm/IR/Module.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/FileSystem.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/IRReader/IRReader.h>
+#include <llvm/Linker/Linker.h>
+#include <llvm/Bitcode/BitcodeWriter.h>
+#include <llvm/Bitcode/BitcodeReader.h>
 
 #define UNUSED(x) (void)(x)
 
@@ -72,36 +80,23 @@ void yupc::process_source_file(std::string path)
     yupc::Visitor visitor;
     visitor.visit(ctx);
 
-    // dump module to .ll
     verifyModule(*yupc::comp_units.back()->module, &llvm::errs());
     dump_module(yupc::comp_units.back()->module, yupc::comp_units.back()->module_name);
 }
 
-void yupc::build_bitcode(fs::path bc_file, fs::path ll_dir) 
+void yupc::build_bitcode(fs::path bc_file) 
 {
-
-    std::string llvm_link = "llvm-link -o " + bc_file.string();
-    for (fs::directory_entry entry : fs::directory_iterator(ll_dir)) 
+    for (size_t i = 1; i < yupc::comp_units.size(); i++)
     {
-        if (!fs::is_directory(entry)) 
-        {
-            llvm_link += " " + entry.path().string();
-        }
+        llvm::Linker::linkModules(*yupc::comp_units.back()->module, 
+            std::unique_ptr<llvm::Module>(yupc::comp_units[i]->module));
+        yupc::comp_units.pop_back();
     }
 
-    int r = std::system(llvm_link.c_str());
-    UNUSED(r);
-    yupc::log_cmd_info(llvm_link);
-
-
-    if (!yupc::compiler_opts.give_perms) 
-    {
-        std::string chmod = (std::string("chmod +x ") + bc_file.string()).c_str();
-        int rr = std::system(chmod.c_str());
-        UNUSED(rr);
-        yupc::log_cmd_info(chmod);
-    }
-
+    yupc::log_cmd_info("finished linking bitcode");
+    std::error_code ec;
+    llvm::raw_fd_ostream os(bc_file.string(), ec);
+    llvm::WriteBitcodeToFile(*yupc::comp_units.back()->module, os);
 }
 
 void yupc::process_path(std::string path) 
@@ -135,6 +130,17 @@ void yupc::process_path(std::string path)
         llvm::LLVMContext *new_ctx = new llvm::LLVMContext;
         llvm::SMDiagnostic error;
         llvm::Module *imported_mod = llvm::parseIRFile(path, error, *new_ctx).release();
+        comp_unit->module = imported_mod;
+        comp_unit->context = new_ctx;
+        yupc::comp_units.push_back(comp_unit);
+    }
+    else if (fs::path(path).extension().string() == ".bc")
+    {
+        yupc::CompilationUnit *comp_unit = new yupc::CompilationUnit;
+        yupc::init_comp_unit(*comp_unit, path);
+        llvm::LLVMContext *new_ctx = new llvm::LLVMContext;
+        llvm::MemoryBufferRef memory_buffer;        
+        llvm::Module *imported_mod = llvm::parseBitcodeFile(memory_buffer, *new_ctx)->release();
         comp_unit->module = imported_mod;
         comp_unit->context = new_ctx;
         yupc::comp_units.push_back(comp_unit);

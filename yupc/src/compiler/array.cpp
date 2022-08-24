@@ -2,6 +2,7 @@
 #include <compiler/array.h>
 #include <compiler/type.h>
 #include <compiler/compilation_unit.h>
+#include <llvm/Support/Casting.h>
 #include <msg/errors.h>
 
 #include <llvm/ADT/ArrayRef.h>
@@ -24,6 +25,7 @@
 
 llvm::Instruction *yupc::create_array_dyn_malloc(llvm::Type *elem_type, llvm::Value *elem_count, llvm::DataLayout dl) 
 {
+
     llvm::IntegerType *i32 = llvm::Type::getInt32Ty(*yupc::comp_units.back()->context);
     llvm::ConstantInt *size_of_element = llvm::ConstantInt::get(i32, dl.getTypeAllocSize(elem_type));
     llvm::Value *array_size = yupc::comp_units.back()->ir_builder->CreateMul(size_of_element, elem_count);
@@ -58,21 +60,17 @@ void yupc::indexed_access_expr_codegen(llvm::Value *array, llvm::Value *idxVal)
 void yupc::arr_elem_assignment_codegen(std::string arr_name, size_t idx_nesting_lvl, std::vector<llvm::Value*> idx_vals) 
 {
     llvm::AllocaInst *stored = yupc::comp_units.back()->symbol_table.back()[arr_name];
-    llvm::Type *alloc_type = stored->getAllocatedType();
-    llvm::LoadInst *array = yupc::comp_units.back()->ir_builder->CreateLoad(alloc_type, stored);
 
-    llvm::Value *val_to_override;
+    llvm::Value *ptr;
     for (size_t i = 0; i < idx_nesting_lvl; i++) 
     { 
-        llvm::Type *arr_ptr_type = array->getType()->getPointerTo();
-        llvm::AllocaInst *arr_ptr = yupc::comp_units.back()->ir_builder->CreateAlloca(array->getType()->getPointerTo());
-        llvm::Value *idx_gep = yupc::comp_units.back()->ir_builder->CreateGEP(arr_ptr_type, arr_ptr, idx_vals[i]);
-        val_to_override = idx_gep;
+        llvm::Value *gep = yupc::comp_units.back()->ir_builder->CreateInBoundsGEP(stored->getAllocatedType(), stored, idx_vals[i]);
+        ptr = gep;
     }
 
     llvm::Value *val = yupc::comp_units.back()->value_stack.top();
-    yupc::comp_units.back()->ir_builder->CreateStore(val, val_to_override, false);
-    yupc::comp_units.back()->value_stack.pop();
+    ptr->mutateType(stored->getAllocatedType()->getArrayElementType()->getPointerTo());
+    yupc::comp_units.back()->ir_builder->CreateStore(val, ptr);
 }
 
 void yupc::array_codegen(std::vector<llvm::Value*> elems, size_t elem_count) 
