@@ -1,6 +1,7 @@
 #include <utils.h>
 
 #include <sys/types.h>
+#include <iostream>
 #include <string>
 #include <cstdlib>
 #include <algorithm>
@@ -8,6 +9,8 @@
 #include <cstdint>
 #include <vector>
 #include <sstream>
+
+#include <llvm/Support/raw_ostream.h>
 
 std::string yupc::string_remove_all(std::string str, const std::string& from)
 {
@@ -57,4 +60,13 @@ std::string yupc::string_replace_all(std::string str, const std::string &from, c
     }
 
     return str;
+}
+
+void yupc::dump_type_to_stdout(llvm::Type *type)
+{
+    std::string str;
+    llvm::raw_string_ostream rso(str);
+    type->print(rso);
+
+    std::cout << str << "\n";
 }

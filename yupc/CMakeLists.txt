@@ -35,30 +35,30 @@ add_definitions (${LLVM_DEFINITIONS})
 llvm_map_components_to_libnames(llvm_libs support core irreader linker bitwriter bitreader)
 
 set (SRCS
-    src/compiler/config.cpp
-    src/compiler/file_sys.cpp
-    src/compiler/operators.cpp
-    src/compiler/ptr_dereference.cpp
-    src/compiler/compiler.cpp
-    src/compiler/compilation_unit.cpp
-    src/compiler/code_block.cpp
-    src/compiler/constant.cpp
-    src/compiler/function.cpp
-    src/compiler/type.cpp
-    src/compiler/visitor.cpp
-    src/compiler/variable.cpp
-    src/compiler/array.cpp
-    src/compiler/addr_of.cpp
-    src/compiler/math.cpp
-    src/compiler/import.cpp
+    src/compiler/Configuration.cpp
+    src/compiler/FileSystem.cpp
+    src/compiler/Operator.cpp
+    src/compiler/PointerDereference.cpp
+    src/compiler/Compiler.cpp
+    src/compiler/CompilationUnit.cpp
+    src/compiler/CodeBlock.cpp
+    src/compiler/Constant.cpp
+    src/compiler/Function.cpp
+    src/compiler/Type.cpp
+    src/compiler/Visitor.cpp
+    src/compiler/Variable.cpp
+    src/compiler/Array.cpp
+    src/compiler/AddressOf.cpp
+    src/compiler/BinaryOperation.cpp
+    src/compiler/Import.cpp
     src/msg/errors.cpp
     src/msg/info.cpp
     src/lexer/YupLexer.cpp
-    src/lexer/lexer_error_listener.cpp
+    src/lexer/LexerErrorListener.cpp
     src/parser/YupParser.cpp
     src/parser/YupParserBaseVisitor.cpp
     src/parser/YupParserVisitor.cpp
-    src/parser/parser_error_listener.cpp
+    src/parser/ParserErrorListener.cpp
     src/main.cpp
     src/utils.cpp
 )

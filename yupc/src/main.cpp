@@ -1,8 +1,8 @@
-#include <compiler/visitor.h>
-#include <compiler/compilation_unit.h>
-#include <compiler/compiler.h>
-#include <compiler/file_sys.h>
-#include <compiler/config.h>
+#include <compiler/Visitor.h>
+#include <compiler/CompilationUnit.h>
+#include <compiler/Compiler.h>
+#include <compiler/FileSystem.h>
+#include <compiler/Configuration.h>
 
 #include <CLI/CLI.hpp>
 
@@ -11,19 +11,19 @@
 
 namespace fs = std::filesystem;
 
-void init_build_opts(CLI::App *build_cmd, yupc::CompilerOpts *compiler_opts) 
+void InitializeBuildCmdOptions(CLI::App *buildCmd, yupc::CompilerOptions *compilerOptions) 
 {
-    build_cmd->add_option("-s,--sources", compiler_opts->src_path, ".yup source files");
-    build_cmd->add_option("-b,--binary-name", compiler_opts->binary_name, "sets the output binary's name");
-    build_cmd->add_flag("-n,--no-perm", compiler_opts->give_perms, "allows the compiler to give permissions to the binary file");
-    build_cmd->add_flag("-v,--verbose", compiler_opts->verbose, "enables verbose compiler output");
+    buildCmd->add_option("-s,--sources",       compilerOptions->SourcePaths,     ".yup source files");
+    buildCmd->add_option("-b,--binary-name",   compilerOptions->BinaryName,      "sets the output binary's name");
+    buildCmd->add_flag("-n,--no-perm",         compilerOptions->GivePermissions, "allows the compiler to give permissions to the binary file");
+    buildCmd->add_flag("-v,--verbose",         compilerOptions->VerboseOutput,   "enables verbose compiler output");
 }
 
-void process_build_cmd() 
+void ProcessBuildCmd() 
 {
-    yupc::build_dir = yupc::init_build_dir(yupc::path_vars["@root"]);
+    yupc::GlobalBuildDirPath = yupc::InitializeBuildDir(yupc::GlobalPathVariables["@root"]);
 
-    for (std::string &path : yupc::compiler_opts.src_path) 
+    for (std::string &path : yupc::GlobalCompilerOptions.SourcePaths)
     {
         if (fs::is_directory(path)) 
         {
@@ -31,28 +31,25 @@ void process_build_cmd()
             {
                 if (!fs::is_directory(entry)) 
                 {
-                    yupc::process_path(entry.path().string());
+                    yupc::ProcessPath(entry.path().string());
                 }
             }
         } 
         else 
         {
-            yupc::process_path(path);
+            yupc::ProcessPath(path); // fail
         }
     }
 
-    std::string bc_file = yupc::init_bin_dir();
-    yupc::build_bitcode(bc_file);
+    std::string bc_file = yupc::InitializeBinDir();
+    yupc::BuildBitcode(bc_file);
 }
 
-void setup_cmds(CLI::App &cli) {
+void SetupCLICommands(CLI::App &cli) {
     CLI::App *build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
-    init_build_opts(build_cmd, &yupc::compiler_opts);
+    InitializeBuildCmdOptions(build_cmd, &yupc::GlobalCompilerOptions);
 
-    build_cmd->callback([&]() 
-    {
-        process_build_cmd();
-    });
+    build_cmd->callback([&]() {ProcessBuildCmd();});
 }
 
 int main(int argc, char *argv[]) 
@@ -60,7 +57,7 @@ int main(int argc, char *argv[])
     CLI::App cli{"a compiler for the yup programming language"};
     cli.allow_windows_style_options(true);
 
-    setup_cmds(cli);
+    SetupCLICommands(cli);
     CLI11_PARSE(cli, argc, argv);
 
     return 0;

@@ -1,58 +1,48 @@
 lexer grammar YupLexer;
 
-COLON               :   ':';
-ASSIGN              :   '=';
-TERMINATOR          :   ';';
-APOSTROPHE          :   '\'';
-RETURN              :   'return';
-AT                  :   '@';
-CONST               :   'const';
-PUBSYM              :   'public';
-GLOBAL              :   'glob';
-FUNC                :   'func';
-REF                 :   'ref';
-LET                 :   'let';
-VAR_ARGS            :   '...';
+KeywordReturn               :   'return';
+KeywordConst                :   'const';
+KeywordPublic               :   'public';
+KeywordGlobal               :   'glob';
+KeywordFunc                 :   'func';
+KeywordRef                  :   'ref';
+KeywordLet                  :   'let';
+KeywordImport               :   'import';
+KeywordType                 :   'type';
+KeywordAlias                :   'alias';
 
-IMPORT              :   'import';
-FROM                :   'from';
-MODULE              :   'module';
+SymbolAt                    :   '@';
+SymbolApostrophe            :   '\'';
+SymbolTerminator            :   ';';
+SymbolAssign                :   '=';
+SymbolColon                 :   ':';
+SymbolVariadicArgs          :   '...';
+SymbolLparen                :   '(';
+SymbolRparen                :   ')';
+SymbolLbrace                :   '{';
+SymbolRbrace                :   '}';
+SymbolLsqbr                 :   '[';  
+SymbolRsqbr                 :   ']';
+SymbolComma                 :   ',';
+SymbolQuestMark             :   '?';
+SymbolAsterisk              :   '*';
+SymbolAmpersand             :   '&';
+SymbolDot                   :   '.';
+SymbolExclMark              :   '!';
+SymbolTilde                 :   '~';
+SymbolArrow                 :   '->';
+SymbolPlus                  :   '+';
+SymbolMinus                 :   '-';
+SymbolSlash                 :   '/';
 
-TYPE                :   'type';
-ALIAS               :   'alias';
+ValueChar                   :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
+ValueString                 :   '"' (~'"' | '\'\'')* '"';
+ValueInteger                :   '-'? '0'..'9'+;
+ValueFloat                  :   '-'? ('0'..'9')+ '.' ('0'..'9')*;
+ValueBool                   :   ('True' | 'False');
+ValueNull                   :   'Null';
 
-LPAREN              :   '(';
-RPAREN              :   ')';
-LBRACE              :   '{';
-RBRACE              :   '}';
-LSQBR               :   '[';  
-RSQBR               :   ']';
-COMMA               :   ',';
-QUEST_MARK          :   '?';
-ASTERISK            :   '*';
-AMPERSAND           :   '&';
-DOT                 :   '.';
-EXCL_MARK           :   '!';
-TILDE               :   '~';
-ARROW               :   '->';
-
-PLUS                :   '+';
-MINUS               :   '-';
-SLASH               :   '/';
-
-V_CHAR              :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
-
-//V_STRING            :   '"' ( Escape | ~('\'' | '\\' | '\n' | '\r') )* '"';
-//fragment Escape     :   '\\' ( '\'' | '\\' );
-
-V_STRING            :   '"' (~'"' | '\'\'')* '"';
-
-V_INT               :   '-'? '0'..'9'+;
-V_FLOAT             :   '-'? ('0'..'9')+ '.' ('0'..'9')*;
-V_BOOL              :   ('True' | 'False');
-V_NULL              :   'Null';
-
-IDENTIFIER          :   ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_')*;
-WHITESPACE          :   [ \r\n\t]+    -> skip;
-COMMENT             :   '/*' .*? '*/' -> channel(HIDDEN);
-LINE_COMMENT        :   '//' ~[\r\n]*  -> channel(HIDDEN);
+Identifier                  :   ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_')*;
+Whitespace                  :   [ \r\n\t]+    -> skip;
+Comment                     :   '/*' .*? '*/' -> channel(HIDDEN);
+MultilineComment            :   '//' ~[\r\n]*  -> channel(HIDDEN);
