@@ -51,8 +51,7 @@ set (SRCS
     src/compiler/AddressOf.cpp
     src/compiler/BinaryOperation.cpp
     src/compiler/Import.cpp
-    src/msg/errors.cpp
-    src/msg/info.cpp
+    src/Logger.cpp
     src/lexer/YupLexer.cpp
     src/lexer/LexerErrorListener.cpp
     src/parser/YupParser.cpp

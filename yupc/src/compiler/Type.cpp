@@ -1,11 +1,12 @@
+#include "Logger.h"
 #include "compiler/Visitor.h"
 #include "compiler/Type.h"
 #include "compiler/CompilationUnit.h"
+#include "Lexer.h"
 
 #include "parser/YupParser.h"
 #include "lexer/YupLexer.h"
 
-#include "msg/errors.h"
 #include "utils.h"
 
 #include "llvm/IR/DerivedTypes.h"
@@ -27,12 +28,9 @@
 yupc::AliasType::AliasType(std::string _typeName,
                         std::string _destination,
                         bool _isPublic)
-    :   TypeName(_typeName),
-        Destination(_destination),
-        IsPublic(_isPublic)
-{
-
-}
+:   TypeName(_typeName),
+    Destination(_destination),
+    IsPublic(_isPublic) { }
 
 llvm::Type *yupc::ResolvePointerType(llvm::Type *base) 
 {
@@ -72,8 +70,7 @@ llvm::Type *yupc::GetBuiltInLLVMType(std::string typeName, llvm::LLVMContext &co
             return llvm::Type::getVoidTy(contextRef);
     }
 
-    yupc::log_compiler_err("GetBuiltInLLVMType(): UNREACHABLE CODE", "");
-    exit(1);
+    return nullptr;
 }
 
 llvm::Type* yupc::ResolveType(std::string typeName, llvm::LLVMContext &contextRef) 

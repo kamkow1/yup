@@ -2,7 +2,6 @@
 #include "compiler/Visitor.h"
 #include "compiler/Array.h"
 #include "compiler/Type.h"
-#include "msg/errors.h"
 #include "utils.h"
 
 #include "llvm/ADT/ArrayRef.h"

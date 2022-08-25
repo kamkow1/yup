@@ -2,7 +2,7 @@
 #include "compiler/CompilationUnit.h"
 #include "compiler/Constant.h"
 #include "compiler/Type.h"
-#include "msg/errors.h"
+#include "Logger.h"
 #include "utils.h"
 
 #include <llvm/IR/Constant.h>
@@ -130,7 +130,9 @@ std::any yupc::Visitor::visitConstant(yupc::YupParser::ConstantContext *ctx)
         return nullptr;
     }
 
-    yupc::log_compiler_err("couldn't match type and create a constant", ctx->getText());
+    yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
+                                        "couldn't match type and create a constant", 
+                                        ctx->getText(), yupc::CompilationUnits.back()->SourceFile);
     exit(1);
     return nullptr;
 }

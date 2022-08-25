@@ -1,13 +1,13 @@
 #include "compiler/FileSystem.h"
 #include "compiler/CompilationUnit.h"
 #include "compiler/Compiler.h"
-#include "msg/info.h"
-#include "msg/errors.h"
+#include "Logger.h"
 
 #include "llvm/Support//FileSystem.h"
 
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -50,7 +50,7 @@ void yupc::DumpModuleToIrFile(llvm::Module *module, std::string moduleName)
     os.flush();
 
     std::string info = "module " + yupc::CompilationUnits.back()->ModuleName;
-    yupc::log_cmd_info(info);
+    yupc::GlobalLogger.LogCompilerInfo(info);
 }
 
 std::string yupc::ReadFileToString(const std::string& path)
@@ -58,7 +58,7 @@ std::string yupc::ReadFileToString(const std::string& path)
     std::ifstream inputFile(path);
     if (!inputFile.is_open())
     {
-        yupc::log_input_err("unable to open file \"" + path + "\"");
+        yupc::GlobalLogger.LogCompilerInputError("unable to open file \"" + path + "\"");
         exit(1);
     }
 

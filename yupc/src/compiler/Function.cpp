@@ -3,7 +3,7 @@
 #include "compiler/Function.h"
 #include "compiler/CompilationUnit.h"
 #include "compiler/CodeBlock.h"
-#include "msg/errors.h"
+#include "Logger.h"
 
 #include "parser/YupParser.h"
 
@@ -53,13 +53,15 @@ void yupc::FunctionDefinitionCodegen(llvm::Function *function)
     }
 }
 
-void yupc::FunctionCallCodegen(std::string functionName, std::vector<llvm::Value*> args, std::string text) 
+void yupc::FunctionCallCodegen(std::string functionName, std::vector<llvm::Value*> args, 
+                                size_t line, size_t pos, std::string text) 
 {
     llvm::Function *function = yupc::CompilationUnits.back()->Module->getFunction(functionName);
 
     if (function == nullptr) 
     {
-        yupc::log_compiler_err("tried to call function " + functionName + " but it isn't declared", text);
+        yupc::GlobalLogger.LogCompilerError(line, pos, "tried to call function " + functionName 
+                    + " but it isn't declared", text, yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 
@@ -116,8 +118,12 @@ std::any yupc::Visitor::visitFunctionSignature(yupc::YupParser::FunctionSignatur
     llvm::Type *return_type = yupc::CompilationUnits.back()->TypeStack.top();
 
     std::vector<yupc::FunctionParameter*> params;
-    for (yupc::YupParser::FunctionParameterContext *p : ctx->functionParameterList()->functionParameter()) 
+    size_t paramsSize = ctx->functionParameterList() == nullptr 
+                        ? 0
+                        : ctx->functionParameterList()->functionParameter().size();
+    for (size_t i = 0; i < paramsSize; ++i)
     {
+        yupc::YupParser::FunctionParameterContext *p = ctx->functionParameterList()->functionParameter(i);
         yupc::FunctionParameter *fp = std::any_cast<yupc::FunctionParameter*>(this->visit(p));
         params.push_back(fp);
     }
@@ -167,7 +173,9 @@ std::any yupc::Visitor::visitFunctionDefinition(yupc::YupParser::FunctionDefinit
     
     if (!function) 
     {
-        yupc::log_compiler_err("cannot resolve the signature for function " + func_name, ctx->getText());
+        yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
+                                            "cannot resolve the signature for function " + func_name, 
+                                            ctx->getText(), yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 
@@ -203,7 +211,9 @@ std::any yupc::Visitor::visitFunctionCall(yupc::YupParser::FunctionCallContext *
 
     if (find != end) 
     {
-        yupc::log_compiler_err("cannot call function \"" + functionName + "\" because it doesn't exist in the symbol table", ctx->getText());
+        yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
+            "cannot call function \"" + functionName + "\" because it doesn't exist in the symbol table",
+            ctx->getText(), yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 
@@ -219,7 +229,8 @@ std::any yupc::Visitor::visitFunctionCall(yupc::YupParser::FunctionCallContext *
         yupc::CompilationUnits.back()->ValueStack.pop();
     }
 
-    yupc::FunctionCallCodegen(functionName, args, ctx->getText());
+    yupc::FunctionCallCodegen(functionName, args, ctx->start->getLine(), 
+                    ctx->start->getCharPositionInLine(), ctx->getText());
     
     return nullptr;
 }

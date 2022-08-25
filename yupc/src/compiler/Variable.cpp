@@ -2,7 +2,7 @@
 #include "compiler/Type.h"
 #include "compiler/Variable.h"
 #include "compiler/CompilationUnit.h"
-#include "msg/errors.h"
+#include "Logger.h"
 
 #include "llvm/Support/TypeName.h"
 #include "llvm/Support/raw_ostream.h"
@@ -18,12 +18,14 @@
 
 #include <cstdlib>
 #include <cstddef>
+#include <iostream>
 #include <string>
 
 static std::map<std::string, yupc::VariableInfo*> Variables;
 
 llvm::AllocaInst *yupc::FindLocalVariable(std::string name, size_t i,
-    std::vector<std::map<std::string, llvm::AllocaInst*>> &symbolTable, std::string text)
+    std::vector<std::map<std::string, llvm::AllocaInst*>> &symbolTable, 
+    size_t line, size_t pos, std::string text)
 {
     if (symbolTable[i].contains(name))
     {
@@ -31,16 +33,18 @@ llvm::AllocaInst *yupc::FindLocalVariable(std::string name, size_t i,
     }
     else if (i > 0)
     {
-        return yupc::FindLocalVariable(name, --i, symbolTable, text);
+        return yupc::FindLocalVariable(name, --i, symbolTable, line, pos, text);
     }
     else
     {
-        yupc::log_compiler_err("unknown variable " + name, text);
+        yupc::GlobalLogger.LogCompilerError(line, pos, "unknown variable " + name, text, 
+                                            yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 }
 
-void yupc::IdentifierCodegen(std::string id, bool isGlobal) 
+void yupc::IdentifierCodegen(std::string id, bool isGlobal, 
+                size_t line, size_t pos, std::string text) 
 {
     if (isGlobal)
     {
@@ -52,7 +56,7 @@ void yupc::IdentifierCodegen(std::string id, bool isGlobal)
     else
     {
         llvm::AllocaInst *variable = yupc::FindLocalVariable(id, yupc::CompilationUnits.back()->SymbolTable.size() - 1,
-                                                            yupc::CompilationUnits.back()->SymbolTable, "");
+                                                            yupc::CompilationUnits.back()->SymbolTable, line, pos, text);
 
         llvm::Type *type = variable->getAllocatedType();
         llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(type, variable);
@@ -60,19 +64,22 @@ void yupc::IdentifierCodegen(std::string id, bool isGlobal)
     }
 }
 
-void yupc::AssignmentCodegen(std::string name, llvm::Value *val, std::string text) 
+void yupc::AssignmentCodegen(std::string name, llvm::Value *val, 
+                        size_t line, size_t pos, std::string text) 
 {
     yupc::VariableInfo *var = Variables[name];
 
     if (var->IsConstant) 
     {
-        yupc::log_compiler_err("cannot reassign a constant \"" + name + "\"", text);
+        yupc::GlobalLogger.LogCompilerError(line, pos, "cannot reassign a constant \"" + name + "\"", 
+                                            text, yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 
     if (var->IsReference) 
     {
-        yupc::log_compiler_err("cannot make a reference point to another variable", text);
+        yupc::GlobalLogger.LogCompilerError(line, pos, "cannot make a reference point to another variable", 
+                                            text, yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 
@@ -86,7 +93,9 @@ void yupc::AssignmentCodegen(std::string name, llvm::Value *val, std::string tex
         {
             std::string valTypeString = yupc::TypeToString(val->getType());
             std::string storedTypeString = yupc::TypeToString(stored->getType());
-            yupc::log_compiler_err("cannot assign type " + valTypeString + " to " + storedTypeString, text);
+
+            yupc::GlobalLogger.LogCompilerError(line, pos, "cannot assign type " + valTypeString + " to " 
+                                    + storedTypeString, text, yupc::CompilationUnits.back()->SourceFile);
             exit(1);
         }
 
@@ -100,7 +109,9 @@ void yupc::AssignmentCodegen(std::string name, llvm::Value *val, std::string tex
         {
             std::string gvTypeString  = yupc::TypeToString(gv->getValueType());
             std::string valTypeString = yupc::TypeToString(val->getType());
-            yupc::log_compiler_err("cannot assign type " + valTypeString + " to " + gvTypeString, text);
+
+            yupc::GlobalLogger.LogCompilerError(line, pos, "cannot assign type " + valTypeString + " to " 
+                                        + gvTypeString, text, yupc::CompilationUnits.back()->SourceFile);
             exit(1);
         }
 
@@ -109,7 +120,8 @@ void yupc::AssignmentCodegen(std::string name, llvm::Value *val, std::string tex
     }
     else 
     {
-        yupc::log_compiler_err("cannot reassign \"" + name + "\" because it doesn't exist", text);
+        yupc::GlobalLogger.LogCompilerError(line, pos, "cannot reassign \"" + name + "\" because it doesn't exist", 
+                                            text, yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 }
@@ -158,7 +170,9 @@ std::any yupc::Visitor::visitVariableDeclare(yupc::YupParser::VariableDeclareCon
 
     if (isRef && ctx->variableValue() == nullptr) 
     {
-        yupc::log_compiler_err("cannot declare a reference that doesn't point to a variable", ctx->getText());
+        yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
+                                            "cannot declare a reference that doesn't point to a variable", 
+                                            ctx->getText(), yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 
@@ -166,8 +180,9 @@ std::any yupc::Visitor::visitVariableDeclare(yupc::YupParser::VariableDeclareCon
 
     if (isGlob && globalsContain) 
     {
-        yupc::log_compiler_err("global variable \"" + name + ctx->typeAnnotation()->getText() 
-                                + "\" already exists", ctx->getText());
+        yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
+                    "global variable \"" + name + ctx->typeAnnotation()->getText() + "\" already exists", 
+                    ctx->getText(), yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 
@@ -179,8 +194,11 @@ std::any yupc::Visitor::visitVariableDeclare(yupc::YupParser::VariableDeclareCon
 
     if (!isGlob && localsContains) 
     {
-        yupc::log_compiler_err("variable \"" + name + ctx->typeAnnotation()->getText() 
-                            + "\" has already been declared in this scope", ctx->getText());
+        //yupc::log_compiler_err("variable \"" + name + ctx->typeAnnotation()->getText() + "\" has already been declared in this scope", ctx->getText());
+        yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
+                                            "variable \"" + name + ctx->typeAnnotation()->getText() 
+                                            + "\" has already been declared in this scope", 
+                                            ctx->getText(), yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 
@@ -188,7 +206,8 @@ std::any yupc::Visitor::visitVariableDeclare(yupc::YupParser::VariableDeclareCon
     llvm::Type *resolvedType = yupc::CompilationUnits.back()->TypeStack.top();
 
     llvm::Value *val = ctx->variableValue() != nullptr 
-        ? [&]() {this->visit(ctx->variableValue()->expression()); return yupc::CompilationUnits.back()->ValueStack.top();}()
+        ? [&]() {this->visit(ctx->variableValue()->expression()); 
+                return yupc::CompilationUnits.back()->ValueStack.top();}()
         : nullptr;
 
     if (val != nullptr)
@@ -220,7 +239,8 @@ std::any yupc::Visitor::visitAssignment(yupc::YupParser::AssignmentContext *ctx)
     this->visit(ctx->variableValue()->expression());
     llvm::Value *val = yupc::CompilationUnits.back()->ValueStack.top();
 
-    yupc::AssignmentCodegen(name, val, ctx->getText());
+    yupc::AssignmentCodegen(name, val, ctx->start->getLine(), 
+            ctx->start->getCharPositionInLine(), ctx->getText());
     
     return nullptr;
 }
@@ -231,7 +251,8 @@ std::any yupc::Visitor::visitIdentifierExpression(yupc::YupParser::IdentifierExp
 
     bool isGlob = yupc::CompilationUnits.back()->GlobalVariables.contains(name);
 
-    yupc::IdentifierCodegen(name, isGlob);
+    yupc::IdentifierCodegen(name, isGlob, ctx->start->getLine(), 
+            ctx->start->getCharPositionInLine(), ctx->getText());
     
     return nullptr;
 }

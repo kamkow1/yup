@@ -5,9 +5,7 @@
 #include "compiler/FileSystem.h"
 #include "compiler/Configuration.h"
 #include "utils.h"
-
-#include "msg/errors.h"
-#include "msg/info.h"
+#include "Logger.h"
 
 #include "parser/YupParser.h"
 #include "parser/ParserErrorListener.h"
@@ -17,6 +15,7 @@
 #include "llvm/IR/Verifier.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
+#include <iostream>
 #include <llvm/IR/IRBuilder.h>
 #include "llvm/Support/MemoryBufferRef.h"
 #include "llvm/Support/FileSystem.h"
@@ -51,7 +50,6 @@ std::string yupc::CreateModuleName(std::string basePath)
 
 void yupc::ProcessSourceFile(std::string path) 
 {
-    std::cout << "eoeoeoeo\n";
     std::string srcContent = yupc::ReadFileToString(path);
 
     antlr4::ANTLRInputStream input(srcContent);
@@ -91,7 +89,8 @@ void yupc::BuildBitcode(fs::path bc_file)
         yupc::CompilationUnits.pop_back();
     }
 
-    yupc::log_cmd_info("finished linking bitcode");
+    yupc::GlobalLogger.LogCompilerInfo("finished linking bitcode");
+
     std::error_code ec;
     llvm::raw_fd_ostream os(bc_file.string(), ec);
     llvm::WriteBitcodeToFile(*yupc::CompilationUnits.back()->Module, os);

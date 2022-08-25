@@ -3,7 +3,6 @@
 #include "compiler/Import.h"
 #include "compiler/CompilationUnit.h"
 #include "compiler/Type.h"
-#include "msg/errors.h"
 #include "tree/TerminalNode.h"
 
 #include "llvm/ADT/StringRef.h"

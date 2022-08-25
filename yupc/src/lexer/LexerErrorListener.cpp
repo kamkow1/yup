@@ -1,6 +1,6 @@
-#include <compiler/CompilationUnit.h>
-#include <lexer/LexerErrorListener.h>
-#include <msg/errors.h>
+#include "compiler/CompilationUnit.h"
+#include "lexer/LexerErrorListener.h"
+
 #include <string>
 
 #define UNUSED(x) (void)(x)
@@ -24,6 +24,7 @@ void yupc::LexerErrorListener::syntaxError(antlr4::Recognizer *recognizer,
                         + " near position "
                         + std::to_string(charPositionInLine);
 
-    yupc::log_lexing_err(errorMessage, yupc::CompilationUnits.back()->SourceFile);
+    UNUSED(errorMessage);
+    // TODO: Print using Logger
     exit(1);
 }

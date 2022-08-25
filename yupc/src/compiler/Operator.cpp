@@ -20,8 +20,8 @@
 
 yupc::OperatorArgument::OperatorArgument(llvm::Value *_operatorPossibleValue,
                                         llvm::Type *_operatorPossibleType)
-    :   OperatorPossibleValue(_operatorPossibleValue),
-        OperatorPossibleType(_operatorPossibleType)
+:   OperatorPossibleValue(_operatorPossibleValue),
+    OperatorPossibleType(_operatorPossibleType)
 {
 
 }
