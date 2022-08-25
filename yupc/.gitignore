@@ -18,22 +18,22 @@ venv/
 .antlr/
 src/.antlr/
 
-src/lexer/YupLexer.cc
-src/lexer/YupLexer.cpp
-src/lexer/*.interp
-src/lexer/*.tokens
+src/Lexer/YupLexer.cc
+src/Lexer/YupLexer.cpp
+src/Lexer/*.interp
+src/Lexer/*.tokens
 
-src/parser/*.interp
-src/parser/*.tokens
-src/parser/YupParser.cc
-src/parser/YupParserBaseVisitor.cc
-src/parser/YupParserVisitor.cc
-src/parser/YupParser.cpp
-src/parser/YupParserBaseVisitor.cpp
-src/parser/YupParserVisitor.cpp
+src/Parser/*.interp
+src/Parser/*.tokens
+src/Parser/YupParser.cc
+src/Parser/YupParserBaseVisitor.cc
+src/Parser/YupParserVisitor.cc
+src/Parser/YupParser.cpp
+src/Parser/YupParserBaseVisitor.cpp
+src/Parser/YupParserVisitor.cpp
 
-include/parser/YupParser.h
-include/parser/YupParserBaseVisitor.h
-include/parser/YupParserVisitor.h
+include/Parser/YupParser.h
+include/Parser/YupParserBaseVisitor.h
+include/Parser/YupParserVisitor.h
 
 include/lexer/YupLexer.h

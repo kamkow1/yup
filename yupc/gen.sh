@@ -34,43 +34,43 @@ cd src/
 
 # clean up
 
-rm -f -- parser/YupParser.cpp
-rm -f -- parser/YupParserBaseVisitor.cpp
-rm -f -- parser/YupParserVisitor.cpp
-rm -f -- parser/YupParser.tokens
-rm -f -- parser/YupParser.interp
+rm -f -- Parser/YupParser.cpp
+rm -f -- Parser/YupParserBaseVisitor.cpp
+rm -f -- Parser/YupParserVisitor.cpp
+rm -f -- Parser/YupParser.tokens
+rm -f -- Parser/YupParser.interp
 
-rm -f -- lexer/YupLexer.cpp
-rm -f -- lexer/YupLexer.tokens
-rm -f -- lexer/YupLexer.interp
+rm -f -- Lexer/YupLexer.cpp
+rm -f -- Lexer/YupLexer.tokens
+rm -f -- Lexer/YupLexer.interp
 
-java -jar "$antlr_jar_path" ./YupLexer.g4 -Dlanguage=Cpp -o ./lexer -package yupc
-java -jar "$antlr_jar_path" ./YupParser.g4 -Dlanguage=Cpp -o ./parser -no-listener -visitor -package yupc
+java -jar "$antlr_jar_path" ./YupLexer.g4 -Dlanguage=Cpp -o ./Lexer -package yupc
+java -jar "$antlr_jar_path" ./YupParser.g4 -Dlanguage=Cpp -o ./Parser -no-listener -visitor -package yupc
 
 cd ..
 
-if [[ ! -d include/lexer ]]; then
-    mkdir include/lexer
+if [[ ! -d include/Lexer ]]; then
+    mkdir include/Lexer
 fi
 
-if [[ ! -d include/parser ]]; then
-    mkdir include/parser
+if [[ ! -d include/Parser ]]; then
+    mkdir include/Parser
 fi
 
-mv src/lexer/YupLexer.h include/lexer/YupLexer.h
+mv src/Lexer/YupLexer.h include/Lexer/YupLexer.h
 
-mv src/parser/YupParser.h include/parser/YupParser.h
-mv src/parser/YupParserBaseVisitor.h include/parser/YupParserBaseVisitor.h
-mv src/parser/YupParserVisitor.h include/parser/YupParserVisitor.h
+mv src/Parser/YupParser.h include/Parser/YupParser.h
+mv src/Parser/YupParserBaseVisitor.h include/Parser/YupParserBaseVisitor.h
+mv src/Parser/YupParserVisitor.h include/Parser/YupParserVisitor.h
 
 # fix includes
-sed -i '5 c \#include "parser/YupParserVisitor.h"' src/parser/YupParser.cpp
-sed -i '7 c \#include "parser/YupParser.h"' src/parser/YupParser.cpp
-sed -i '5 c \#include "parser/YupParserBaseVisitor.h"' src/parser/YupParserBaseVisitor.cpp
-sed -i '5 c \#include "parser/YupParserVisitor.h"' src/parser/YupParserVisitor.cpp
+sed -i '5 c \#include "Parser/YupParserVisitor.h"' src/Parser/YupParser.cpp
+sed -i '7 c \#include "Parser/YupParser.h"' src/Parser/YupParser.cpp
+sed -i '5 c \#include "Parser/YupParserBaseVisitor.h"' src/Parser/YupParserBaseVisitor.cpp
+sed -i '5 c \#include "Parser/YupParserVisitor.h"' src/Parser/YupParserVisitor.cpp
 
-sed -i '5 c \#include "lexer/YupLexer.h"' src/lexer/YupLexer.cpp
+sed -i '5 c \#include "Lexer/YupLexer.h"' src/Lexer/YupLexer.cpp
 
-sed -i '8 c \#include "parser/YupParserVisitor.h"' include/parser/YupParserBaseVisitor.h
+sed -i '8 c \#include "Parser/YupParserVisitor.h"' include/Parser/YupParserBaseVisitor.h
 
 echo "finished generating lexer & parser"
