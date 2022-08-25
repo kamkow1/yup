@@ -1,4 +1,4 @@
-#include "compiler/Configuration.h"
+#include "Compiler/Configuration.h"
 
 #include <map>
 #include <string>

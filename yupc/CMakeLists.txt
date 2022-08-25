@@ -35,22 +35,22 @@ add_definitions (${LLVM_DEFINITIONS})
 llvm_map_components_to_libnames(llvm_libs support core irreader linker bitwriter bitreader)
 
 set (SRCS
-    src/compiler/Configuration.cpp
-    src/compiler/FileSystem.cpp
-    src/compiler/Operator.cpp
-    src/compiler/PointerDereference.cpp
-    src/compiler/Compiler.cpp
-    src/compiler/CompilationUnit.cpp
-    src/compiler/CodeBlock.cpp
-    src/compiler/Constant.cpp
-    src/compiler/Function.cpp
-    src/compiler/Type.cpp
-    src/compiler/Visitor.cpp
-    src/compiler/Variable.cpp
-    src/compiler/Array.cpp
-    src/compiler/AddressOf.cpp
-    src/compiler/BinaryOperation.cpp
-    src/compiler/Import.cpp
+    src/Compiler/Configuration.cpp
+    src/Compiler/FileSystem.cpp
+    src/Compiler/Operator.cpp
+    src/Compiler/PointerDereference.cpp
+    src/Compiler/Compiler.cpp
+    src/Compiler/CompilationUnit.cpp
+    src/Compiler/CodeBlock.cpp
+    src/Compiler/Constant.cpp
+    src/Compiler/Function.cpp
+    src/Compiler/Type.cpp
+    src/Compiler/Visitor.cpp
+    src/Compiler/Variable.cpp
+    src/Compiler/Array.cpp
+    src/Compiler/AddressOf.cpp
+    src/Compiler/BinaryOperation.cpp
+    src/Compiler/Import.cpp
     src/Logger.cpp
     src/lexer/YupLexer.cpp
     src/lexer/LexerErrorListener.cpp

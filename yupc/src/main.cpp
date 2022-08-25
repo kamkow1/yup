@@ -1,8 +1,8 @@
-#include <compiler/Visitor.h>
-#include <compiler/CompilationUnit.h>
-#include <compiler/Compiler.h>
-#include <compiler/FileSystem.h>
-#include <compiler/Configuration.h>
+#include <Compiler/Visitor.h>
+#include <Compiler/CompilationUnit.h>
+#include <Compiler/Compiler.h>
+#include <Compiler/FileSystem.h>
+#include <Compiler/Configuration.h>
 
 #include <CLI/CLI.hpp>
 

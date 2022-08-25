@@ -1,6 +1,6 @@
-#include "compiler/PointerDereference.h"
-#include "compiler/Visitor.h"
-#include "compiler/CompilationUnit.h"
+#include "Compiler/PointerDereference.h"
+#include "Compiler/Visitor.h"
+#include "Compiler/CompilationUnit.h"
 #include "Logger.h"
 
 #include "llvm/IR/DerivedTypes.h"

@@ -1,7 +1,7 @@
 #ifndef YUPC_COMPILER_COMPILER_H_
 #define YUPC_COMPILER_COMPILER_H_
 
-#include "compiler/CompilationUnit.h"
+#include "Compiler/CompilationUnit.h"
 
 #include "llvm/IR/Module.h"
 

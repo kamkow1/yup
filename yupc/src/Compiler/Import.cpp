@@ -1,8 +1,8 @@
-#include "compiler/Compiler.h"
-#include "compiler/Visitor.h"
-#include "compiler/Import.h"
-#include "compiler/CompilationUnit.h"
-#include "compiler/Type.h"
+#include "Compiler/Compiler.h"
+#include "Compiler/Visitor.h"
+#include "Compiler/Import.h"
+#include "Compiler/CompilationUnit.h"
+#include "Compiler/Type.h"
 #include "tree/TerminalNode.h"
 
 #include "llvm/ADT/StringRef.h"

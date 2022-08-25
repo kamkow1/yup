@@ -1,4 +1,4 @@
-#include <compiler/Visitor.h>
+#include <Compiler/Visitor.h>
 
 #include <parser/YupParser.h>
 

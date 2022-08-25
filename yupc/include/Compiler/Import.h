@@ -1,7 +1,7 @@
 #ifndef YUPC_COMPILER_IMPORT_H_
 #define YUPC_COMPILER_IMPORT_H_
 
-#include "compiler/Type.h"
+#include "Compiler/Type.h"
 
 #include "llvm/IR/Module.h"
 

@@ -1,8 +1,8 @@
 #ifndef YUPC_COMPILER_COMPILATION_UNIT_H_
 #define YUPC_COMPILER_COMPILATION_UNIT_H_
 
-#include <compiler/Import.h>
-#include <compiler/Type.h>
+#include <Compiler/Import.h>
+#include <Compiler/Type.h>
 
 #include <llvm/IR/Function.h>
 #include <llvm/IR/LLVMContext.h>

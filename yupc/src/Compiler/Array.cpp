@@ -1,7 +1,7 @@
-#include "compiler/CompilationUnit.h"
-#include "compiler/Visitor.h"
-#include "compiler/Array.h"
-#include "compiler/Type.h"
+#include "Compiler/CompilationUnit.h"
+#include "Compiler/Visitor.h"
+#include "Compiler/Array.h"
+#include "Compiler/Type.h"
 #include "utils.h"
 
 #include "llvm/ADT/ArrayRef.h"

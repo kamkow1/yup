@@ -1,4 +1,4 @@
-#include "compiler/CompilationUnit.h"
+#include "Compiler/CompilationUnit.h"
 #include "lexer/LexerErrorListener.h"
 
 #include <string>

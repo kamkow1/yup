@@ -1,7 +1,7 @@
-#include "compiler/Visitor.h"
-#include "compiler/CompilationUnit.h"
-#include "compiler/Constant.h"
-#include "compiler/Type.h"
+#include "Compiler/Visitor.h"
+#include "Compiler/CompilationUnit.h"
+#include "Compiler/Constant.h"
+#include "Compiler/Type.h"
 #include "Logger.h"
 #include "utils.h"
 

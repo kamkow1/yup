@@ -1,7 +1,7 @@
-#include "compiler/Visitor.h"
-#include "compiler/Type.h"
-#include "compiler/Variable.h"
-#include "compiler/CompilationUnit.h"
+#include "Compiler/Visitor.h"
+#include "Compiler/Type.h"
+#include "Compiler/Variable.h"
+#include "Compiler/CompilationUnit.h"
 #include "Logger.h"
 
 #include "llvm/Support/TypeName.h"

@@ -1,6 +1,6 @@
-#include "compiler/Visitor.h"
-#include "compiler/AddressOf.h"
-#include "compiler/CompilationUnit.h"
+#include "Compiler/Visitor.h"
+#include "Compiler/AddressOf.h"
+#include "Compiler/CompilationUnit.h"
 
 void yupc::AddressOfCodegen(std::string id) 
 {

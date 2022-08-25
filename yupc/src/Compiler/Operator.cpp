@@ -1,6 +1,6 @@
-#include <compiler/Visitor.h>
-#include <compiler/CompilationUnit.h>
-#include <compiler/Operator.h>
+#include <Compiler/Visitor.h>
+#include <Compiler/CompilationUnit.h>
+#include <Compiler/Operator.h>
 
 #include <cstddef>
 #include <parser/YupParser.h>

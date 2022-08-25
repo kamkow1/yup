@@ -1,6 +1,6 @@
-#include "compiler/Visitor.h"
-#include "compiler/BinaryOperation.h"
-#include "compiler/CompilationUnit.h"
+#include "Compiler/Visitor.h"
+#include "Compiler/BinaryOperation.h"
+#include "Compiler/CompilationUnit.h"
 
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Value.h"

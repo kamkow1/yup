@@ -1,8 +1,8 @@
-#include "compiler/Visitor.h"
-#include "compiler/Type.h"
-#include "compiler/Function.h"
-#include "compiler/CompilationUnit.h"
-#include "compiler/CodeBlock.h"
+#include "Compiler/Visitor.h"
+#include "Compiler/Type.h"
+#include "Compiler/Function.h"
+#include "Compiler/CompilationUnit.h"
+#include "Compiler/CodeBlock.h"
 #include "Logger.h"
 
 #include "parser/YupParser.h"

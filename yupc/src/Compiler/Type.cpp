@@ -1,7 +1,7 @@
 #include "Logger.h"
-#include "compiler/Visitor.h"
-#include "compiler/Type.h"
-#include "compiler/CompilationUnit.h"
+#include "Compiler/Visitor.h"
+#include "Compiler/Type.h"
+#include "Compiler/CompilationUnit.h"
 #include "Lexer.h"
 
 #include "parser/YupParser.h"

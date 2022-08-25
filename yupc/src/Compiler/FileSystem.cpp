@@ -1,6 +1,6 @@
-#include "compiler/FileSystem.h"
-#include "compiler/CompilationUnit.h"
-#include "compiler/Compiler.h"
+#include "Compiler/FileSystem.h"
+#include "Compiler/CompilationUnit.h"
+#include "Compiler/Compiler.h"
 #include "Logger.h"
 
 #include "llvm/Support//FileSystem.h"

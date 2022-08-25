@@ -1,6 +1,6 @@
-#include "compiler/CompilationUnit.h"
-#include "compiler/Type.h"
-#include "compiler/Import.h"
+#include "Compiler/CompilationUnit.h"
+#include "Compiler/Type.h"
+#include "Compiler/Import.h"
 
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Function.h"
