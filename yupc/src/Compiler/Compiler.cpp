@@ -89,7 +89,7 @@ void yupc::BuildBitcode(fs::path bc_file)
         yupc::CompilationUnits.pop_back();
     }
 
-    yupc::GlobalLogger.LogCompilerInfo("finished linking bitcode");
+    yupc::GlobalLogger.LogCompilerInfo("finished linking LLVM bitcode! use the LLI command line tool to run it");
 
     std::error_code ec;
     llvm::raw_fd_ostream os(bc_file.string(), ec);
@@ -99,14 +99,14 @@ void yupc::BuildBitcode(fs::path bc_file)
 void yupc::ProcessPath(std::string path) 
 {
     std::string tempPath = path;
-    std::vector<std::string> path_elems = yupc::split_string(tempPath, '/');;
+    std::vector<std::string> path_elems = yupc::SplitString(tempPath, '/');;
     for (size_t i = 0; i < tempPath.size(); i++)
     {
         for (auto &pv : yupc::GlobalPathVariables)
         {
             if (path_elems[i] == pv.first)
             {
-                path = yupc::string_replace_all(path, pv.first, pv.second);
+                path = yupc::StringReplaceAll(path, pv.first, pv.second);
             }
         }
     }

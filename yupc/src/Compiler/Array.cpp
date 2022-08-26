@@ -26,7 +26,7 @@ void yupc::ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVa
     llvm::Type * gepType = array->getType()->getNonOpaquePointerElementType();
     llvm::Value *idxGep = yupc::CompilationUnits.back()->IRBuilder->CreateInBoundsGEP(gepType, array, idxVal);
 
-    yupc::dump_type_to_stdout(idxGep->getType());
+    yupc::PrintLLVMType(idxGep->getType());
 
     llvm::Type *load_type = idxGep->getType()->getNonOpaquePointerElementType();
     llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(load_type, idxGep);

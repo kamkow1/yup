@@ -3,19 +3,19 @@
 #include <vector>
 #include <sys/types.h>
 
-#include <llvm/IR/Type.h>
+#include "llvm/IR/Type.h"
 
 namespace yupc
 {
-    std::string string_remove_all(std::string str, const std::string& from);
+    std::string StringRemoveAll(std::string str, const std::string& from);
 
-    u_int64_t string_to_uint64_t(std::string str);
+    u_int64_t StringToUInt64(std::string str);
 
-    int64_t string_to_int64_t(std::string str);
+    int64_t StringToInt64(std::string str);
 
-    std::vector<std::string> split_string(std::string &str, char delim);
+    std::vector<std::string> SplitString(std::string &str, char delim);
 
-    std::string string_replace_all(std::string str, const std::string &from, const std::string &to);
+    std::string StringReplaceAll(std::string str, const std::string &from, const std::string &to);
 
-    void dump_type_to_stdout(llvm::Type *type);
+    void PrintLLVMType(llvm::Type *type);
 }

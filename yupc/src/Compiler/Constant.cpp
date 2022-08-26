@@ -76,7 +76,7 @@ std::any yupc::Visitor::visitConstant(yupc::YupParser::ConstantContext *ctx)
     {
         std::string text = ctx->ValueInteger()->getText();
 
-        int64_t value = yupc::string_to_int64_t(text);
+        int64_t value = yupc::StringToInt64(text);
         yupc::IntegerCodegen(value);
 
         return nullptr;

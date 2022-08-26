@@ -10,19 +10,19 @@
 #include <vector>
 #include <sstream>
 
-#include <llvm/Support/raw_ostream.h>
+#include "llvm/Support/raw_ostream.h"
 
-std::string yupc::string_remove_all(std::string str, const std::string& from)
+std::string yupc::StringRemoveAll(std::string str, const std::string& from)
 {
-    size_t start_pos = 0;
-    while(( start_pos = str.find( from)) != std::string::npos) {
-        str.erase( start_pos, from.length());
+    size_t startPos = 0;
+    while(( startPos = str.find( from)) != std::string::npos) {
+        str.erase( startPos, from.length());
     }
 
     return str;
 }
 
-u_int64_t yupc::string_to_uint64_t(std::string str)
+u_int64_t yupc::StringToUInt64(std::string str)
 {
     u_int64_t i;
     char *end;
@@ -30,7 +30,7 @@ u_int64_t yupc::string_to_uint64_t(std::string str)
     return i;
 }
 
-int64_t yupc::string_to_int64_t(std::string str)
+int64_t yupc::StringToInt64(std::string str)
 {
     int64_t i;
     char *end;
@@ -38,7 +38,7 @@ int64_t yupc::string_to_int64_t(std::string str)
     return i;
 }
 
-std::vector<std::string> yupc::split_string(std::string &str, char delim)
+std::vector<std::string> yupc::SplitString(std::string &str, char delim)
 {
     std::vector<std::string> elems;
     std::stringstream ss(str);
@@ -51,18 +51,18 @@ std::vector<std::string> yupc::split_string(std::string &str, char delim)
     return elems;
 }
 
-std::string yupc::string_replace_all(std::string str, const std::string &from, const std::string &to)
+std::string yupc::StringReplaceAll(std::string str, const std::string &from, const std::string &to)
 {
-    size_t start_pos = 0;
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length();
+    size_t startPos = 0;
+    while((startPos = str.find(from, startPos)) != std::string::npos) {
+        str.replace(startPos, from.length(), to);
+        startPos += to.length();
     }
 
     return str;
 }
 
-void yupc::dump_type_to_stdout(llvm::Type *type)
+void yupc::PrintLLVMType(llvm::Type *type)
 {
     std::string str;
     llvm::raw_string_ostream rso(str);

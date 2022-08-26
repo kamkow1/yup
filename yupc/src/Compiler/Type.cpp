@@ -100,7 +100,7 @@ llvm::Type* yupc::ResolveType(std::string typeName, llvm::LLVMContext &contextRe
         llvm::Type *base = yupc::ResolveType(baseString, contextRef);
 
         std::string suffixes = typeName;
-        yupc::string_remove_all(baseString, suffixes);
+        yupc::StringRemoveAll(baseString, suffixes);
             
         for (size_t i = 0; i < suffixes.size(); i++) 
         {
@@ -212,7 +212,7 @@ std::any yupc::Visitor::visitTypeName(yupc::YupParser::TypeNameContext *ctx)
         {
             if (dynamic_cast<yupc::YupParser::ConstantExpressionContext*>(ext->arrayTypeExtension()->expression())) 
             {
-                uint32_t elemCount = yupc::string_to_uint64_t(ext->arrayTypeExtension()->expression()->getText());
+                uint32_t elemCount = yupc::StringToUInt64(ext->arrayTypeExtension()->expression()->getText());
                 typeBase = yupc::ResolveFixedArrayType(typeBase, elemCount);
             }
         }
