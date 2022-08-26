@@ -1,12 +1,22 @@
 #include "Compiler/Configuration.h"
+#include "Logger.h"
 
 #include "Compiler/Compiler.h"
 #include "nlohmann/json.hpp"
 
+#include <fstream>
 #include <map>
 #include <string>
 #include <filesystem>
 #include <cstdlib>
+
+static std::string DefaultConfigFile =  R"({
+    "config": {            
+        "main": "main.yup",
+        "bin": "program",  
+        "verbose": true    
+    }                      
+})";
 
 namespace fs = std::filesystem;
 
@@ -36,5 +46,23 @@ void yupc::LoadJsonConfigFile(nlohmann::json &json)
     yupc::GlobalCompilerConfigFile.verboseOutput = verboseOutput;
 
     yupc::InitializeLoadedConfig(yupc::GlobalCompilerOptions, yupc::GlobalCompilerConfigFile);
+}
+
+void yupc::GenerateYupConfInCWD()
+{
+    fs::path cwd = fs::current_path();
+    fs::path file("yupconf");
+    fs::path finalPath = cwd / file;
+
+    std::fstream f;
+    f.open(finalPath.string(), std::ios::out);
+    if (!f)
+    {
+        yupc::GlobalLogger.LogCompilerInputError("unable to create the compiler config file");
+    }
+
+    f << DefaultConfigFile;
+
+    f.close();
 }
 

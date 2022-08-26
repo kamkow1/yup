@@ -40,15 +40,22 @@ void ProcessBFCCmd()
     yupc::BuildProgram(yupc::GlobalCompilerOptions);
 }
 
+void ProcessGCCmd()
+{
+    yupc::GenerateYupConfInCWD();
+}
+
 void SetupCLICommands(CLI::App &cli) {
     CLI::App *build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
     CLI::App *bfc_cmd   = cli.add_subcommand("bfc"  , "loads a config file and uses it to manage the compilation process");
+    CLI::App *gc_cmd    = cli.add_subcommand("gc"   , "generates a yupconf JSON file to manage compiler's config in CWD");
 
     InitializeBuildCmdOptions(build_cmd, &yupc::GlobalCompilerOptions);
-    InitializeBFCCmdOptions(bfc_cmd, &yupc::GlobalCompilerOptions);
+    InitializeBFCCmdOptions(bfc_cmd,     &yupc::GlobalCompilerOptions);
 
-    build_cmd->callback([&]() {ProcessBuildCmd();});
-    bfc_cmd->callback([&]()   {ProcessBFCCmd();});
+    build_cmd->callback([&]() { ProcessBuildCmd(); });
+    bfc_cmd->callback  ([&]() { ProcessBFCCmd();   });
+    gc_cmd->callback   ([&]() { ProcessGCCmd();    });
 }
 
 int main(int argc, char *argv[]) 

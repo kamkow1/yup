@@ -22,6 +22,7 @@ namespace yupc
     void LoadJsonConfigFile(nlohmann::json &json);
     void InitializeLoadedConfig(yupc::CompilerOptions &compilerOptions, 
                                 yupc::CompilerConfigFile &configFile);
+    void GenerateYupConfInCWD();
 
 } // namespace yupc
 
