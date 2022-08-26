@@ -11,6 +11,7 @@ namespace yupc
     {
     public:
         std::stringstream *LogStream;
+        bool LoggingMode;
         
         void LogCompilerInfo(std::string message);
         void LogCompilerError(size_t line, size_t pos, std::string message, 
@@ -18,7 +19,6 @@ namespace yupc
         void LogCompilerInputError(std::string message);
         void LogParsingError(size_t line, size_t pos, std::string message, std::string file);
         void LogLexingError(std::string message, std::string file);
-        void LogCommandExecutionError(std::string message);
     };
 
     extern Logger GlobalLogger;
