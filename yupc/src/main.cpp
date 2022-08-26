@@ -11,8 +11,6 @@
 #include <string>
 #include <filesystem>
 
-namespace fs = std::filesystem;
-
 void InitializeBuildCmdOptions(CLI::App *buildCmd, yupc::CompilerOptions *compilerOptions) 
 {
     buildCmd->add_option("-s,--sources",       compilerOptions->SourcePaths,     ".yup source files");
