@@ -1,17 +1,17 @@
-#include <Compiler/Visitor.h>
-#include <Compiler/CompilationUnit.h>
-#include <Compiler/Operator.h>
+#include "Compiler/Visitor.h"
+#include "Compiler/CompilationUnit.h"
+#include "Compiler/Operator.h"
+
+#include "Parser/YupParser.h"
+
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/Constant.h"
+#include "llvm/IR/InstrTypes.h"
+#include "llvm/IR/Instruction.h"
+#include "llvm/IR/Value.h"
 
 #include <cstddef>
-#include <parser/YupParser.h>
-
-#include <llvm/IR/Type.h>
-#include <llvm/IR/Constants.h>
-#include <llvm/IR/Constant.h>
-#include <llvm/IR/InstrTypes.h>
-#include <llvm/IR/Instruction.h>
-#include <llvm/IR/Value.h>
-
 #include <iostream>
 #include <any>
 #include <vector>

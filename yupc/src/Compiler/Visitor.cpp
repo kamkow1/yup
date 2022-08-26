@@ -1,6 +1,6 @@
-#include <Compiler/Visitor.h>
+#include "Compiler/Visitor.h"
 
-#include <parser/YupParser.h>
+#include "Parser/YupParser.h"
 
 // visitor entry point
 std::any yupc::Visitor::visitFile(yupc::YupParser::FileContext *ctx)

@@ -51,13 +51,13 @@ set (SRCS
     src/Compiler/AddressOf.cpp
     src/Compiler/BinaryOperation.cpp
     src/Compiler/Import.cpp
+    src/Lexer/YupLexer.cpp
+    src/Lexer/LexerErrorListener.cpp
+    src/Parser/YupParser.cpp
+    src/Parser/YupParserBaseVisitor.cpp
+    src/Parser/YupParserVisitor.cpp
+    src/Parser/ParserErrorListener.cpp
     src/Logger.cpp
-    src/lexer/YupLexer.cpp
-    src/lexer/LexerErrorListener.cpp
-    src/parser/YupParser.cpp
-    src/parser/YupParserBaseVisitor.cpp
-    src/parser/YupParserVisitor.cpp
-    src/parser/ParserErrorListener.cpp
     src/main.cpp
     src/utils.cpp
 )

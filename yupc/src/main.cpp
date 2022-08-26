@@ -1,10 +1,10 @@
-#include <Compiler/Visitor.h>
-#include <Compiler/CompilationUnit.h>
-#include <Compiler/Compiler.h>
-#include <Compiler/FileSystem.h>
-#include <Compiler/Configuration.h>
+#include "Compiler/Visitor.h"
+#include "Compiler/CompilationUnit.h"
+#include "Compiler/Compiler.h"
+#include "Compiler/FileSystem.h"
+#include "Compiler/Configuration.h"
 
-#include <CLI/CLI.hpp>
+#include "CLI/CLI.hpp"
 
 #include <string>
 #include <filesystem>
@@ -37,7 +37,7 @@ void ProcessBuildCmd()
         } 
         else 
         {
-            yupc::ProcessPath(path); // fail
+            yupc::ProcessPath(path);
         }
     }
 

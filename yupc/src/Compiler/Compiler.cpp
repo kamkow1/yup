@@ -7,16 +7,15 @@
 #include "utils.h"
 #include "Logger.h"
 
-#include "parser/YupParser.h"
-#include "parser/ParserErrorListener.h"
-#include "lexer/YupLexer.h"
-#include "lexer/LexerErrorListener.h"
+#include "Parser/YupParser.h"
+#include "Parser/ParserErrorListener.h"
+#include "Lexer/YupLexer.h"
+#include "Lexer/LexerErrorListener.h"
 
 #include "llvm/IR/Verifier.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
-#include <iostream>
-#include <llvm/IR/IRBuilder.h>
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/Support/MemoryBufferRef.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/raw_ostream.h"
@@ -27,6 +26,7 @@
 #include "llvm/Bitcode/BitcodeReader.h"
 #include "llvm/Linker/Linker.h"
 
+#include <iostream>
 #include <string>
 #include <filesystem>
 #include <cstddef>

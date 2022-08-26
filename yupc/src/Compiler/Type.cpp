@@ -4,8 +4,8 @@
 #include "Compiler/CompilationUnit.h"
 #include "Lexer.h"
 
-#include "parser/YupParser.h"
-#include "lexer/YupLexer.h"
+#include "Parser/YupParser.h"
+#include "Lexer/YupLexer.h"
 
 #include "utils.h"
 

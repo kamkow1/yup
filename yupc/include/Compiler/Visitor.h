@@ -1,7 +1,8 @@
-#pragma once
+#ifndef YUPC_COMPILER_VISITOR_H_
+#define YUPC_COMPILER_VISITOR_H_
 
-#include <parser/YupParser.h>
-#include <parser/YupParserBaseVisitor.h>
+#include <Parser/YupParser.h>
+#include <Parser/YupParserBaseVisitor.h>
 
 #include <any>
 
@@ -46,4 +47,6 @@ namespace yupc
 
         std::any visitConstant(yupc::YupParser::ConstantContext *ctx)                                   override;
     };
-}
+} // namespace yupc
+
+#endif

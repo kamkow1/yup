@@ -5,7 +5,7 @@
 #include "Compiler/CodeBlock.h"
 #include "Logger.h"
 
-#include "parser/YupParser.h"
+#include "Parser/YupParser.h"
 
 #include "llvm/IR/Value.h"
 #include "llvm/IR/GlobalValue.h"

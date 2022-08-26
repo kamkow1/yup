@@ -1,5 +1,5 @@
 #include "Compiler/CompilationUnit.h"
-#include "lexer/LexerErrorListener.h"
+#include "Lexer/LexerErrorListener.h"
 
 #include <string>
 

@@ -2,7 +2,7 @@
 #include "Compiler/CompilationUnit.h"
 #include "Compiler/CodeBlock.h"
 
-#include "parser/YupParser.h"
+#include "Parser/YupParser.h"
 
 #include "llvm/IR/Instructions.h"
 
