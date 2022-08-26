@@ -23,16 +23,21 @@ set (ANTLR_BUILD_PATH ${ANTLR_SRC}/dist/libantlr4-runtime.a)
 
 include_directories (
     ${ANTLR_INCLUDE_PATH} 
+    ${THIRD_PARTY_DIR}/json/include
     ${CMAKE_SOURCE_DIR}/include)
 
 conan_basic_setup ()
 
 find_package (Threads REQUIRED)
+
+# LLVM
 find_package (LLVM REQUIRED CONFIG)
-
 add_definitions (${LLVM_DEFINITIONS})
+llvm_map_components_to_libnames(LLVM_LIBS support core irreader linker bitwriter bitreader)
 
-llvm_map_components_to_libnames(llvm_libs support core irreader linker bitwriter bitreader)
+# json
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(${THIRD_PARTY_DIR}/json)
 
 set (SRCS
     src/Compiler/Configuration.cpp
@@ -65,4 +70,9 @@ set (SRCS
 
 add_executable(yupc ${SRCS})
 
-target_link_libraries(${CMAKE_PROJECT_NAME} ${ANTLR_BUILD_PATH} ${CONAN_LIBS} ${llvm_libs} Threads::Threads)
+target_link_libraries(${CMAKE_PROJECT_NAME} 
+    ${ANTLR_BUILD_PATH} 
+    ${CONAN_LIBS} 
+    ${LLVM_LIBS} 
+    Threads::Threads
+    nlohmann_json::nlohmann_json)

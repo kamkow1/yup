@@ -18,4 +18,6 @@ namespace yupc
     std::string StringReplaceAll(std::string str, const std::string &from, const std::string &to);
 
     void PrintLLVMType(llvm::Type *type);
+
+    void StringStripQuotes(std::string &str);
 }

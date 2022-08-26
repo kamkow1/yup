@@ -70,3 +70,9 @@ void yupc::PrintLLVMType(llvm::Type *type)
 
     std::cout << str << "\n";
 }
+
+void yupc::StringStripQuotes(std::string &str)
+{
+    str.erase(0, 1);
+    str.erase(str.size() - 1);
+}

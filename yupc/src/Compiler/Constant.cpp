@@ -114,9 +114,7 @@ std::any yupc::Visitor::visitConstant(yupc::YupParser::ConstantContext *ctx)
     if (ctx->ValueString() != nullptr) 
     {
         std::string text = ctx->ValueString()->getText();
-
-        text.erase(0, 1);
-        text.erase(text.size() - 1);
+        yupc::StringStripQuotes(text);
 
         yupc::StringCodegen(text);
 

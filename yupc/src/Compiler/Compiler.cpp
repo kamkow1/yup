@@ -149,3 +149,27 @@ void yupc::ProcessPath(std::string path)
         yupc::CompilationUnits.push_back(compilationUnit);
     }
 }
+
+void yupc::BuildProgram(yupc::CompilerOptions &options)
+{
+    for (std::string &path : options.SourcePaths)
+    {
+        if (fs::is_directory(path)) 
+        {
+            for (auto &entry : fs::directory_iterator(path)) 
+            {
+                if (!fs::is_directory(entry)) 
+                {
+                    yupc::ProcessPath(entry.path().string());
+                }
+            }
+        } 
+        else 
+        {
+            yupc::ProcessPath(path);
+        }
+    }
+
+    std::string bc_file = yupc::InitializeBinDir();
+    yupc::BuildBitcode(bc_file);
+}

@@ -3,8 +3,10 @@
 #include "Compiler/Compiler.h"
 #include "Compiler/FileSystem.h"
 #include "Compiler/Configuration.h"
+#include "utils.h"
 
 #include "CLI/CLI.hpp"
+#include "nlohmann/json.hpp"
 
 #include <string>
 #include <filesystem>
@@ -19,37 +21,36 @@ void InitializeBuildCmdOptions(CLI::App *buildCmd, yupc::CompilerOptions *compil
     buildCmd->add_flag("-v,--verbose",         compilerOptions->VerboseOutput,   "enables verbose compiler output");
 }
 
+void InitializeBFCCmdOptions(CLI::App *bfcCmd, yupc::CompilerOptions *compilerConfigFile)
+{
+    bfcCmd->add_option("-f,--file",            compilerConfigFile->CompilerConfigFilePath, "sets the path to the configuration file for the compiler");
+}
+
 void ProcessBuildCmd() 
 {
     yupc::GlobalBuildDirPath = yupc::InitializeBuildDir(yupc::GlobalPathVariables["@root"]);
+    yupc::BuildProgram(yupc::GlobalCompilerOptions);
+}
 
-    for (std::string &path : yupc::GlobalCompilerOptions.SourcePaths)
-    {
-        if (fs::is_directory(path)) 
-        {
-            for (auto &entry : fs::directory_iterator(path)) 
-            {
-                if (!fs::is_directory(entry)) 
-                {
-                    yupc::ProcessPath(entry.path().string());
-                }
-            }
-        } 
-        else 
-        {
-            yupc::ProcessPath(path);
-        }
-    }
-
-    std::string bc_file = yupc::InitializeBinDir();
-    yupc::BuildBitcode(bc_file);
+void ProcessBFCCmd()
+{
+    std::string jsonFile = yupc::ReadFileToString(yupc::GlobalCompilerOptions.CompilerConfigFilePath);
+    nlohmann::json jsonObjectConfig = nlohmann::json::parse(jsonFile);
+    nlohmann::json configObject = jsonObjectConfig["config"];
+    yupc::LoadJsonConfigFile(configObject);
+    yupc::GlobalBuildDirPath = yupc::InitializeBuildDir(yupc::GlobalPathVariables["@root"]);
+    yupc::BuildProgram(yupc::GlobalCompilerOptions);
 }
 
 void SetupCLICommands(CLI::App &cli) {
     CLI::App *build_cmd = cli.add_subcommand("build", "compiles a .yup source file into an executable binary");
+    CLI::App *bfc_cmd   = cli.add_subcommand("bfc"  , "loads a config file and uses it to manage the compilation process");
+
     InitializeBuildCmdOptions(build_cmd, &yupc::GlobalCompilerOptions);
+    InitializeBFCCmdOptions(bfc_cmd, &yupc::GlobalCompilerOptions);
 
     build_cmd->callback([&]() {ProcessBuildCmd();});
+    bfc_cmd->callback([&]()   {ProcessBFCCmd();});
 }
 
 int main(int argc, char *argv[]) 

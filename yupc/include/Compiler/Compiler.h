@@ -19,17 +19,17 @@ namespace yupc
         bool VerboseOutput;
         std::vector<std::string> SourcePaths;  
         std::string BinaryName;
+        std::string CompilerConfigFilePath;
     };
 
     extern CompilerOptions GlobalCompilerOptions;
 
     void BuildBitcode(fs::path binFile);
-
     void ProcessSourceFile(std::string path);
-
     void ProcessPath(std::string path);
-
+    void BuildProgram(CompilerOptions &options);
     std::string CreateModuleName(std::string basePath);
+
 } // namespace yupc
 
 #endif
