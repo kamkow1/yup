@@ -1,5 +1,5 @@
 import "@std/io/iolib.ll";
 
-public _printf(fmt: i8*, aa: i32) -> void {
+export func PrintF(fmt: i8*, aa: i32) -> void {
     printf(fmt, aa);
 }
