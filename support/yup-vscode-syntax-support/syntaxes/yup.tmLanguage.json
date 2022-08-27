@@ -12,6 +12,9 @@
 			"include": "#type_annot"
 		},
 		{
+			"include": "#return_type"
+		},
+		{
 			"include": "#identifier"
 		},
 		{
@@ -28,7 +31,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.yup",
-				"match": "\\b(module|func|cosnt|glob|public|import|from|return|ref|let|type|alias)\\b"
+				"match": "\\b(func|const|global|export|import|return|ref|var|type|alias)\\b"
 			}]
 		},
 		"strings": {
@@ -49,6 +52,10 @@
 		"type_annot": {
 			"name": "support.type",
 			"match": ":\\s*[*]?[a-zA-Z][a-zA-Z_0-9]+"
+		},
+		"return_type": {
+			"name": "support.type",
+			"match": "->\\s*[*]?[a-zA-Z][a-zA-Z_0-9]+"
 		},
 		"identifier": {
 			"name": "variable.name",

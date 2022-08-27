@@ -19,8 +19,3 @@ this extenstion was created to make it easier to navigate through and read the .
 
 
 if you want (and know how to), you can make a better extension yourself and contribute to the repository.
-
-
-## small demo
-
-![alt 'demo of the extension'](https://github.com/kamkow1/yup/blob/master/support/yup-vscode-syntax-support/tiny_demo.png?raw=true)
