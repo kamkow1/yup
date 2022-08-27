@@ -8,7 +8,7 @@ file:                           statement*;
 
 codeBlock:                      SymbolLbrace statement* SymbolRbrace;
 
-typeDeclaration:                KeywordPublic? KeywordType Identifier typeDefinition;
+typeDeclaration:                KeywordExport? KeywordType Identifier typeDefinition;
 typeDefinition:                 typeAlias;
 typeAlias:                      KeywordAlias typeName;
 typeAnnotation:                 SymbolColon typeName;
@@ -19,17 +19,17 @@ typeNameExpression:             SymbolApostrophe typeName;
 
 importDeclaration:              KeywordImport ValueString;
 
-
 arrayElementAssignment:         Identifier arrayIndex* variableValue;
 arrayIndex:                     SymbolLsqbr expression SymbolRsqbr;
 array:                          SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
 
 assignment:                     Identifier variableValue;
-variableDeclare:                KeywordPublic? KeywordGlobal? KeywordConst? KeywordRef? KeywordLet Identifier typeAnnotation variableValue?;
+variableDeclare:                KeywordExport? KeywordGlobal? declarationType KeywordRef? Identifier typeAnnotation variableValue?;
+declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
 
 functionDefinition:             functionSignature codeBlock;
-functionSignature:              KeywordPublic? Identifier SymbolLparen functionParameterList? SymbolRparen SymbolArrow typeName;
+functionSignature:              KeywordExport? KeywordFunc Identifier SymbolLparen functionParameterList? SymbolRparen SymbolArrow typeName;
 functionParameterList:          functionParameter (SymbolComma functionParameter)*;
 functionReturn:                 KeywordReturn expression;
 functionParameter:              (Identifier typeAnnotation ) | SymbolVariadicArgs;

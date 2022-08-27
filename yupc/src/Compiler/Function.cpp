@@ -128,15 +128,7 @@ std::any yupc::Visitor::visitFunctionSignature(yupc::YupParser::FunctionSignatur
         params.push_back(fp);
     }
 
-    /*std::vector<llvm::Type*> paramTypes;
-    size_t i = 0;
-    while (i < params.size() && !params[i]->isVarArg)
-    {
-        paramTypes.push_back(params[i]->ParameterType);
-        i++;
-    }*/
-
-    bool isPublic = ctx->KeywordPublic() != nullptr;
+    bool isPublic = ctx->KeywordExport() != nullptr;
     bool isVarArg = !params.empty() && params.back()->IsVarArg;
     yupc::FunctionSignatureCodegen(isVarArg, isPublic, name, return_type, params);
 

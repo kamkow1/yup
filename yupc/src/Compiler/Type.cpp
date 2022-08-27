@@ -143,7 +143,7 @@ std::any yupc::Visitor::visitTypeDeclaration(yupc::YupParser::TypeDeclarationCon
         std::string aliasName = ctx->Identifier()->getText();
         std::string oldName = ctx->typeDefinition()->typeAlias()->typeName()->getText();
 
-        bool isPublic = ctx->KeywordPublic() != nullptr;
+        bool isPublic = ctx->KeywordExport() != nullptr;
         yupc::AliasType *type = new yupc::AliasType(aliasName, oldName, isPublic);
         yupc::CompilationUnits.back()->TypeAliases.push_back(type);
     }

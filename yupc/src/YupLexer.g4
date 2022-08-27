@@ -2,14 +2,14 @@ lexer grammar YupLexer;
 
 KeywordReturn               :   'return';
 KeywordConst                :   'const';
-KeywordPublic               :   'public';
-KeywordGlobal               :   'glob';
-KeywordFunc                 :   'func';
+KeywordExport               :   'export';
+KeywordGlobal               :   'global';
 KeywordRef                  :   'ref';
-KeywordLet                  :   'let';
+KeywordVar                  :   'var';
 KeywordImport               :   'import';
 KeywordType                 :   'type';
 KeywordAlias                :   'alias';
+KeywordFunc                 :   'func';
 
 SymbolAt                    :   '@';
 SymbolApostrophe            :   '\'';

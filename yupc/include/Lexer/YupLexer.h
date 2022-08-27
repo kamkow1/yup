@@ -13,9 +13,9 @@ namespace yupc {
 class  YupLexer : public antlr4::Lexer {
 public:
   enum {
-    KeywordReturn = 1, KeywordConst = 2, KeywordPublic = 3, KeywordGlobal = 4, 
-    KeywordFunc = 5, KeywordRef = 6, KeywordLet = 7, KeywordImport = 8, 
-    KeywordType = 9, KeywordAlias = 10, SymbolAt = 11, SymbolApostrophe = 12, 
+    KeywordReturn = 1, KeywordConst = 2, KeywordExport = 3, KeywordGlobal = 4, 
+    KeywordRef = 5, KeywordVar = 6, KeywordImport = 7, KeywordType = 8, 
+    KeywordAlias = 9, KeywordFunc = 10, SymbolAt = 11, SymbolApostrophe = 12, 
     SymbolTerminator = 13, SymbolAssign = 14, SymbolColon = 15, SymbolVariadicArgs = 16, 
     SymbolLparen = 17, SymbolRparen = 18, SymbolLbrace = 19, SymbolRbrace = 20, 
     SymbolLsqbr = 21, SymbolRsqbr = 22, SymbolComma = 23, SymbolQuestMark = 24, 

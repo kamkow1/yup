@@ -55,7 +55,7 @@ void yupc::Logger::LogLexingError(std::string message, std::string file)
 void yupc::Logger::LogParsingError(size_t line, size_t pos, std::string message, std::string file)
 {
     std::cout
-        << file << ":" << line << ":" << "pos"
+        << file << ":" << line << ":" << pos
         <<  "\n"
         << "[" << "PARSING ERROR" << "]: "
         << " (in file "

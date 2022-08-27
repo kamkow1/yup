@@ -163,10 +163,10 @@ std::any yupc::Visitor::visitVariableDeclare(yupc::YupParser::VariableDeclareCon
 {
     std::string name = ctx->Identifier()->getText();
     
-    bool isConst = ctx->KeywordConst()  != nullptr;
-    bool isGlob  = ctx->KeywordGlobal() != nullptr;
-    bool isPub   = ctx->KeywordPublic() != nullptr;
-    bool isRef   = ctx->KeywordRef()    != nullptr;
+    bool isGlob  = ctx->KeywordGlobal()                    != nullptr;
+    bool isConst = ctx->declarationType()->KeywordConst()  != nullptr;
+    bool isPub   = ctx->KeywordExport()                    != nullptr;
+    bool isRef   = ctx->KeywordRef()                       != nullptr;
 
     if (isRef && ctx->variableValue() == nullptr) 
     {
@@ -194,7 +194,6 @@ std::any yupc::Visitor::visitVariableDeclare(yupc::YupParser::VariableDeclareCon
 
     if (!isGlob && localsContains) 
     {
-        //yupc::log_compiler_err("variable \"" + name + ctx->typeAnnotation()->getText() + "\" has already been declared in this scope", ctx->getText());
         yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
                                             "variable \"" + name + ctx->typeAnnotation()->getText() 
                                             + "\" has already been declared in this scope", 
