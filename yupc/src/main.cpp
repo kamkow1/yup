@@ -28,8 +28,6 @@ void ProcessBuildCmd()
 {
     yupc::GlobalBuildDirPath = yupc::InitializeBuildDir(yupc::GlobalPathVariables["@root"]);
     yupc::BuildProgram(yupc::GlobalCompilerOptions);
-    std::string bc_file = yupc::InitializeBinDir();
-    yupc::BuildBitcode(bc_file);
 }
 
 void ProcessBFCCmd()
