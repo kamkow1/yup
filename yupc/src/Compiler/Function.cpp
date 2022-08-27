@@ -26,7 +26,7 @@
 #include <iostream>
 #include <vector>
 
-#define MAIN_FUNC_NAME "main"
+#define MAIN_FUNC_NAME "Main"
 
 yupc::FunctionParameter::FunctionParameter(llvm::Type  *_parameterType,
                                         std::string     _parameterName,

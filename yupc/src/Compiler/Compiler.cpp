@@ -169,7 +169,4 @@ void yupc::BuildProgram(yupc::CompilerOptions &options)
             yupc::ProcessPath(path);
         }
     }
-
-    std::string bc_file = yupc::InitializeBinDir();
-    yupc::BuildBitcode(bc_file);
 }
