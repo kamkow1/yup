@@ -34,6 +34,8 @@ SymbolArrow                 :   '->';
 SymbolPlus                  :   '+';
 SymbolMinus                 :   '-';
 SymbolSlash                 :   '/';
+SymbolEqual                 :   '==';
+SymbolNotEqual              :   '!=';
 
 ValueChar                   :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 ValueString                 :   '"' (~'"' | '\'\'')* '"';

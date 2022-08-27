@@ -5,17 +5,16 @@
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/DataLayout.h"
+#include "llvm/IR/Instructions.h"
 
 #include <vector>
 
 namespace yupc 
 {
-    void ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVal);
-
+    llvm::LoadInst *ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVal);
+    llvm::Constant *ArrayCodegen(std::vector<llvm::Constant*> elems);
     void ArrayElementAssignmentCodegen(std::string arrName, size_t idxNestingLvl, 
                                 std::vector<llvm::Value*> idxVals);
-
-    void ArrayCodegen(std::vector<llvm::Constant*> elems);
 } // namespace yupc
 
 #endif

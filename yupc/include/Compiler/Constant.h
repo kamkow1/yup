@@ -1,22 +1,19 @@
 #ifndef YUPC_COMPILER_CONSTANT_H_
 #define YUPC_COMPILER_CONSTANT_H_
 
+#include "llvm/IR/Constant.h"
+
 #include <string>
 #include <cstdint>
 
 namespace yupc
 {
-    void IntegerCodegen(int64_t value);
-
-    void FloatCodegen(float value);
-
-    void BoolCodegen(bool value);
-
-    void CharCodegen(std::string text);
-
-    void StringCodegen(std::string text);
-
-    void NullCodegen();
+    llvm::Constant *IntegerCodegen(int64_t value);
+    llvm::Constant *FloatCodegen(float value);
+    llvm::Constant *BoolCodegen(bool value);
+    llvm::Constant *CharCodegen(std::string text);
+    llvm::Constant *StringCodegen(std::string text);
+    llvm::Constant *NullCodegen();
 } // namespace yupc
 
 #endif

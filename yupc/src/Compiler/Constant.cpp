@@ -5,16 +5,16 @@
 #include "Logger.h"
 #include "utils.h"
 
-#include <llvm/IR/Constant.h>
-#include <llvm/IR/DerivedTypes.h>
-#include <llvm/IR/Type.h>
-#include <llvm/IR/Constants.h>
+#include "llvm/IR/Constant.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Constants.h"
 
 #include <string>
 #include <cstdint>
 
 
-void yupc::IntegerCodegen(int64_t value) 
+llvm::Constant *yupc::IntegerCodegen(int64_t value) 
 {
     llvm::IntegerType *i64type = llvm::Type::getInt64Ty(*yupc::CompilationUnits.back()->Context);
     llvm::IntegerType *i32type = llvm::Type::getInt32Ty(*yupc::CompilationUnits.back()->Context);
@@ -23,25 +23,23 @@ void yupc::IntegerCodegen(int64_t value)
             ? llvm::ConstantInt::get(i64type, value)
             : llvm::ConstantInt::get(i32type, value);
 
-    yupc::CompilationUnits.back()->ValueStack.push(constant);
+    return constant;
 }
 
-void yupc::FloatCodegen(float value) 
+llvm::Constant *yupc::FloatCodegen(float value) 
 {
     llvm::ConstantFP *constant = llvm::ConstantFP::get(*yupc::CompilationUnits.back()->Context, llvm::APFloat(value));
-
-    yupc::CompilationUnits.back()->ValueStack.push(constant);
+    return constant;
 }
 
-void yupc::BoolCodegen(bool value) 
+llvm::Constant *yupc::BoolCodegen(bool value) 
 {
     llvm::IntegerType *type = llvm::Type::getInt8Ty(*yupc::CompilationUnits.back()->Context);
     llvm::Constant *constant = llvm::ConstantInt::get(type, value);
-
-    yupc::CompilationUnits.back()->ValueStack.push(constant);
+    return constant;
 }
 
-void yupc::CharCodegen(std::string text) 
+llvm::Constant *yupc::CharCodegen(std::string text) 
 {
 
     char *cstr = new char[text.length() + 1];
@@ -50,87 +48,62 @@ void yupc::CharCodegen(std::string text)
     llvm::IntegerType *type = llvm::Type::getInt8Ty(*yupc::CompilationUnits.back()->Context);
     llvm::Constant *constant = llvm::ConstantInt::get(type, *cstr);
 
-    yupc::CompilationUnits.back()->ValueStack.push(constant);
-
     delete []cstr;
+    return constant;
 }
 
-void yupc::StringCodegen(std::string text) 
+llvm::Constant *yupc::StringCodegen(std::string text) 
 {
     llvm::Constant *gstrptr = yupc::CompilationUnits.back()->IRBuilder->CreateGlobalStringPtr(llvm::StringRef(text));
-    yupc::CompilationUnits.back()->ValueStack.push(gstrptr);
+    return gstrptr;
 }
 
-void yupc::NullCodegen() 
+llvm::Constant *yupc::NullCodegen() 
 {
     llvm::Type *voidPtrType = llvm::Type::getInt8Ty(*yupc::CompilationUnits.back()->Context)->getPointerTo();
     llvm::Constant *nullp = llvm::ConstantPointerNull::getNullValue(voidPtrType);
-
-    yupc::CompilationUnits.back()->ValueStack.push(nullp);
+    return nullp;
 }
 
 std::any yupc::Visitor::visitConstant(yupc::YupParser::ConstantContext *ctx) 
 {
-    
+    llvm::Constant *result;
+
     if (ctx->ValueInteger() != nullptr) 
     {
         std::string text = ctx->ValueInteger()->getText();
-
         int64_t value = yupc::StringToInt64(text);
-        yupc::IntegerCodegen(value);
-
-        return nullptr;
+        result = yupc::IntegerCodegen(value);
     }
-
-    if (ctx->ValueFloat() != nullptr) 
+    else if (ctx->ValueFloat() != nullptr) 
     {
         std::string text = ctx->ValueFloat()->getText();
         double value = std::atof(text.c_str());
-
-        yupc::FloatCodegen(value);
-
-        return nullptr;
+        result = yupc::FloatCodegen(value);
     }
-
-    if (ctx->ValueBool() != nullptr) 
+    else if (ctx->ValueBool() != nullptr) 
     {
         std::string text = ctx->ValueBool()->getText();
-
         bool value = text == "True";
-        yupc::BoolCodegen(value);
-
-        return nullptr;
+        result = yupc::BoolCodegen(value);
     }
-
-    if (ctx->ValueChar() != nullptr) 
+    else if (ctx->ValueChar() != nullptr) 
     {
         std::string text = ctx->ValueChar()->getText();
-
-        yupc::CharCodegen(text);
-
-        return nullptr;
+        result = yupc::CharCodegen(text);
     }
-
-    if (ctx->ValueString() != nullptr) 
+    else if (ctx->ValueString() != nullptr) 
     {
         std::string text = ctx->ValueString()->getText();
         yupc::StringStripQuotes(text);
-
-        yupc::StringCodegen(text);
-
-        return nullptr;
+        result = yupc::StringCodegen(text);
     }
-
-    if (ctx->ValueNull() != nullptr) 
+    else 
     {
-        yupc::NullCodegen();
-
-        return nullptr;
+        result = yupc::NullCodegen();
     }
 
-    yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
-                                        "couldn't match type and create a constant", 
-                                        ctx->getText(), yupc::CompilationUnits.back()->SourceFile);
-    exit(1);
+    yupc::CompilationUnits.back()->ValueStack.push(result);
+
     return nullptr;
 }

@@ -21,7 +21,7 @@
 #include <cstddef>
 #include <string>
 
-void yupc::ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVal) 
+llvm::LoadInst *yupc::ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVal) 
 {
     llvm::Type * gepType = array->getType()->getNonOpaquePointerElementType();
     llvm::Value *idxGep = yupc::CompilationUnits.back()->IRBuilder->CreateInBoundsGEP(gepType, array, idxVal);
@@ -31,7 +31,7 @@ void yupc::ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVa
     llvm::Type *load_type = idxGep->getType()->getNonOpaquePointerElementType();
     llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(load_type, idxGep);
 
-    yupc::CompilationUnits.back()->ValueStack.push(load);
+    return load;
 }
 
 void yupc::ArrayElementAssignmentCodegen(std::string arrayName, size_t idxNestingLvl, std::vector<llvm::Value*> idxVals) 
@@ -50,13 +50,13 @@ void yupc::ArrayElementAssignmentCodegen(std::string arrayName, size_t idxNestin
     yupc::CompilationUnits.back()->IRBuilder->CreateStore(val, ptr);
 }
 
-void yupc::ArrayCodegen(std::vector<llvm::Constant*> elems) 
+llvm::Constant *yupc::ArrayCodegen(std::vector<llvm::Constant*> elems) 
 {
     llvm::Type *elemType = elems[0]->getType();
     llvm::ArrayType *arrayType = llvm::ArrayType::get(elemType, elems.size());
     llvm::Constant *constArray = llvm::ConstantArray::get(arrayType, elems);
 
-    yupc::CompilationUnits.back()->ValueStack.push(constArray);
+    return constArray;
 }
 
 std::any yupc::Visitor::visitIndexedAccessExpression(yupc::YupParser::IndexedAccessExpressionContext *ctx) 
@@ -64,13 +64,15 @@ std::any yupc::Visitor::visitIndexedAccessExpression(yupc::YupParser::IndexedAcc
     std::string name = ctx->expression(0)->getText();
     llvm::Value *array = yupc::CompilationUnits.back()->SymbolTable.back()[name];
 
+    llvm::LoadInst *load;
     for (size_t i = 1; i < ctx->expression().size(); i++)
     {
         this->visit(ctx->expression(i));
         llvm::Value *idxVal = yupc::CompilationUnits.back()->ValueStack.top();
-        yupc::ConstArrayIndexedAccessCodegen(array, idxVal);
+        load = yupc::ConstArrayIndexedAccessCodegen(array, idxVal);
     }
-
+    
+    yupc::CompilationUnits.back()->ValueStack.push(load);
     return nullptr;
 }
 
@@ -102,6 +104,7 @@ std::any yupc::Visitor::visitArray(yupc::YupParser::ArrayContext *ctx)
         yupc::CompilationUnits.back()->ValueStack.pop();
     }
 
-    yupc::ArrayCodegen(elems);
+    llvm::Constant *constArray = yupc::ArrayCodegen(elems);
+    yupc::CompilationUnits.back()->ValueStack.push(constArray);
     return nullptr;
 }

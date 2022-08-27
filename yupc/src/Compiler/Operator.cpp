@@ -68,13 +68,11 @@ std::any yupc::Visitor::visitOperator(yupc::YupParser::OperatorContext *ctx)
         {
             this->visit(ctx->expression(i));
             operArg = new yupc::OperatorArgument(nullptr, yupc::CompilationUnits.back()->TypeStack.top());
-            //operArg->OperatorPossibleType = yupc::CompilationUnits.back()->TypeStack.top();
         } 
         else if (dynamic_cast<yupc::YupParser::IdentifierExpressionContext*>(ctx->expression(i)) != nullptr)
         {
             this->visit(ctx->expression(i));
             operArg = new yupc::OperatorArgument(yupc::CompilationUnits.back()->ValueStack.top(), nullptr);
-            //operArg->OperatorPossibleValue = yupc::CompilationUnits.back()->ValueStack.top();
         }
         else
         {

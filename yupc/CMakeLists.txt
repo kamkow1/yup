@@ -40,6 +40,7 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(${THIRD_PARTY_DIR}/json)
 
 set (SRCS
+    src/Compiler/Logic.cpp
     src/Compiler/Configuration.cpp
     src/Compiler/FileSystem.cpp
     src/Compiler/Operator.cpp

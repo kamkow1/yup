@@ -41,6 +41,8 @@ namespace yupc
         std::any visitEmphasizedExpression(yupc::YupParser::EmphasizedExpressionContext *ctx)           override;
         std::any visitBinaryOperationExpression(yupc::YupParser::BinaryOperationExpressionContext *ctx) override;
 
+        std::any visitEqualExpression(yupc::YupParser::EqualExpressionContext *ctx)                     override;
+
         std::any visitOperator(yupc::YupParser::OperatorContext *ctx)                                   override;
 
         std::any visitImportDeclaration(yupc::YupParser::ImportDeclarationContext *ctx)                 override;

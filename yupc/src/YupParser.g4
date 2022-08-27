@@ -56,7 +56,8 @@ expression:                     constant                                        
         |                       pointerDereference                                  #pointerDereferenceExpression
         |                       operator                                            #operatorExpression
         |                       typeNameExpression                                  #typeExpression
-        |                       SymbolLparen expression SymbolRparen expression     #typeCastExpression;
+        |                       SymbolLparen expression SymbolRparen expression     #typeCastExpression
+        |                       expression SymbolEqual expression                   #EqualExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator

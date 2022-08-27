@@ -12,7 +12,7 @@
 #include <cstddef>
 #include <iostream>
 
-void yupc::PointerDereferenceCodegen(llvm::Value *value, size_t line, size_t pos, std::string text) 
+llvm::LoadInst *yupc::PointerDereferenceCodegen(llvm::Value *value, size_t line, size_t pos, std::string text) 
 {
 
     if (!value->getType()->isPointerTy()) 
@@ -25,7 +25,7 @@ void yupc::PointerDereferenceCodegen(llvm::Value *value, size_t line, size_t pos
 
     llvm::Type *type = value->getType()->getNonOpaquePointerElementType();
     llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(type, value);
-    yupc::CompilationUnits.back()->ValueStack.push(load);
+    return load; //yupc::CompilationUnits.back()->ValueStack.push(load);
 }
 
 std::any yupc::Visitor::visitPointerDereference(yupc::YupParser::PointerDereferenceContext *ctx) 
@@ -34,9 +34,10 @@ std::any yupc::Visitor::visitPointerDereference(yupc::YupParser::PointerDerefere
     this->visit(ctx->expression());
     llvm::Value *value = yupc::CompilationUnits.back()->ValueStack.top();
 
-    yupc::PointerDereferenceCodegen(value, ctx->start->getLine(), 
-            ctx->start->getCharPositionInLine(), ctx->getText());
     yupc::CompilationUnits.back()->ValueStack.pop();
+    llvm::LoadInst *load = yupc::PointerDereferenceCodegen(value, ctx->start->getLine(), 
+                                    ctx->start->getCharPositionInLine(), ctx->getText());
 
+    yupc::CompilationUnits.back()->ValueStack.push(load);
     return nullptr;
 }

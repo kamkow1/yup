@@ -124,7 +124,7 @@ llvm::Value *yupc::DivCodgen(llvm::Value *lhs, llvm::Value *rhs)
     return result;
 }
 
-void yupc::BinaryOparationCodegen(llvm::Value *lhs, llvm::Value *rhs, std::string op) 
+llvm::Value *yupc::BinaryOparationCodegen(llvm::Value *lhs, llvm::Value *rhs, std::string op) 
 {
 
     llvm::Value *math_inst;
@@ -153,7 +153,7 @@ void yupc::BinaryOparationCodegen(llvm::Value *lhs, llvm::Value *rhs, std::strin
 
     delete []cstr;
     
-    yupc::CompilationUnits.back()->ValueStack.push(math_inst);
+    return math_inst;
 }
 
 std::any yupc::Visitor::visitBinaryOperationExpression(yupc::YupParser::BinaryOperationExpressionContext *ctx) 
@@ -166,9 +166,11 @@ std::any yupc::Visitor::visitBinaryOperationExpression(yupc::YupParser::BinaryOp
     this->visit(ctx->expression(1));
     llvm::Value *rhs = yupc::CompilationUnits.back()->ValueStack.top();
 
-    yupc::BinaryOparationCodegen(lhs, rhs, op);
     yupc::CompilationUnits.back()->ValueStack.pop();
     yupc::CompilationUnits.back()->ValueStack.pop();
+
+    llvm::Value *result = yupc::BinaryOparationCodegen(lhs, rhs, op);
+    yupc::CompilationUnits.back()->ValueStack.push(result);
 
     return nullptr;
 }

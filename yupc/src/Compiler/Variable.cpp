@@ -43,7 +43,7 @@ llvm::AllocaInst *yupc::FindLocalVariable(std::string name, size_t i,
     }
 }
 
-void yupc::IdentifierCodegen(std::string id, bool isGlobal, 
+llvm::LoadInst *yupc::IdentifierCodegen(std::string id, bool isGlobal, 
                 size_t line, size_t pos, std::string text) 
 {
     if (isGlobal)
@@ -51,7 +51,7 @@ void yupc::IdentifierCodegen(std::string id, bool isGlobal,
         llvm::GlobalVariable *globalVariable = yupc::CompilationUnits.back()->GlobalVariables[id];
         llvm::Type *type = globalVariable->getValueType();
         llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(type, globalVariable);
-        yupc::CompilationUnits.back()->ValueStack.push(load);
+        return load;
     }
     else
     {
@@ -60,7 +60,7 @@ void yupc::IdentifierCodegen(std::string id, bool isGlobal,
 
         llvm::Type *type = variable->getAllocatedType();
         llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(type, variable);
-        yupc::CompilationUnits.back()->ValueStack.push(load);
+        return load;
     }
 }
 
@@ -250,8 +250,8 @@ std::any yupc::Visitor::visitIdentifierExpression(yupc::YupParser::IdentifierExp
 
     bool isGlob = yupc::CompilationUnits.back()->GlobalVariables.contains(name);
 
-    yupc::IdentifierCodegen(name, isGlob, ctx->start->getLine(), 
-            ctx->start->getCharPositionInLine(), ctx->getText());
-    
+    llvm::LoadInst *load = yupc::IdentifierCodegen(name, isGlob, ctx->start->getLine(), 
+                                    ctx->start->getCharPositionInLine(), ctx->getText());
+    yupc::CompilationUnits.back()->ValueStack.push(load);
     return nullptr;
 }

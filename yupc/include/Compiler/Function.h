@@ -25,10 +25,8 @@ namespace yupc
     };
 
     void FunctionDefinitionCodegen(llvm::Function *function);
-
     void FunctionCallCodegen(std::string functionName, std::vector<llvm::Value*> args, 
                             size_t line, size_t pos, std::string text);
-
     void FunctionSignatureCodegen(bool isVarArg, bool isPublic, std::string name, 
                     llvm::Type *return_type, std::vector<FunctionParameter*> params);
 

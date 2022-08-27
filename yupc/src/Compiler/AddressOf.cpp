@@ -2,15 +2,17 @@
 #include "Compiler/AddressOf.h"
 #include "Compiler/CompilationUnit.h"
 
-void yupc::AddressOfCodegen(std::string id) 
+#include "llvm/IR/Value.h"
+
+llvm::Value *yupc::AddressOfCodegen(std::string id) 
 {
-    llvm::Value *val = yupc::CompilationUnits.back()->SymbolTable.back()[id];
-    yupc::CompilationUnits.back()->ValueStack.push(val);
+    return yupc::CompilationUnits.back()->SymbolTable.back()[id];
 }
 
 std::any yupc::Visitor::visitAddressOf(yupc::YupParser::AddressOfContext *ctx) 
 {
     std::string text = ctx->Identifier()->getText();
-    yupc::AddressOfCodegen(text);   
+    llvm::Value *val = yupc::AddressOfCodegen(text);   
+    yupc::CompilationUnits.back()->ValueStack.push(val);
     return nullptr;
 }
