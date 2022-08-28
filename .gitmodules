@@ -4,3 +4,6 @@
 [submodule "yupc/third_party/CLI11"]
 	path = yupc/third_party/CLI11
 	url = https://github.com/CLIUtils/CLI11
+[submodule "yupc/third_party/antlr4"]
+	path = yupc/third_party/antlr4
+	url = https://github.com/antlr/antlr4
