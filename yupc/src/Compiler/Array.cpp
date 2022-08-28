@@ -36,7 +36,7 @@ llvm::LoadInst *yupc::ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::V
 
 void yupc::ArrayElementAssignmentCodegen(std::string arrayName, size_t idxNestingLvl, std::vector<llvm::Value*> idxVals) 
 {
-    llvm::AllocaInst *stored = yupc::CompilationUnits.back()->SymbolTable.back()[arrayName];
+    llvm::AllocaInst *stored = llvm::cast<llvm::AllocaInst>(yupc::CompilationUnits.back()->SymbolTable.back()[arrayName]->ValuePtr);
 
     llvm::Value *ptr;
     for (size_t i = 0; i < idxNestingLvl; i++) 
@@ -62,7 +62,7 @@ llvm::Constant *yupc::ArrayCodegen(std::vector<llvm::Constant*> elems)
 std::any yupc::Visitor::visitIndexedAccessExpression(yupc::YupParser::IndexedAccessExpressionContext *ctx) 
 {
     std::string name = ctx->expression(0)->getText();
-    llvm::Value *array = yupc::CompilationUnits.back()->SymbolTable.back()[name];
+    llvm::Value *array = yupc::CompilationUnits.back()->SymbolTable.back()[name]->ValuePtr;
 
     llvm::LoadInst *load;
     for (size_t i = 1; i < ctx->expression().size(); i++)

@@ -127,17 +127,20 @@ bool yupc::CheckValueType(llvm::Value *val1, llvm::Value *val2)
 {
     if (val1->getType()->isPointerTy())
     {
-        return val1->getType()->getTypeID() != val2->getType()->getTypeID();
+        return val1->getType()->getTypeID() == val2->getType()->getTypeID();
     }
     else
     {
-        return val1->getType()->getPointerTo()->getTypeID() != val2->getType()->getTypeID();
+        return val1->getType()->getPointerTo()->getTypeID() == val2->getType()->getTypeID();
     }
 }
 
-std::any yupc::Visitor::visitTypeNameExpression(yupc::YupParser::TypeNameExpressionContext *ctx) {return this->visit(ctx->typeName());}
-std::any yupc::Visitor::visitTypeExpression(yupc::YupParser::TypeExpressionContext *ctx)         {return this->visit(ctx->typeNameExpression());}
-std::any yupc::Visitor::visitTypeAnnotation(yupc::YupParser::TypeAnnotationContext *ctx)         {return this->visit(ctx->typeName());}
+std::any yupc::Visitor::visitTypeNameExpression(yupc::YupParser::TypeNameExpressionContext *ctx) 
+{return this->visit(ctx->typeName());}
+std::any yupc::Visitor::visitTypeExpression(yupc::YupParser::TypeExpressionContext *ctx)         
+{return this->visit(ctx->typeNameExpression());}
+std::any yupc::Visitor::visitTypeAnnotation(yupc::YupParser::TypeAnnotationContext *ctx)         
+{return this->visit(ctx->typeName());}
 
 std::any yupc::Visitor::visitTypeDeclaration(yupc::YupParser::TypeDeclarationContext *ctx) 
 {

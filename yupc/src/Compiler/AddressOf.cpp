@@ -6,7 +6,7 @@
 
 llvm::Value *yupc::AddressOfCodegen(std::string id) 
 {
-    return yupc::CompilationUnits.back()->SymbolTable.back()[id];
+    return yupc::CompilationUnits.back()->SymbolTable.back()[id]->ValuePtr;
 }
 
 std::any yupc::Visitor::visitAddressOf(yupc::YupParser::AddressOfContext *ctx) 

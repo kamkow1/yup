@@ -1,6 +1,7 @@
 #include "Compiler/CompilationUnit.h"
 #include "Compiler/Type.h"
 #include "Compiler/Import.h"
+#include "Compiler/Variable.h"
 
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Function.h"
@@ -23,27 +24,10 @@ void yupc::InitializeCompilationUnit(yupc::CompilationUnit *compilationUnit, std
     compilationUnit->Context            = new llvm::LLVMContext;
     compilationUnit->IRBuilder          = new llvm::IRBuilder<>(*compilationUnit->Context);
     compilationUnit->Module             = new llvm::Module(compilationUnit->ModuleName, *compilationUnit->Context);
-    compilationUnit->SymbolTable        = std::vector<std::map<std::string, llvm::AllocaInst*>>();
+    compilationUnit->SymbolTable        = std::vector<std::map<std::string, yupc::Variable*>>();
     compilationUnit->GlobalVariables    = std::map<std::string, llvm::GlobalVariable*>();
     compilationUnit->Functions          = std::map<std::string, llvm::Function*>();
     compilationUnit->ValueStack         = std::stack<llvm::Value*>();
     compilationUnit->TypeStack          = std::stack<llvm::Type*>();
     compilationUnit->TypeAliases        = std::vector<yupc::AliasType*>();
-
-    /*yupc::CompilationUnit *compilationUnit = new yupc::CompilationUnit
-    {
-        sourceFile,
-        "",
-        new llvm::LLVMContext,
-        new llvm::IRBuilder<>(*compilationUnit->Context),
-        new llvm::Module(compilationUnit->ModuleName, *compilationUnit->Context),
-        std::vector<std::map<std::string, llvm::AllocaInst*>>(),
-        std::map<std::string, llvm::GlobalVariable*>(),
-        std::map<std::string, llvm::Function*>(),
-        std::stack<llvm::Value*>(),
-        std::stack<llvm::Type*>(),
-        std::vector<yupc::AliasType*>()
-    };
-
-    return compilationUnit;*/
 }

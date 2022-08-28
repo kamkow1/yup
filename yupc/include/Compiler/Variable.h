@@ -5,6 +5,7 @@
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/Function.h"
 
 #include <string>
 #include <cstddef>
@@ -14,15 +15,21 @@
 namespace yupc 
 {
 
-    struct VariableInfo
+    struct Variable
     {
+        Variable(std::string  _name,
+                bool          _isConstant,
+                bool          _isReference,
+                llvm::Value  *_valuePtr);
+
         std::string Name;
         bool IsConstant;
         bool IsReference;
+        llvm::Value *ValuePtr;
     };
 
-    llvm::AllocaInst *FindLocalVariable(std::string name, size_t i,
-        std::vector<std::map<std::string, llvm::AllocaInst*>> &symbolTable, 
+    yupc::Variable *FindLocalVariable(std::string name, size_t i,
+        std::vector<std::map<std::string, yupc::Variable*>> &symbolTable, 
         size_t line, size_t pos, std::string text);
 
     llvm::LoadInst *IdentifierCodegen(std::string id, bool isGlobal, size_t line, 

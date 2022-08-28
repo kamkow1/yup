@@ -30,7 +30,7 @@ std::any yupc::Visitor::visitComparisonExpression(yupc::YupParser::ComparisonExp
     yupc::CompilationUnits.back()->ValueStack.pop();
     yupc::CompilationUnits.back()->ValueStack.pop();
 
-    if (!yupc::CheckValueType(val1, val2))
+    if (yupc::CheckValueType(val1, val2))
     {
         yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
                                             "cannot compare values of different types", ctx->getText(), 

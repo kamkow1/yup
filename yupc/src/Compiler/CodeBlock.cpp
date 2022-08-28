@@ -1,3 +1,4 @@
+#include "Compiler/Variable.h"
 #include "Compiler/Visitor.h"
 #include "Compiler/CompilationUnit.h"
 #include "Compiler/CodeBlock.h"
@@ -10,7 +11,7 @@
 
 void yupc::CreateNewScope()
 {
-    std::map<std::string, llvm::AllocaInst*> newSymbolMap;
+    std::map<std::string, yupc::Variable*> newSymbolMap;
     yupc::CompilationUnits.back()->SymbolTable.push_back(newSymbolMap);
 }
 

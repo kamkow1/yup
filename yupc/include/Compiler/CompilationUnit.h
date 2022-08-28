@@ -3,6 +3,7 @@
 
 #include "Compiler/Import.h"
 #include "Compiler/Type.h"
+#include "Compiler/Variable.h"
 
 #include "llvm/IR/Function.h"
 #include "llvm/IR/LLVMContext.h"
@@ -27,7 +28,7 @@ namespace yupc
         llvm::LLVMContext *Context;
         llvm::IRBuilder<> *IRBuilder;
         llvm::Module *Module;
-        std::vector<std::map<std::string, llvm::AllocaInst*>> SymbolTable;
+        std::vector<std::map<std::string, yupc::Variable*>> SymbolTable;
         std::map<std::string, llvm::GlobalVariable*> GlobalVariables;
         std::map<std::string, llvm::Function*> Functions;
         std::stack<llvm::Value*> ValueStack;

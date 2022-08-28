@@ -7,6 +7,7 @@
 #include "llvm/Support/TypeName.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/Alignment.h"
+#include "llvm/Support/Casting.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Value.h"
@@ -21,10 +22,19 @@
 #include <iostream>
 #include <string>
 
-static std::map<std::string, yupc::VariableInfo*> Variables;
+yupc::Variable::Variable(std::string _name, 
+                        bool         _isConstant, 
+                        bool         _isReference, 
+                        llvm::Value  *_ptr)
+:   Name(_name),
+    IsConstant(_isConstant),
+    IsReference(_isReference),
+    ValuePtr(_ptr) { }
 
-llvm::AllocaInst *yupc::FindLocalVariable(std::string name, size_t i,
-    std::vector<std::map<std::string, llvm::AllocaInst*>> &symbolTable, 
+static std::map<std::string, yupc::Variable*> Variables;
+
+yupc::Variable *yupc::FindLocalVariable(std::string name, size_t i,
+    std::vector<std::map<std::string, yupc::Variable*>> &symbolTable, 
     size_t line, size_t pos, std::string text)
 {
     if (symbolTable[i].contains(name))
@@ -55,11 +65,11 @@ llvm::LoadInst *yupc::IdentifierCodegen(std::string id, bool isGlobal,
     }
     else
     {
-        llvm::AllocaInst *variable = yupc::FindLocalVariable(id, yupc::CompilationUnits.back()->SymbolTable.size() - 1,
+        yupc::Variable *variable = yupc::FindLocalVariable(id, yupc::CompilationUnits.back()->SymbolTable.size() - 1,
                                                             yupc::CompilationUnits.back()->SymbolTable, line, pos, text);
 
-        llvm::Type *type = variable->getAllocatedType();
-        llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(type, variable);
+        llvm::Type *type = llvm::cast<llvm::AllocaInst>(variable->ValuePtr)->getAllocatedType();
+        llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(type, variable->ValuePtr);
         return load;
     }
 }
@@ -67,7 +77,7 @@ llvm::LoadInst *yupc::IdentifierCodegen(std::string id, bool isGlobal,
 void yupc::AssignmentCodegen(std::string name, llvm::Value *val, 
                         size_t line, size_t pos, std::string text) 
 {
-    yupc::VariableInfo *var = Variables[name];
+    yupc::Variable *var = Variables[name];
 
     if (var->IsConstant) 
     {
@@ -88,18 +98,18 @@ void yupc::AssignmentCodegen(std::string name, llvm::Value *val,
 
     if (isLocal) 
     {
-        llvm::AllocaInst *stored = yupc::CompilationUnits.back()->SymbolTable.back()[name];
-        if (!yupc::CheckValueType(val, stored))
+        yupc::Variable *stored = yupc::CompilationUnits.back()->SymbolTable.back()[name];
+        if (!yupc::CheckValueType(val, stored->ValuePtr))
         {
             std::string valTypeString = yupc::TypeToString(val->getType());
-            std::string storedTypeString = yupc::TypeToString(stored->getType());
+            std::string storedTypeString = yupc::TypeToString(stored->ValuePtr->getType());
 
             yupc::GlobalLogger.LogCompilerError(line, pos, "cannot assign type " + valTypeString + " to " 
                                     + storedTypeString, text, yupc::CompilationUnits.back()->SourceFile);
             exit(1);
         }
 
-        yupc::CompilationUnits.back()->IRBuilder->CreateStore(val, stored, false);
+        yupc::CompilationUnits.back()->IRBuilder->CreateStore(val, stored->ValuePtr, false);
         yupc::CompilationUnits.back()->ValueStack.pop();
     } 
     else if (isGlobal) 
@@ -141,7 +151,7 @@ void yupc::VarDeclareCodegen(std::string name, llvm::Type *resolvedType, bool is
         yupc::CompilationUnits.back()->GlobalVariables[name] = gv;
         yupc::CompilationUnits.back()->ValueStack.push(gv);
 
-        Variables[name] = new yupc::VariableInfo{name, isConst, isReference};
+        Variables[name] = new yupc::Variable(name, isConst, isReference, gv);
     } 
     else 
     {
@@ -152,10 +162,10 @@ void yupc::VarDeclareCodegen(std::string name, llvm::Type *resolvedType, bool is
             yupc::CompilationUnits.back()->IRBuilder->CreateStore(val, ptr, false);
         }
 
-        yupc::CompilationUnits.back()->SymbolTable.back()[name] = ptr;
+        yupc::CompilationUnits.back()->SymbolTable.back()[name] = new yupc::Variable(name, isConst, isReference, ptr);
         yupc::CompilationUnits.back()->ValueStack.push(ptr);
 
-        Variables[name] = new yupc::VariableInfo{name, isConst, isReference};
+        Variables[name] = new yupc::Variable(name, isConst, isReference, ptr);
     }
 }
 

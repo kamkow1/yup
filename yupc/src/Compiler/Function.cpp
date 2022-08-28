@@ -1,3 +1,4 @@
+#include "Compiler/Variable.h"
 #include "Compiler/Visitor.h"
 #include "Compiler/Type.h"
 #include "Compiler/Function.h"
@@ -48,7 +49,7 @@ void yupc::FunctionDefinitionCodegen(llvm::Function *function)
         llvm::Argument &arg = *function->getArg(i);
 
         llvm::AllocaInst *alloca = yupc::CompilationUnits.back()->IRBuilder->CreateAlloca(arg.getType(), 0, arg.getName());
-        yupc::CompilationUnits.back()->SymbolTable.back()[arg.getName().str()] = alloca;
+        yupc::CompilationUnits.back()->SymbolTable.back()[arg.getName().str()] = new yupc::Variable(arg.getName().str(), false, false, alloca);
         yupc::CompilationUnits.back()->IRBuilder->CreateStore(&arg, alloca);
     }
 }
