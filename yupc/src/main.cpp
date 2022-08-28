@@ -14,8 +14,8 @@
 void InitializeBuildCmdOptions(CLI::App *buildCmd, yupc::CompilerOptions *compilerOptions) 
 {
     buildCmd->add_option("-s,--sources",       compilerOptions->SourcePaths,     ".yup source files");
-    buildCmd->add_option("-b,--binary-name",   compilerOptions->BinaryName,      "sets the output binary's name");
-    buildCmd->add_flag("-n,--no-perm",         compilerOptions->GivePermissions, "allows the compiler to give permissions to the binary file");
+    buildCmd->add_option("-o,--output",        compilerOptions->BinaryName,      "sets the output binary's name");
+    buildCmd->add_flag("-n,--no-perm",         compilerOptions->GivePermissions, "makes the compiler not give permissions to the binary file");
     buildCmd->add_flag("-v,--verbose",         compilerOptions->VerboseOutput,   "enables verbose compiler output");
 }
 
