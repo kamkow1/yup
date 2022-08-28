@@ -4,7 +4,6 @@ project(yupc)
 set (CXX_STANDARD 20)
 
 set (CONAN_DISABLE_CHECK_COMPILER True CACHE BOOL "" FORCE)
-set (CMAKE_COMPILE_WARNING_AS_ERROR ON)
 set (CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 set (CMAKE_CXX_STANDARD 20)
@@ -14,27 +13,31 @@ include (${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
 set (THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/third_party)
 
-set (ANTLR_SRC ${THIRD_PARTY_DIR}/antlr4-runtime)
-
 # change this to your own path
 set (ANTLR_INCLUDE_PATH ${ANTLR_SRC}/runtime/src)
-
-set (ANTLR_BUILD_PATH ${ANTLR_SRC}/dist/libantlr4-runtime.a)
 
 include_directories (
     ${ANTLR_INCLUDE_PATH} 
     ${THIRD_PARTY_DIR}/json/include
     ${THIRD_PARTY_DIR}/CLI11/include
+    ${THIRD_PARTY_DIR}/antlr4/runtime/Cpp/runtime/src
     ${CMAKE_SOURCE_DIR}/include)
 
-#conan_basic_setup ()
-
 find_package (Threads REQUIRED)
+
+# ANTLR4
+add_subdirectory(${THIRD_PARTY_DIR}/antlr4/runtime/Cpp)
 
 # LLVM
 find_package (LLVM REQUIRED CONFIG)
 add_definitions (${LLVM_DEFINITIONS})
-llvm_map_components_to_libnames(LLVM_LIBS support core irreader linker bitwriter bitreader transformutils)
+llvm_map_components_to_libnames(LLVM_LIBS 
+    support 
+    core 
+    irreader 
+    linker 
+    bitwriter 
+    bitreader)
 
 # json
 set(JSON_BuildTests OFF CACHE INTERNAL "")
@@ -81,4 +84,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${LLVM_LIBS} 
     Threads::Threads
     nlohmann_json::nlohmann_json
-    CLI11::CLI11)
+    CLI11::CLI11
+    antlr4_static)
