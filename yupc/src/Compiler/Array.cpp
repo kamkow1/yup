@@ -1,4 +1,5 @@
 #include "Compiler/CompilationUnit.h"
+#include "Compiler/Constant.h"
 #include "Compiler/Visitor.h"
 #include "Compiler/Array.h"
 #include "Compiler/Type.h"
@@ -21,16 +22,18 @@
 #include <cstddef>
 #include <string>
 
-llvm::LoadInst *yupc::ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVal) 
+llvm::Value *yupc::ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVal) 
 {
-    llvm::Type * gepType = array->getType()->getNonOpaquePointerElementType();
-    llvm::Value *idxGep = yupc::CompilationUnits.back()->IRBuilder->CreateInBoundsGEP(gepType, array, idxVal);
+    llvm::AllocaInst *arrayAlloca = llvm::cast<llvm::AllocaInst>(array);
+    llvm::Type * gepType = arrayAlloca->getAllocatedType();
 
-    yupc::PrintLLVMType(idxGep->getType());
+    std::vector<llvm::Value*> x;
+    x.push_back(yupc::IntegerCodegen(0));
+    x.push_back(idxVal);
+    llvm::Value *idxGep = yupc::CompilationUnits.back()->IRBuilder->CreateGEP(gepType, arrayAlloca, x);
 
-    llvm::Type *load_type = idxGep->getType()->getNonOpaquePointerElementType();
-    llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(load_type, idxGep);
-
+    llvm::Type *loadType = idxGep->getType()->getNonOpaquePointerElementType();
+    llvm::LoadInst *load = yupc::CompilationUnits.back()->IRBuilder->CreateLoad(loadType, idxGep);
     return load;
 }
 
@@ -64,15 +67,15 @@ std::any yupc::Visitor::visitIndexedAccessExpression(yupc::YupParser::IndexedAcc
     std::string name = ctx->expression(0)->getText();
     llvm::Value *array = yupc::CompilationUnits.back()->SymbolTable.back()[name]->ValuePtr;
 
-    llvm::LoadInst *load;
+    llvm::Value *val;
     for (size_t i = 1; i < ctx->expression().size(); i++)
     {
         this->visit(ctx->expression(i));
         llvm::Value *idxVal = yupc::CompilationUnits.back()->ValueStack.top();
-        load = yupc::ConstArrayIndexedAccessCodegen(array, idxVal);
+        val = yupc::ConstArrayIndexedAccessCodegen(array, idxVal);
     }
     
-    yupc::CompilationUnits.back()->ValueStack.push(load);
+    yupc::CompilationUnits.back()->ValueStack.push(val);
     return nullptr;
 }
 

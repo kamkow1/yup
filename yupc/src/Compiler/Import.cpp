@@ -5,6 +5,7 @@
 #include "Compiler/Type.h"
 #include "tree/TerminalNode.h"
 
+#include "llvm/Linker/Linker.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/Casting.h"
@@ -34,7 +35,6 @@ void yupc::ImportFunctions(llvm::Module &currentModule, llvm::Module &prevModule
 
         std::string returnTypeString;
         llvm::raw_string_ostream returnTypeRSO(returnTypeString);
-
         func.getReturnType()->print(returnTypeRSO);
         llvm::Type *returnType = yupc::ResolveType(returnTypeString, prevModule.getContext());
 
@@ -43,9 +43,7 @@ void yupc::ImportFunctions(llvm::Module &currentModule, llvm::Module &prevModule
         {
             std::string typeName;
             llvm::raw_string_ostream paramTypeRSO(typeName);
-            
             func.getFunctionType()->getParamType(i)->print(paramTypeRSO);
-
             llvm::Type *paramType = yupc::ResolveType(typeName, prevModule.getContext());
 
             paramTypes.push_back(paramType);
@@ -105,10 +103,13 @@ void yupc::ImportPathRecursively(std::string path)
         yupc::ProcessPath(path);
 
         yupc::ImportFunctions(*yupc::CompilationUnits.back()->Module, 
-                    *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);
+            *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);
 
         yupc::ImportGlobalVariables(*yupc::CompilationUnits.back()->Module, 
-                        *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);
+            *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);
+
+        llvm::Linker::linkModules(*yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module, 
+                                std::unique_ptr<llvm::Module>(yupc::CompilationUnits.back()->Module));
 
         yupc::CompilationUnits.pop_back();
     }

@@ -82,14 +82,6 @@ void yupc::ProcessSourceFile(std::string path)
 
 void yupc::BuildBitcode(fs::path bc_file) 
 {
-    for (size_t i = 1; i < yupc::CompilationUnits.size(); i++)
-    {
-        llvm::Linker::linkModules(*yupc::CompilationUnits.back()->Module, 
-            std::unique_ptr<llvm::Module>(yupc::CompilationUnits[i]->Module));
-            
-        yupc::CompilationUnits.pop_back();
-    }
-
     yupc::GlobalLogger.LogCompilerInfo("finished linking LLVM bitcode! use the LLI command line tool to run it");
 
     std::error_code ec;

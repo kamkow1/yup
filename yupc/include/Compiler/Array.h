@@ -11,7 +11,7 @@
 
 namespace yupc 
 {
-    llvm::LoadInst *ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVal);
+    llvm::Value *ConstArrayIndexedAccessCodegen(llvm::Value *array, llvm::Value *idxVal);
     llvm::Constant *ArrayCodegen(std::vector<llvm::Constant*> elems);
     void ArrayElementAssignmentCodegen(std::string arrName, size_t idxNestingLvl, 
                                 std::vector<llvm::Value*> idxVals);
