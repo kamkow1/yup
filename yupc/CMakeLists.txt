@@ -24,9 +24,10 @@ set (ANTLR_BUILD_PATH ${ANTLR_SRC}/dist/libantlr4-runtime.a)
 include_directories (
     ${ANTLR_INCLUDE_PATH} 
     ${THIRD_PARTY_DIR}/json/include
+    ${THIRD_PARTY_DIR}/CLI11/include
     ${CMAKE_SOURCE_DIR}/include)
 
-conan_basic_setup ()
+#conan_basic_setup ()
 
 find_package (Threads REQUIRED)
 
@@ -38,6 +39,9 @@ llvm_map_components_to_libnames(LLVM_LIBS support core irreader linker bitwriter
 # json
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(${THIRD_PARTY_DIR}/json)
+
+# CLI11
+add_subdirectory(${THIRD_PARTY_DIR}/CLI11)
 
 set (SRCS
     src/Compiler/Logic.cpp
@@ -76,4 +80,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${CONAN_LIBS} 
     ${LLVM_LIBS} 
     Threads::Threads
-    nlohmann_json::nlohmann_json)
+    nlohmann_json::nlohmann_json
+    CLI11::CLI11)
