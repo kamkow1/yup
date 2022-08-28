@@ -17,6 +17,7 @@ void InitializeBuildCmdOptions(CLI::App *buildCmd, yupc::CompilerOptions *compil
     buildCmd->add_option("-o,--output",        compilerOptions->BinaryName,      "sets the output binary's name");
     buildCmd->add_flag("-n,--no-perm",         compilerOptions->GivePermissions, "makes the compiler not give permissions to the binary file");
     buildCmd->add_flag("-v,--verbose",         compilerOptions->VerboseOutput,   "enables verbose compiler output");
+    buildCmd->add_flag("-d,--dump-ir",         compilerOptions->DumpIR,          "makes the compiler dump .ll files after compiling a source file");
 }
 
 void InitializeBFCCmdOptions(CLI::App *bfcCmd, yupc::CompilerOptions *compilerConfigFile)

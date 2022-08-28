@@ -76,8 +76,12 @@ void yupc::ProcessSourceFile(std::string path)
     visitor.visit(ctx);
 
     verifyModule(*yupc::CompilationUnits.back()->Module, &llvm::errs());
-    yupc::DumpModuleToIrFile(yupc::CompilationUnits.back()->Module, 
+    
+    if (yupc::GlobalCompilerOptions.DumpIR)
+    {
+        yupc::DumpModuleToIrFile(yupc::CompilationUnits.back()->Module, 
                             yupc::CompilationUnits.back()->ModuleName);
+    }
 }
 
 void yupc::BuildBitcode(fs::path bc_file) 

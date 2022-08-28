@@ -15,6 +15,7 @@ namespace yupc
 {
     struct CompilerOptions
     {
+        bool DumpIR;
         bool GivePermissions;
         bool VerboseOutput;
         std::vector<std::string> SourcePaths;  
