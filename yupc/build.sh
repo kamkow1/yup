@@ -37,8 +37,6 @@ fi
 
 cd build/
 
-conan install ..
-
 cmake .. -G Ninja -DCMAKE_BUILD_TYPE="$build_mode"
 
 ninja -j 8
