@@ -26,7 +26,7 @@
 #include <iostream>
 #include <vector>
 
-#define MAIN_FUNC_NAME "Main"
+#define MAIN_FUNC_NAME "main"
 
 yupc::FunctionParameter::FunctionParameter(llvm::Type  *_parameterType,
                                         std::string     _parameterName,
@@ -53,30 +53,19 @@ void yupc::FunctionDefinitionCodegen(llvm::Function *function)
     }
 }
 
-void yupc::FunctionCallCodegen(std::string functionName, std::vector<llvm::Value*> args, 
+llvm::CallInst *yupc::FunctionCallCodegen(std::string functionName, std::vector<llvm::Value*> args, 
                                 size_t line, size_t pos, std::string text) 
 {
     llvm::Function *function = yupc::CompilationUnits.back()->Module->getFunction(functionName);
 
-    if (function == nullptr) 
+    if (!function) 
     {
         yupc::GlobalLogger.LogCompilerError(line, pos, "tried to call function " + functionName 
                     + " but it isn't declared", text, yupc::CompilationUnits.back()->SourceFile);
         exit(1);
     }
 
-    bool is_void = function->getReturnType()->isVoidTy();
-    if (is_void) 
-    {
-        llvm::CallInst *result = yupc::CompilationUnits.back()->IRBuilder->CreateCall(function, args, "");
-        yupc::CompilationUnits.back()->ValueStack.push(result);
-
-    } 
-    else 
-    {
-        llvm::CallInst *result = yupc::CompilationUnits.back()->IRBuilder->CreateCall(function, args);
-        yupc::CompilationUnits.back()->ValueStack.push(result);
-    }
+    return yupc::CompilationUnits.back()->IRBuilder->CreateCall(function, args);
 }
 
 void yupc::FunctionSignatureCodegen(bool isVarArg, bool isPublic, std::string name, 
@@ -105,9 +94,31 @@ void yupc::FunctionSignatureCodegen(bool isVarArg, bool isPublic, std::string na
     yupc::CompilationUnits.back()->Functions[name] = function;
 }
 
+llvm::Value *yupc::FunctionReturnCodegen(llvm::Value *res, size_t line, size_t pos, std::string text)
+{
+    llvm::Type::TypeID returnType = yupc::CompilationUnits.back()->IRBuilder
+                                    ->getCurrentFunctionReturnType()->getTypeID();
+    if (res->getType()->getTypeID() != returnType)
+    {
+        yupc::GlobalLogger.LogCompilerError(line, pos, 
+            "function return value does not match function return type", 
+            text, yupc::CompilationUnits.back()->SourceFile);
+        exit(1);
+    }
+
+    return res;
+}
+
 std::any yupc::Visitor::visitFunctionReturn(yupc::YupParser::FunctionReturnContext *ctx) 
 {
-    return this->visit(ctx->expression());
+    this->visit(ctx->expression());
+    llvm::Value *result = yupc::CompilationUnits.back()->ValueStack.top();
+    yupc::CompilationUnits.back()->ValueStack.pop();
+
+    llvm::Value *val = yupc::FunctionReturnCodegen(result, ctx->start->getLine(), 
+                            ctx->start->getCharPositionInLine(), ctx->getText());
+    yupc::CompilationUnits.back()->ValueStack.push(val);
+    return nullptr;
 }
 
 std::any yupc::Visitor::visitFunctionSignature(yupc::YupParser::FunctionSignatureContext *ctx) 
@@ -118,7 +129,7 @@ std::any yupc::Visitor::visitFunctionSignature(yupc::YupParser::FunctionSignatur
     llvm::Type *return_type = yupc::CompilationUnits.back()->TypeStack.top();
 
     std::vector<yupc::FunctionParameter*> params;
-    size_t paramsSize = ctx->functionParameterList() == nullptr 
+    size_t paramsSize = !ctx->functionParameterList() 
                         ? 0
                         : ctx->functionParameterList()->functionParameter().size();
     for (size_t i = 0; i < paramsSize; ++i)
@@ -210,7 +221,7 @@ std::any yupc::Visitor::visitFunctionCall(yupc::YupParser::FunctionCallContext *
     }
 
     std::vector<llvm::Value*> args;
-    size_t exprLength = ctx->functionCallArgList()->expression().size();
+    size_t exprLength = !ctx->functionCallArgList() ? 0 : ctx->functionCallArgList()->expression().size();
     for (size_t i = 0; i < exprLength; ++i) 
     {
         yupc::YupParser::ExpressionContext *expr = ctx->functionCallArgList()->expression()[i];
@@ -221,8 +232,9 @@ std::any yupc::Visitor::visitFunctionCall(yupc::YupParser::FunctionCallContext *
         yupc::CompilationUnits.back()->ValueStack.pop();
     }
 
-    yupc::FunctionCallCodegen(functionName, args, ctx->start->getLine(), 
-                    ctx->start->getCharPositionInLine(), ctx->getText());
+    llvm::CallInst *call = yupc::FunctionCallCodegen(functionName, args, ctx->start->getLine(), 
+                                            ctx->start->getCharPositionInLine(), ctx->getText());
+    yupc::CompilationUnits.back()->ValueStack.push(call);
     
     return nullptr;
 }

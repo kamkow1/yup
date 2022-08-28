@@ -33,7 +33,7 @@ find_package (Threads REQUIRED)
 # LLVM
 find_package (LLVM REQUIRED CONFIG)
 add_definitions (${LLVM_DEFINITIONS})
-llvm_map_components_to_libnames(LLVM_LIBS support core irreader linker bitwriter bitreader)
+llvm_map_components_to_libnames(LLVM_LIBS support core irreader linker bitwriter bitreader transformutils)
 
 # json
 set(JSON_BuildTests OFF CACHE INTERNAL "")

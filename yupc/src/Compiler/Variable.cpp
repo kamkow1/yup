@@ -168,7 +168,7 @@ std::any yupc::Visitor::visitVariableDeclare(yupc::YupParser::VariableDeclareCon
     bool isPub   = ctx->KeywordExport()                    != nullptr;
     bool isRef   = ctx->KeywordRef()                       != nullptr;
 
-    if (isRef && ctx->variableValue() == nullptr) 
+    if (isRef && !ctx->variableValue()) 
     {
         yupc::GlobalLogger.LogCompilerError(ctx->start->getLine(), ctx->start->getCharPositionInLine(), 
                                             "cannot declare a reference that doesn't point to a variable", 

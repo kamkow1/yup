@@ -17,6 +17,7 @@ namespace yupc
         LLVM_I32_TYPE,
         LLVM_I64_TYPE,
         LLVM_I8_TYPE,
+        LLVM_I1_TYPE,
         LLVM_FLOAT_TYPE,
         LLVM_VOID_TYPE
     };

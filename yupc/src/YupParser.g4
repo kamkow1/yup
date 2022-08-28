@@ -45,6 +45,8 @@ addressOf:                      SymbolAmpersand Identifier;
 
 constant:                       ValueString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 
+comparisonOperator:             SymbolEqual | SymbolNotEqual;
+
 expression:                     constant                                            #constantExpression
         |                       functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
@@ -57,7 +59,7 @@ expression:                     constant                                        
         |                       operator                                            #operatorExpression
         |                       typeNameExpression                                  #typeExpression
         |                       SymbolLparen expression SymbolRparen expression     #typeCastExpression
-        |                       expression SymbolEqual expression                   #EqualExpression;
+        |                       expression comparisonOperator expression            #ComparisonExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator

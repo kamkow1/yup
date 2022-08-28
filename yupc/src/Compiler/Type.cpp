@@ -39,11 +39,12 @@ llvm::Type *yupc::ResolvePointerType(llvm::Type *base)
 
 std::map<std::string, yupc::BuiltInTypes> yupc::BuiltInLLVMTypes
 {
-    {"i32", yupc::LLVM_I32_TYPE},
-    {"i64", yupc::LLVM_I64_TYPE},
-    {"float", yupc::LLVM_FLOAT_TYPE},
-    {"void", yupc::LLVM_VOID_TYPE},
-    {"i8", yupc::LLVM_I8_TYPE}
+    { "i32",   yupc::LLVM_I32_TYPE   },
+    { "i64",   yupc::LLVM_I64_TYPE   },
+    { "i8",    yupc::LLVM_I8_TYPE    },
+    { "i1",    yupc::LLVM_I1_TYPE    },
+    { "float", yupc::LLVM_FLOAT_TYPE },
+    { "void",  yupc::LLVM_VOID_TYPE  }
 };
 
 std::string yupc::TypeToString(llvm::Type *type)
@@ -68,6 +69,8 @@ llvm::Type *yupc::GetBuiltInLLVMType(std::string typeName, llvm::LLVMContext &co
             return llvm::Type::getFloatTy(contextRef);
         case yupc::LLVM_VOID_TYPE:
             return llvm::Type::getVoidTy(contextRef);
+        case yupc::LLVM_I1_TYPE:
+            return llvm::Type::getInt1Ty(contextRef);
     }
 
     return nullptr;
@@ -124,11 +127,11 @@ bool yupc::CheckValueType(llvm::Value *val1, llvm::Value *val2)
 {
     if (val1->getType()->isPointerTy())
     {
-        return val1->getType()->getTypeID() == val2->getType()->getTypeID();
+        return val1->getType()->getTypeID() != val2->getType()->getTypeID();
     }
     else
     {
-        return val1->getType()->getPointerTo()->getTypeID() == val2->getType()->getTypeID();
+        return val1->getType()->getPointerTo()->getTypeID() != val2->getType()->getTypeID();
     }
 }
 
