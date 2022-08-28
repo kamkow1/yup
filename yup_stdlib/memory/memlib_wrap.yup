@@ -12,6 +12,6 @@ export func SetMemory(ptr: i8*, value: i32, sz: i64) -> i8* {
     return memset(ptr, value, sz);
 }
 
-public func CopyMemory(dest: i8*, src: i8*, cnt: i64) -> void {
+export func CopyMemory(dest: i8*, src: i8*, cnt: i64) -> void {
     memcpy(dest, src, cnt);
 }
