@@ -3,13 +3,10 @@ project(yupc)
 
 set (CXX_STANDARD 20)
 
-set (CONAN_DISABLE_CHECK_COMPILER True CACHE BOOL "" FORCE)
 set (CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 set (CMAKE_CXX_STANDARD 20)
 set (GCC_COVERAGE_LINK_FLAGS "--libs")
-
-include (${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 
 set (THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/third_party)
 
@@ -80,7 +77,6 @@ add_executable(yupc ${SRCS})
 
 target_link_libraries(${CMAKE_PROJECT_NAME} 
     ${ANTLR_BUILD_PATH} 
-    ${CONAN_LIBS} 
     ${LLVM_LIBS} 
     Threads::Threads
     nlohmann_json::nlohmann_json
