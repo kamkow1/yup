@@ -102,8 +102,8 @@ void yupc::ImportPathRecursively(std::string path)
     {
         yupc::ProcessPath(path);
 
-        yupc::ImportFunctions(*yupc::CompilationUnits.back()->Module, 
-            *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);
+        //yupc::ImportFunctions(*yupc::CompilationUnits.back()->Module, 
+        //    *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);
 
         yupc::ImportGlobalVariables(*yupc::CompilationUnits.back()->Module, 
             *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);

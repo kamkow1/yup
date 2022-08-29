@@ -80,7 +80,7 @@ void yupc::FunctionSignatureCodegen(bool isVarArg, bool isPublic, std::string na
 
     llvm::FunctionType *functionType = llvm::FunctionType::get(return_type, paramTypes, isVarArg);
     llvm::GlobalValue::LinkageTypes linkage_type = isPublic || name == MAIN_FUNC_NAME 
-                                                    ? llvm::GlobalValue::WeakAnyLinkage 
+                                                    ? llvm::GlobalValue::ExternalLinkage 
                                                     : llvm::GlobalValue::PrivateLinkage;
 
     llvm::Function *function = llvm::Function::Create(functionType, linkage_type, 
