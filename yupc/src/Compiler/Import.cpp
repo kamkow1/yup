@@ -3,6 +3,7 @@
 #include "Compiler/Import.h"
 #include "Compiler/CompilationUnit.h"
 #include "Compiler/Type.h"
+#include "Logger.h"
 #include "tree/TerminalNode.h"
 
 #include "llvm/Linker/Linker.h"
@@ -102,14 +103,11 @@ void yupc::ImportPathRecursively(std::string path)
     {
         yupc::ProcessPath(path);
 
-        //yupc::ImportFunctions(*yupc::CompilationUnits.back()->Module, 
-        //    *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);
+        yupc::ImportFunctions(*yupc::CompilationUnits.back()->Module, 
+            *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);
 
         yupc::ImportGlobalVariables(*yupc::CompilationUnits.back()->Module, 
             *yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module);
-
-        llvm::Linker::linkModules(*yupc::CompilationUnits[yupc::CompilationUnits.size() - 2]->Module, 
-                                std::unique_ptr<llvm::Module>(yupc::CompilationUnits.back()->Module));
 
         yupc::CompilationUnits.pop_back();
     }

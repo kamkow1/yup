@@ -49,7 +49,7 @@ void yupc::DumpModuleToIrFile(llvm::Module *module, std::string moduleName)
     module->print(os, nullptr);
     os.flush();
 
-    std::string info = "module " + yupc::CompilationUnits.back()->ModuleName;
+    std::string info = "module " + moduleName;
     yupc::GlobalLogger.LogCompilerInfo(info);
 }
 

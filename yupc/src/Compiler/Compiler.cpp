@@ -26,6 +26,7 @@
 #include "llvm/Bitcode/BitcodeReader.h"
 #include "llvm/Linker/Linker.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <filesystem>
@@ -77,20 +78,37 @@ void yupc::ProcessSourceFile(std::string path)
 
     verifyModule(*yupc::CompilationUnits.back()->Module, &llvm::errs());
     
-    if (yupc::GlobalCompilerOptions.DumpIR)
-    {
-        yupc::DumpModuleToIrFile(yupc::CompilationUnits.back()->Module, 
-                            yupc::CompilationUnits.back()->ModuleName);
-    }
+    // TODO: make this dependent on a CLI option
+    yupc::DumpModuleToIrFile(yupc::CompilationUnits.back()->Module, 
+                        yupc::CompilationUnits.back()->ModuleName);
 }
 
 void yupc::BuildBitcode(fs::path bc_file) 
 {
-    yupc::GlobalLogger.LogCompilerInfo("finished linking LLVM bitcode! use the LLI command line tool to run it");
+    std::string llvmLinkCmd = "llvm-link -o " + bc_file.string();
 
-    std::error_code ec;
-    llvm::raw_fd_ostream os(bc_file.string(), ec);
-    llvm::WriteBitcodeToFile(*yupc::CompilationUnits.back()->Module, os);
+    for (auto &entry : fs::directory_iterator(yupc::GlobalBuildDirPath))
+    {
+        if (!fs::is_directory(entry))
+        {
+            llvmLinkCmd += " ";
+            llvmLinkCmd += entry.path().string();
+        }
+    }
+
+    std::cout << "[DBG]: " << llvmLinkCmd << "\n";
+    int x = std::system(llvmLinkCmd.c_str());
+    if (x)
+    {
+        std::cout << "linking modules failed\n";
+        exit(1);
+    }
+
+    // TODO: get llvm::linkModules() working
+    // the compiler shouldn't interact with the file system
+    /// and execute shell commands
+
+    yupc::GlobalLogger.LogCompilerInfo("finished linking LLVM bitcode! use the LLI command line tool to run it");
 }
 
 void yupc::ProcessPath(std::string path) 
