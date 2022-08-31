@@ -1,6 +1,7 @@
 #include "Compiler/Visitor.h"
 #include "Compiler/CompilationUnit.h"
 #include "Compiler/Operator.h"
+#include "utils.h"
 
 #include "Parser/YupParser.h"
 
@@ -26,10 +27,18 @@ yupc::OperatorArgument::OperatorArgument(llvm::Value *_operatorPossibleValue,
 
 }
 
-llvm::Value *SizeOfOperator(std::vector<yupc::OperatorArgument*> &args) 
+llvm::Value *SizeOfTypeOperator(std::vector<yupc::OperatorArgument*> &args) 
 {
     yupc::OperatorArgument *baseSize = args[0];
     llvm::Constant *size = llvm::ConstantExpr::getSizeOf(baseSize->OperatorPossibleType);
+
+    return size;
+}
+
+llvm::Value *SizeOfExprOperator(std::vector<yupc::OperatorArgument*> &args) 
+{
+    yupc::OperatorArgument *baseSize = args[0];
+    llvm::Constant *size = llvm::ConstantExpr::getSizeOf(baseSize->OperatorPossibleValue->getType());
 
     return size;
 }
@@ -45,7 +54,8 @@ llvm::Type *TypeOfOperator(std::vector<yupc::OperatorArgument*> &args)
 
 std::map<std::string, std::function<llvm::Value*(std::vector<yupc::OperatorArgument*>&)>> yupc::ValueOperators
 {
-    { "sizeof", &SizeOfOperator },
+    { "SizeOfType", &SizeOfTypeOperator },
+    { "SizeOfExpr", &SizeOfExprOperator }
 };
 
 std::map<std::string, std::function<llvm::Type*(std::vector<yupc::OperatorArgument*>&)>> yupc::TypeOperators
@@ -61,35 +71,16 @@ std::any yupc::Visitor::visitOperator(yupc::YupParser::OperatorContext *ctx)
     std::vector<yupc::OperatorArgument*> args;
     for (size_t i = 0; i < ctx->expression().size(); i++) 
     {
-
         yupc::OperatorArgument *operArg;
-
-        if (dynamic_cast<yupc::YupParser::TypeNameExpressionContext*>(ctx->expression(i)) != nullptr) 
+        size_t ts_current = yupc::CompilationUnits.back()->TypeStack.size();
+        this->visit(ctx->expression(i));
+        if (ts_current != yupc::CompilationUnits.back()->TypeStack.size())
         {
-            this->visit(ctx->expression(i));
             operArg = new yupc::OperatorArgument(nullptr, yupc::CompilationUnits.back()->TypeStack.top());
         } 
-        else if (dynamic_cast<yupc::YupParser::IdentifierExpressionContext*>(ctx->expression(i)) != nullptr)
-        {
-            this->visit(ctx->expression(i));
-            operArg = new yupc::OperatorArgument(yupc::CompilationUnits.back()->ValueStack.top(), nullptr);
-        }
         else
         {
-            std::any result = this->visit(ctx->expression(i));
-            try 
-            {
-                llvm::Value *v = std::any_cast<llvm::Value*>(result);
-                operArg->OperatorPossibleValue = v;
-            } 
-            catch (std::bad_any_cast) { }
-
-            try 
-            {
-                llvm::Type *t = std::any_cast<llvm::Type*>(result);
-                operArg->OperatorPossibleType = t;
-            } 
-            catch (std::bad_any_cast) {}
+            operArg = new yupc::OperatorArgument(yupc::CompilationUnits.back()->ValueStack.top(), nullptr);
         }
 
         args.push_back(operArg);
