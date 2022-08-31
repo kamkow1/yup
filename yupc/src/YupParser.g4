@@ -70,4 +70,5 @@ statement:                      expression                                      
         |                       importDeclaration                                   SymbolTerminator
         |                       typeDeclaration                                     SymbolTerminator
         |                       functionDefinition
-        |                       codeBlock;
+        |                       codeBlock
+        |                       SymbolTerminator;
