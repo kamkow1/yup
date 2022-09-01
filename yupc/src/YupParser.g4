@@ -45,7 +45,11 @@ addressOf:                      SymbolAmpersand Identifier;
 
 constant:                       ValueString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 
-comparisonOperator:             SymbolEqual | SymbolNotEqual;
+comparisonOperator:             compareEqual | compareNotEqual | compareLessThan | compareMoreThan;
+compareEqual:                   SymbolEqual | SymbolUnsignedEqual;
+compareNotEqual:                SymbolNotEqual | SymbolUnsignedNotEqual;
+compareLessThan:                SymbolLessThan | SymbolUnsignedLessThan;
+compareMoreThan:                SymbolMoreThan | SymbolUnsignedMoreThan;
 
 expression:                     constant                                            #constantExpression
         |                       functionCall                                        #functionCallExpression

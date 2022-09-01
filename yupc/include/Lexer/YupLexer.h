@@ -21,9 +21,11 @@ public:
     SymbolLsqbr = 21, SymbolRsqbr = 22, SymbolComma = 23, SymbolQuestMark = 24, 
     SymbolAsterisk = 25, SymbolAmpersand = 26, SymbolDot = 27, SymbolExclMark = 28, 
     SymbolTilde = 29, SymbolArrow = 30, SymbolPlus = 31, SymbolMinus = 32, 
-    SymbolSlash = 33, SymbolEqual = 34, SymbolNotEqual = 35, ValueChar = 36, 
-    ValueString = 37, ValueInteger = 38, ValueFloat = 39, ValueBool = 40, 
-    ValueNull = 41, Identifier = 42, Whitespace = 43, Comment = 44, MultilineComment = 45
+    SymbolSlash = 33, SymbolEqual = 34, SymbolNotEqual = 35, SymbolUnsignedEqual = 36, 
+    SymbolUnsignedNotEqual = 37, SymbolLessThan = 38, SymbolMoreThan = 39, 
+    SymbolUnsignedLessThan = 40, SymbolUnsignedMoreThan = 41, ValueChar = 42, 
+    ValueString = 43, ValueInteger = 44, ValueFloat = 45, ValueBool = 46, 
+    ValueNull = 47, Identifier = 48, Whitespace = 49, Comment = 50, MultilineComment = 51
   };
 
   explicit YupLexer(antlr4::CharStream *input);

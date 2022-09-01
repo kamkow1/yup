@@ -36,6 +36,12 @@ SymbolMinus                 :   '-';
 SymbolSlash                 :   '/';
 SymbolEqual                 :   '==';
 SymbolNotEqual              :   '!=';
+SymbolUnsignedEqual         :   'u==';
+SymbolUnsignedNotEqual      :   'u!=';
+SymbolLessThan              :   '<';
+SymbolMoreThan              :   '>';
+SymbolUnsignedLessThan      :   'u<';
+SymbolUnsignedMoreThan      :   'u>';
 
 ValueChar                   :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 ValueString                 :   '"' (~'"' | '\'\'')* '"';

@@ -5,8 +5,10 @@
 
 namespace yupc
 {
-    llvm::Value *EqualCodegen(llvm::Value *lhs, llvm::Value *rhs);
-    llvm::Value *NotEqualCodegen(llvm::Value *lhs, llvm::Value *rhs);
+    llvm::Value *EqualCodegen(llvm::Value *lhs, llvm::Value *rhs, bool isSigned);
+    llvm::Value *NotEqualCodegen(llvm::Value *lhs, llvm::Value *rhs, bool isSigned);
+    llvm::Value *MoreThanCodegen(llvm::Value *lhs, llvm::Value *rhs, bool isSigned);
+    llvm::Value *LessThanCodegen(llvm::Value *lhs, llvm::Value *rhs, bool isSigned);
 
 } // namespace yupc
 
