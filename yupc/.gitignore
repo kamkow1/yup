@@ -36,5 +36,6 @@ src/Parser/YupParserVisitor.cpp
 include/Parser/YupParser.h
 include/Parser/YupParserBaseVisitor.h
 include/Parser/YupParserVisitor.h
+include/Lexer/YupLexer.h
 
 include/lexer/YupLexer.h

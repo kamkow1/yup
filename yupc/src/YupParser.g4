@@ -36,7 +36,7 @@ functionParameter:              (Identifier typeAnnotation ) | SymbolVariadicArg
 functionCall:                   Identifier SymbolLparen functionCallArgList? SymbolRparen;
 functionCallArgList:            expression (SymbolComma expression)*;
 
-binaryOperator:                 SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash;
+binaryOperator:                 KeywordUnsigned? (SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash);
 
 operator:                       Identifier SymbolExclMark SymbolLparen expression+ SymbolRparen;
 
@@ -45,11 +45,7 @@ addressOf:                      SymbolAmpersand Identifier;
 
 constant:                       ValueString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 
-comparisonOperator:             compareEqual | compareNotEqual | compareLessThan | compareMoreThan;
-compareEqual:                   SymbolEqual | SymbolUnsignedEqual;
-compareNotEqual:                SymbolNotEqual | SymbolUnsignedNotEqual;
-compareLessThan:                SymbolLessThan | SymbolUnsignedLessThan;
-compareMoreThan:                SymbolMoreThan | SymbolUnsignedMoreThan;
+comparisonOperator:             KeywordUnsigned? (SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan);
 
 expression:                     constant                                            #constantExpression
         |                       functionCall                                        #functionCallExpression

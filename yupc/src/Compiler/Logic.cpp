@@ -7,24 +7,26 @@
 #include "llvm/IR/Value.h"
 #include "llvm/IR/InstrTypes.h"
 
-llvm::Value *yupc::EqualCodegen(llvm::Value *lhs, llvm::Value *rhs, bool isSigned)
+llvm::Value *yupc::EqualCodegen(llvm::Value *lhs, llvm::Value *rhs)
 {
     return yupc::CompilationUnits.back()->IRBuilder->CreateCmp(llvm::CmpInst::ICMP_EQ, lhs, rhs);
 }
 
-llvm::Value *yupc::NotEqualCodegen(llvm::Value *lhs, llvm::Value *rhs, bool isSigned)
+llvm::Value *yupc::NotEqualCodegen(llvm::Value *lhs, llvm::Value *rhs)
 {
     return yupc::CompilationUnits.back()->IRBuilder->CreateCmp(llvm::CmpInst::ICMP_NE, lhs, rhs);
 }
 
 llvm::Value *yupc::MoreThanCodegen(llvm::Value *lhs, llvm::Value *rhs, bool isSigned)
 {
-    return yupc::CompilationUnits.back()->IRBuilder->CreateCmp(llvm::CmpInst::ICMP_UGT, lhs, rhs);
+    llvm::CmpInst::Predicate pred = isSigned ? llvm::CmpInst::ICMP_SGT : llvm::CmpInst::ICMP_UGT;
+    return yupc::CompilationUnits.back()->IRBuilder->CreateCmp(pred, lhs, rhs);
 }
 
 llvm::Value *yupc::LessThanCodegen(llvm::Value *lhs, llvm::Value *rhs, bool isSigned)
 {
-    return yupc::CompilationUnits.back()->IRBuilder->CreateCmp(llvm::CmpInst::ICMP_ULT, lhs, rhs);
+    llvm::CmpInst::Predicate pred = isSigned ? llvm::CmpInst::ICMP_UGT : llvm::CmpInst::ICMP_ULT;
+    return yupc::CompilationUnits.back()->IRBuilder->CreateCmp(pred, lhs, rhs);
 }
 
 std::any yupc::Visitor::visitComparisonExpression(yupc::YupParser::ComparisonExpressionContext *ctx)
@@ -48,24 +50,22 @@ std::any yupc::Visitor::visitComparisonExpression(yupc::YupParser::ComparisonExp
 
     llvm::Value *val;
 
-    if (ctx->comparisonOperator()->compareEqual())
+    if (ctx->comparisonOperator()->SymbolEqual())
     {
-        bool isSigned = ctx->comparisonOperator()->compareEqual()->SymbolEqual() != nullptr;
-        val = yupc::EqualCodegen(val1, val2, isSigned);
+        val = yupc::EqualCodegen(val1, val2);
     }
-    else if (ctx->comparisonOperator()->compareNotEqual())
+    else if (ctx->comparisonOperator()->SymbolNotEqual())
     {
-        bool isSigned = ctx->comparisonOperator()->compareNotEqual()->SymbolNotEqual() != nullptr;
-        val = yupc::NotEqualCodegen(val1, val2, isSigned);
+        val = yupc::NotEqualCodegen(val1, val2);
     }
-    else if (ctx->comparisonOperator()->compareMoreThan())
+    else if (ctx->comparisonOperator()->SymbolMoreThan())
     {
-        bool isSigned = ctx->comparisonOperator()->compareMoreThan()->SymbolMoreThan() != nullptr;
+        bool isSigned = ctx->comparisonOperator()->KeywordUnsigned() == nullptr;
         val = yupc::MoreThanCodegen(val1, val2, isSigned);
     }
-    else if (ctx->comparisonOperator()->compareLessThan())
+    else if (ctx->comparisonOperator()->SymbolLessThan())
     {
-        bool isSigned = ctx->comparisonOperator()->compareLessThan()->SymbolLessThan() != nullptr;
+        bool isSigned = ctx->comparisonOperator()->KeywordUnsigned() == nullptr;
         val = yupc::LessThanCodegen(val1, val2, isSigned);
     }
 
