@@ -1,8 +1,8 @@
 #ifndef YUPC_COMPILER_VISITOR_H_
 #define YUPC_COMPILER_VISITOR_H_
 
-#include <Parser/YupParser.h>
-#include <Parser/YupParserBaseVisitor.h>
+#include "Parser/YupParser.h"
+#include "Parser/YupParserBaseVisitor.h"
 
 #include <any>
 
@@ -40,6 +40,8 @@ namespace yupc
 
         std::any visitEmphasizedExpression(yupc::YupParser::EmphasizedExpressionContext *ctx)           override;
         std::any visitBinaryOperationExpression(yupc::YupParser::BinaryOperationExpressionContext *ctx) override;
+
+        std::any visitIfStatement(yupc::YupParser::IfStatementContext *ctx)								override;
 
         std::any visitComparisonExpression(yupc::YupParser::ComparisonExpressionContext *ctx)           override;
 

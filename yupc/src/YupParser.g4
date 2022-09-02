@@ -43,6 +43,10 @@ operator:                       Identifier SymbolExclMark SymbolLparen expressio
 pointerDereference:             SymbolAsterisk expression;
 addressOf:                      SymbolAmpersand Identifier;
 
+ifStatement:					KeywordIf expression ifThenBlock ifElseBlock?;
+ifThenBlock:					codeBlock;
+ifElseBlock:					KeywordElse codeBlock;
+
 constant:                       ValueString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 
 comparisonOperator:             KeywordUnsigned? (SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan);
@@ -69,6 +73,7 @@ statement:                      expression                                      
         |                       functionSignature                                   SymbolTerminator
         |                       importDeclaration                                   SymbolTerminator
         |                       typeDeclaration                                     SymbolTerminator
+        |						ifStatement
         |                       functionDefinition
         |                       codeBlock
         |                       SymbolTerminator;

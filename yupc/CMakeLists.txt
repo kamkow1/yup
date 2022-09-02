@@ -44,6 +44,7 @@ add_subdirectory(${THIRD_PARTY_DIR}/json)
 add_subdirectory(${THIRD_PARTY_DIR}/CLI11)
 
 set (SRCS
+	src/Compiler/IfStatement.cpp
     src/Compiler/Logic.cpp
     src/Compiler/Configuration.cpp
     src/Compiler/FileSystem.cpp

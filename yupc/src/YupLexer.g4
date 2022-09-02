@@ -11,6 +11,9 @@ KeywordType                 :   'type';
 KeywordAlias                :   'alias';
 KeywordFunc                 :   'func';
 KeywordUnsigned             :   'u';
+KeywordIf					:	'if';
+KeywordElse					:	'else';
+KeywordElif					:	'elif';
 
 SymbolAt                    :   '@';
 SymbolApostrophe            :   '\'';
