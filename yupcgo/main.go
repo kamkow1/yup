@@ -1,5 +1,7 @@
 package main
 
-func main() {
+import "kamkow1/yupc/cmd"
 
+func main() {
+	cmd.Execute()
 }
