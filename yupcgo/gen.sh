@@ -1,5 +1,5 @@
 #!/bin/sh
-
+set -xe
 antlr="deps/antlr4-4.10.2-SNAPSHOT-complete.jar"
 
 if [ ! -d lexer ]; then 
