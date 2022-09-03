@@ -1,7 +1,7 @@
-parser grammar yup_parser;
+parser grammar YupParser;
 
 options {
-    tokenVocab = 'Lexer/YupLexer';
+    tokenVocab = 'lexer/YupLexer';
 }
 
 file:                           statement*;

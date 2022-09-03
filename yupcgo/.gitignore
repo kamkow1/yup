@@ -1,4 +1,5 @@
-build
+bin
 .vscode
 lexer
 parser
+demo_proj

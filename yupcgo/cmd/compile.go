@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/kamkow1/yup/yupcgo/compiler"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +24,9 @@ var compileCmd = &cobra.Command{
 		}
 
 		fileContent := string(fileBytes)
-		fmt.Printf("%s\n", fileContent)
+		compiler := compiler.NewCompiler()
+
+		compiler.ProcessSourceFile(fileContent)
 	},
 }
 
