@@ -1,6 +1,6 @@
 package main
 
-import "kamkow1/yupc/cmd"
+import "github.com/kamkow1/yup/cmd"
 
 func main() {
 	cmd.Execute()
