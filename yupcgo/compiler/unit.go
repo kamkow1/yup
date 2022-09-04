@@ -26,6 +26,10 @@ func (s *Stack[T]) Peek() *T {
 	return s.units[len(s.units)-1]
 }
 
+func (s *Stack[T]) GetFrame(i int) *T {
+	return s.units[i]
+}
+
 type CompilationUnit struct {
 	sourceFile string
 	moduleName string

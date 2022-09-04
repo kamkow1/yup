@@ -38,3 +38,8 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 
 	return nil
 }
+
+func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionContext) any {
+	name := ctx.Identifier().GetText()
+	return compiler.GetVariable(name)
+}

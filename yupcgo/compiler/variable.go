@@ -1,6 +1,8 @@
 package compiler
 
 import (
+	"fmt"
+
 	"tinygo.org/x/go-llvm"
 )
 
@@ -48,4 +50,23 @@ func InitializeVariable(name string, value llvm.Value, isGlobal bool) {
 		variable := (*compilationUnits.Peek().locals.Peek())[name]
 		compilationUnits.Peek().builder.CreateStore(value, variable.value)
 	}
+}
+
+func FindLocalVariable(name string, i int) LocalVariable {
+	if v, ok := (*compilationUnits.Peek().locals.GetFrame(i))[name]; ok {
+		return v
+	} else if i >= 0 {
+		return FindLocalVariable(name, i-1)
+	}
+
+	panic(fmt.Sprintf("ERROR: tried to reference an unknown variable: %s", name))
+}
+
+func GetVariable(name string) llvm.Value {
+	if v, ok := compilationUnits.Peek().globals[name]; ok {
+		compilationUnits.Peek().builder.CreateLoad(v.value, "")
+	}
+
+	v := FindLocalVariable(name, len(compilationUnits.units)).value
+	return compilationUnits.Peek().builder.CreateLoad(v, "")
 }
