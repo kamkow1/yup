@@ -131,8 +131,8 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitImportDeclaration(ctx)
 
 	default:
-		fmt.Fprintf(os.Stderr, "ERROR: stepped into an unknown context: %s (type of: %s)\n",
-			ctx.GetText(), reflect.TypeOf(ctx).String())
+		fmt.Fprintf(os.Stderr, "ERROR: stepped into an unknown context: %s\n",
+			reflect.TypeOf(ctx).String())
 		os.Exit(1)
 	}
 
@@ -141,7 +141,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 
 func (v *AstVisitor) VisitFile(ctx *parser.FileContext) any {
 	for _, st := range ctx.AllStatement() {
-		fmt.Printf("%s\n", ctx.GetText())
 		v.Visit(st)
 	}
 

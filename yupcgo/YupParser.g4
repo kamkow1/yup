@@ -32,7 +32,7 @@ functionDefinition:             functionSignature codeBlock;
 functionSignature:              KeywordExport? KeywordFunc Identifier SymbolLparen functionParameterList? SymbolRparen SymbolArrow typeName;
 functionParameterList:          functionParameter (SymbolComma functionParameter)*;
 functionReturn:                 KeywordReturn expression;
-functionParameter:              (Identifier typeAnnotation ) | SymbolVariadicArgs;
+functionParameter:              (KeywordConst? Identifier typeAnnotation ) | SymbolVariadicArgs;
 functionCall:                   Identifier SymbolLparen functionCallArgList? SymbolRparen;
 functionCallArgList:            expression (SymbolComma expression)*;
 
