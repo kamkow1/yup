@@ -39,8 +39,8 @@ type CompilationUnit struct {
 	valueStack Stack[[]map[string]llvm.Value]
 	typeStack  Stack[[]map[string]llvm.Type]
 	functions  map[string]llvm.Value
-	globals    map[string]GlobalVariable
-	locals     Stack[map[string]LocalVariable]
+	globals    map[string]*GlobalVariable
+	locals     []map[string]LocalVariable
 }
 
 func NewCompilationUnit(sf string) *CompilationUnit {
@@ -53,11 +53,17 @@ func NewCompilationUnit(sf string) *CompilationUnit {
 		Stack[[]map[string]llvm.Value]{},
 		Stack[[]map[string]llvm.Type]{},
 		map[string]llvm.Value{},
-		map[string]GlobalVariable{},
-		Stack[map[string]LocalVariable]{},
+		map[string]*GlobalVariable{},
+		[]map[string]LocalVariable{},
 	}
 }
 
 func DebugPrintModule() {
 	compilationUnits.Peek().module.Dump()
+}
+
+func RemoveIndex[T any](s []T, index int) []T {
+	ret := make([]T, 0)
+	ret = append(ret, s[:index]...)
+	return append(ret, s[index+1:]...)
 }

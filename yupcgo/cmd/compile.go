@@ -6,6 +6,7 @@ import (
 	"path"
 
 	"github.com/kamkow1/yup/yupcgo/ast"
+	"github.com/kamkow1/yup/yupcgo/compiler"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,7 @@ var compileCmd = &cobra.Command{
 		fileContent := string(fileBytes)
 
 		ast.ProcessSourceFile(fileContent, fp)
+		compiler.DebugPrintModule()
 	},
 }
 

@@ -35,12 +35,34 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionContext) any {
 	signature := v.Visit(ctx.FunctionSignature()).(llvm.Value)
 	compiler.CreateBlock()
-	if signature.ParamsCount() > 0 {
-		compiler.CreateFunctionEntryBlock(signature)
-	}
+	compiler.CreateFunctionEntryBlock(signature)
 
 	v.Visit(ctx.CodeBlock())
-	compiler.DebugPrintModule()
 
 	return nil
+}
+
+func (v *AstVisitor) VisitFunctionCallArgList(ctx *parser.FunctionCallArgListContext) any {
+	var args []llvm.Value
+	for _, expr := range ctx.AllExpression() {
+		args = append(args, v.Visit(expr).(llvm.Value))
+	}
+
+	return args
+}
+
+func (v *AstVisitor) VisitFunctionCallExpression(ctx *parser.FunctionCallExpressionContext) any {
+	return v.Visit(ctx.FunctionCall())
+}
+
+func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
+	name := ctx.Identifier().GetText()
+	var args []llvm.Value
+	if ctx.FunctionCallArgList() != nil {
+		args = v.Visit(ctx.FunctionCallArgList()).([]llvm.Value)
+	} else {
+		args = make([]llvm.Value, 0)
+	}
+
+	return compiler.CallFunction(name, args)
 }

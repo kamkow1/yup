@@ -32,12 +32,12 @@ func CreateVariable(name string, typ llvm.Type, isGlobal bool, isConstant bool, 
 		}
 
 		v.SetLinkage(linkage)
-		gv := GlobalVariable{&Variable{name, isConstant}, v}
+		gv := &GlobalVariable{&Variable{name, isConstant}, v}
 		compilationUnits.Peek().globals[name] = gv
 	} else {
 		v := compilationUnits.Peek().builder.CreateAlloca(typ, "")
 		lv := LocalVariable{&Variable{name, isConstant}, v}
-		(*compilationUnits.Peek().locals.Peek())[name] = lv
+		compilationUnits.Peek().locals[len(compilationUnits.Peek().locals)-1][name] = lv
 	}
 }
 
@@ -47,19 +47,19 @@ func InitializeVariable(name string, value llvm.Value, isGlobal bool) {
 		variable.value.SetInitializer(value)
 		compilationUnits.Peek().module.Dump()
 	} else {
-		variable := (*compilationUnits.Peek().locals.Peek())[name]
+		variable := compilationUnits.Peek().locals[len(compilationUnits.Peek().locals)-1][name]
 		compilationUnits.Peek().builder.CreateStore(value, variable.value)
 	}
 }
 
 func FindLocalVariable(name string, i int) LocalVariable {
-	if v, ok := (*compilationUnits.Peek().locals.GetFrame(i))[name]; ok {
+	if v, ok := compilationUnits.Peek().locals[i][name]; ok {
 		return v
-	} else if i >= 0 {
+	} else if i > 0 {
 		return FindLocalVariable(name, i-1)
+	} else {
+		panic(fmt.Sprintf("ERROR: tried to reference an unknown variable: %s", name))
 	}
-
-	panic(fmt.Sprintf("ERROR: tried to reference an unknown variable: %s", name))
 }
 
 func GetVariable(name string) llvm.Value {
@@ -67,6 +67,6 @@ func GetVariable(name string) llvm.Value {
 		compilationUnits.Peek().builder.CreateLoad(v.value, "")
 	}
 
-	v := FindLocalVariable(name, len(compilationUnits.units)).value
+	v := FindLocalVariable(name, len(compilationUnits.Peek().locals)-1).value
 	return compilationUnits.Peek().builder.CreateLoad(v, "")
 }

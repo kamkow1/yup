@@ -1,6 +1,10 @@
 package compiler
 
-import "tinygo.org/x/go-llvm"
+import (
+	"fmt"
+
+	"tinygo.org/x/go-llvm"
+)
 
 func CreateFuncSignature(name string, paramTypes []llvm.Type, returnType llvm.Type) llvm.Value {
 	funcType := llvm.FunctionType(returnType, paramTypes, false)
@@ -14,11 +18,21 @@ func CreateFunctionEntryBlock(function llvm.Value) {
 	block := llvm.AddBasicBlock(function, "entry")
 	compilationUnits.Peek().builder.SetInsertPoint(block, block.LastInstruction())
 
-	for _, p := range function.Params() {
-		alloca := compilationUnits.Peek().builder.CreateAlloca(p.Type(), "")
-		(*compilationUnits.Peek().locals.Peek())[p.Name()] = LocalVariable{
-			&Variable{p.Name(), false}, alloca,
+	if function.ParamsCount() > 0 {
+		for _, p := range function.Params() {
+			alloca := compilationUnits.Peek().builder.CreateAlloca(p.Type(), "")
+			compilationUnits.Peek().locals[len(compilationUnits.Peek().locals)-1][p.Name()] = LocalVariable{
+				&Variable{p.Name(), false}, alloca,
+			}
+			compilationUnits.Peek().builder.CreateStore(p, alloca)
 		}
-		compilationUnits.Peek().builder.CreateStore(p, alloca)
+	}
+}
+
+func CallFunction(name string, args []llvm.Value) llvm.Value {
+	if f, ok := compilationUnits.Peek().functions[name]; ok {
+		return compilationUnits.Peek().builder.CreateCall(f, args, "")
+	} else {
+		panic(fmt.Sprintf("ERROR: tried to call function %s but it doens't exist", name))
 	}
 }
