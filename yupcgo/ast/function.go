@@ -38,6 +38,9 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	compiler.CreateFunctionEntryBlock(signature)
 
 	v.Visit(ctx.CodeBlock())
+	if signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind {
+		return compiler.BuildVoidReturn()
+	}
 
 	return nil
 }
