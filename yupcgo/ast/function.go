@@ -21,6 +21,7 @@ func (v *AstVisitor) VisitFunctionParameterList(ctx *parser.FunctionParameterLis
 
 func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext) any {
 	name := ctx.Identifier().GetText()
+	isExported := ctx.KeywordExport() != nil
 	var paramTypes []llvm.Type
 	if ctx.FunctionParameterList() != nil {
 		paramTypes = v.Visit(ctx.FunctionParameterList()).([]llvm.Type)
@@ -29,7 +30,7 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 	}
 
 	returnType := v.Visit(ctx.TypeName()).(llvm.Type)
-	return compiler.CreateFuncSignature(name, paramTypes, returnType)
+	return compiler.CreateFuncSignature(name, paramTypes, returnType, isExported)
 }
 
 func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionContext) any {

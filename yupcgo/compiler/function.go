@@ -6,9 +6,15 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func CreateFuncSignature(name string, paramTypes []llvm.Type, returnType llvm.Type) llvm.Value {
+func CreateFuncSignature(name string, paramTypes []llvm.Type, returnType llvm.Type, isExported bool) llvm.Value {
 	funcType := llvm.FunctionType(returnType, paramTypes, false)
 	function := llvm.AddFunction(compilationUnits.Peek().module, name, funcType)
+	if isExported || name == "main" {
+		function.SetLinkage(llvm.ExternalLinkage)
+	} else {
+		function.SetLinkage(llvm.PrivateLinkage)
+	}
+
 	compilationUnits.Peek().functions[name] = function
 
 	return function
