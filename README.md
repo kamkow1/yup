@@ -1,5 +1,10 @@
 # yup language
 
+## currently the yup compiler is being migrated form C++ to Go (see yupcgo/). <br>
+yupcgo will soon be renamed to yupc as it's going to become 
+the main directory for the development of the yup compiler. 
+The C++ version will still be kept around but probably under a different name
+
 ## introduction
 
 Yup is an imperative programming language. It borrows syntax from
