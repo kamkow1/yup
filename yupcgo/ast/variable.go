@@ -7,7 +7,7 @@ import (
 )
 
 func (v *AstVisitor) VisitVariableValue(ctx *parser.VariableValueContext) any {
-	return nil
+	return v.Visit(ctx.Expression())
 }
 
 func (v *AstVisitor) VisitDeclarationType(ctx *parser.DeclarationTypeContext) any {
@@ -22,6 +22,11 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 	isConstant := v.Visit(ctx.DeclarationType()).(bool) // true == const, false == var
 
 	compiler.CreateVariable(name, typ, isGlobal, isConstant, isExported)
+
+	if ctx.VariableValue() != nil {
+		value := v.Visit(ctx.VariableValue()).(llvm.Value)
+		compiler.InitializeVariable(name, value, isGlobal)
+	}
 
 	return nil
 }

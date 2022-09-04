@@ -1,8 +1,6 @@
 package compiler
 
 import (
-	"fmt"
-
 	"tinygo.org/x/go-llvm"
 )
 
@@ -32,16 +30,20 @@ func CreateVariable(name string, typ llvm.Type, isGlobal bool, isConstant bool, 
 		}
 
 		v.SetLinkage(linkage)
-
 		gv := GlobalVariable{&Variable{name, isConstant}, v}
 		compilationUnits.Peek().globals[name] = gv
-
-		compilationUnits.Peek().module.Dump()
-
 	} else {
-		fmt.Println("global")
 		v := compilationUnits.Peek().builder.CreateAlloca(typ, name)
 		lv := LocalVariable{&Variable{name, isConstant}, v}
 		(*compilationUnits.Peek().locals.Peek())[name] = lv
 	}
+}
+
+func InitializeVariable(name string, value llvm.Value, isGlobal bool) {
+	if isGlobal {
+		variable := compilationUnits.Peek().globals[name]
+		variable.value.SetInitializer(value)
+		compilationUnits.Peek().module.Dump()
+	}
+
 }
