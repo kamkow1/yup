@@ -36,3 +36,11 @@ func CallFunction(name string, args []llvm.Value) llvm.Value {
 		panic(fmt.Sprintf("ERROR: tried to call function %s but it doens't exist", name))
 	}
 }
+
+func BuildValueReturn(value llvm.Value) llvm.Value {
+	return compilationUnits.Peek().builder.CreateRet(value)
+}
+
+func BuildVoidReturn() llvm.Value {
+	return compilationUnits.Peek().builder.CreateRetVoid()
+}

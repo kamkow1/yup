@@ -66,3 +66,11 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 
 	return compiler.CallFunction(name, args)
 }
+
+func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any {
+	if ctx.Expression() != nil {
+		return compiler.BuildValueReturn(v.Visit(ctx.Expression()).(llvm.Value))
+	} else {
+		return compiler.BuildVoidReturn()
+	}
+}

@@ -52,7 +52,6 @@ func InitializeVariable(name string, value llvm.Value, isGlobal bool) {
 	if isGlobal {
 		variable := compilationUnits.Peek().globals[name]
 		variable.value.SetInitializer(value)
-		compilationUnits.Peek().module.Dump()
 	} else {
 		variable := compilationUnits.Peek().locals[len(compilationUnits.Peek().locals)-1][name]
 		compilationUnits.Peek().builder.CreateStore(value, variable.value)
