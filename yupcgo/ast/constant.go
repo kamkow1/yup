@@ -3,7 +3,6 @@ package ast
 import (
 	"encoding/ascii85"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/kamkow1/yup/yupcgo/compiler"
@@ -22,8 +21,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		str := ctx.ValueInteger().GetText()
 		i, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: unable to parse int: %s", err)
-			os.Exit(1)
+			panic(fmt.Sprintf("ERROR: unable to parse int: %s", err))
 		}
 
 		value = compiler.GetIntegerConstant(i)
@@ -33,7 +31,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		str := ctx.ValueFloat().GetText()
 		f, err := strconv.ParseFloat(str, 64)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: unable to parse float: %s", err)
+			panic(fmt.Sprintf("ERROR: unable to parse float: %s", err))
 		}
 
 		value = compiler.GetFloatConstant(f)

@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path"
 
 	"github.com/kamkow1/yup/yupcgo/ast"
@@ -19,8 +18,7 @@ var compileCmd = &cobra.Command{
 
 		fileBytes, err := ioutil.ReadFile(abspath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: an error has occurend when reading file: %s", abspath)
-			os.Exit(1)
+			panic(fmt.Sprintf("ERROR: an error has occurend when reading file: %s", abspath))
 		}
 
 		fileContent := string(fileBytes)

@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/kamkow1/yup/yupcgo/compiler"
 	"github.com/kamkow1/yup/yupcgo/parser"
@@ -29,9 +28,8 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 	if ctx.VariableValue() != nil {
 		value := v.Visit(ctx.VariableValue()).(llvm.Value)
 		if compiler.AssertType(typ, value.Type()) {
-			fmt.Fprintf(os.Stderr, "ERROR: tried to assign %s to %s\n",
-				value.Type().String(), typ.String())
-			os.Exit(1)
+			panic(fmt.Sprintf("ERROR: tried to assign %s to %s\n",
+				value.Type().String(), typ.String()))
 		}
 		compiler.InitializeVariable(name, value, isGlobal)
 	}

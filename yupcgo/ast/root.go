@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
@@ -131,12 +130,9 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitImportDeclaration(ctx)
 
 	default:
-		fmt.Fprintf(os.Stderr, "ERROR: stepped into an unknown context: %s\n",
-			reflect.TypeOf(ctx).String())
-		os.Exit(1)
+		panic(fmt.Sprintf("ERROR: stepped into an unknown context: %s\n",
+			reflect.TypeOf(ctx).String()))
 	}
-
-	return nil
 }
 
 func (v *AstVisitor) VisitFile(ctx *parser.FileContext) any {
