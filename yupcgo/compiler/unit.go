@@ -53,3 +53,7 @@ func NewCompilationUnit(sf string) *CompilationUnit {
 		Stack[map[string]LocalVariable]{},
 	}
 }
+
+func DebugPrintModule() {
+	compilationUnits.Peek().module.Dump()
+}

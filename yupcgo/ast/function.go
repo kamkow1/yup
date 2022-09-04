@@ -39,5 +39,8 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 		compiler.CreateFunctionEntryBlock(signature)
 	}
 
+	v.Visit(ctx.CodeBlock())
+	compiler.DebugPrintModule()
+
 	return nil
 }

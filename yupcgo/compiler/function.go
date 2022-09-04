@@ -21,6 +21,4 @@ func CreateFunctionEntryBlock(function llvm.Value) {
 		}
 		compilationUnits.Peek().builder.CreateStore(p, alloca)
 	}
-
-	compilationUnits.Peek().module.Dump()
 }

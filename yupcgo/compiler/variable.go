@@ -33,7 +33,7 @@ func CreateVariable(name string, typ llvm.Type, isGlobal bool, isConstant bool, 
 		gv := GlobalVariable{&Variable{name, isConstant}, v}
 		compilationUnits.Peek().globals[name] = gv
 	} else {
-		v := compilationUnits.Peek().builder.CreateAlloca(typ, name)
+		v := compilationUnits.Peek().builder.CreateAlloca(typ, "")
 		lv := LocalVariable{&Variable{name, isConstant}, v}
 		(*compilationUnits.Peek().locals.Peek())[name] = lv
 	}
@@ -44,6 +44,8 @@ func InitializeVariable(name string, value llvm.Value, isGlobal bool) {
 		variable := compilationUnits.Peek().globals[name]
 		variable.value.SetInitializer(value)
 		compilationUnits.Peek().module.Dump()
+	} else {
+		variable := (*compilationUnits.Peek().locals.Peek())[name]
+		compilationUnits.Peek().builder.CreateStore(value, variable.value)
 	}
-
 }
