@@ -22,6 +22,13 @@ type GlobalVariable struct {
 }
 
 func CreateVariable(name string, typ llvm.Type, isGlobal bool, isConstant bool, isExported bool) {
+	_, alreadyGlobal := compilationUnits.Peek().globals[name]
+	_, alreadyLocal := compilationUnits.Peek().locals[len(compilationUnits.Peek().locals)-1][name]
+	if alreadyGlobal || alreadyLocal {
+		panic(fmt.Sprintf("ERROR: variable %s: %s has already been declared",
+			name, typ.String()))
+	}
+
 	if isGlobal {
 		v := llvm.AddGlobal(compilationUnits.Peek().module, typ, name)
 		var linkage llvm.Linkage
@@ -64,7 +71,7 @@ func FindLocalVariable(name string, i int) LocalVariable {
 
 func GetVariable(name string) llvm.Value {
 	if v, ok := compilationUnits.Peek().globals[name]; ok {
-		compilationUnits.Peek().builder.CreateLoad(v.value, "")
+		return compilationUnits.Peek().builder.CreateLoad(v.value, "")
 	}
 
 	v := FindLocalVariable(name, len(compilationUnits.Peek().locals)-1).value
