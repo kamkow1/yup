@@ -24,7 +24,7 @@ arrayIndex:                     SymbolLsqbr expression SymbolRsqbr;
 array:                          SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
 
 assignment:                     Identifier variableValue;
-variableDeclare:                KeywordExport? declarationType KeywordRef? Identifier typeAnnotation variableValue?;
+variableDeclare:                KeywordExport? KeywordGlobal? declarationType Identifier typeAnnotation variableValue?;
 declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
 

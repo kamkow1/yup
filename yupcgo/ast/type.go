@@ -1,11 +1,14 @@
 package ast
 
-import "github.com/kamkow1/yup/yupcgo/parser"
+import (
+	"github.com/kamkow1/yup/yupcgo/compiler"
+	"github.com/kamkow1/yup/yupcgo/parser"
+)
 
 func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
-	return nil
+	return compiler.GetTypeFromName(ctx.GetText())
 }
 
 func (v *AstVisitor) VisitTypeAnnotation(ctx *parser.TypeAnnotationContext) any {
-	return nil
+	return v.Visit(ctx.TypeName())
 }
