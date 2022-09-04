@@ -10,12 +10,18 @@ func (v *AstVisitor) VisitVariableValue(ctx *parser.VariableValueContext) any {
 	return nil
 }
 
+func (v *AstVisitor) VisitDeclarationType(ctx *parser.DeclarationTypeContext) any {
+	return ctx.KeywordConst() != nil
+}
+
 func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) any {
 	name := ctx.Identifier().GetText()
 	typ := v.Visit(ctx.TypeAnnotation()).(llvm.Type)
 	isGlobal := ctx.KeywordGlobal() != nil
+	isExported := ctx.KeywordExport() != nil
+	isConstant := v.Visit(ctx.DeclarationType()).(bool) // true == const, false == var
 
-	compiler.CreateVariable(name, typ, isGlobal)
+	compiler.CreateVariable(name, typ, isGlobal, isConstant, isExported)
 
 	return nil
 }
