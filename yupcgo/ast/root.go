@@ -2,9 +2,7 @@ package ast
 
 import (
 	"fmt"
-	"path/filepath"
 	"reflect"
-	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/kamkow1/yup/yupcgo/compiler"
@@ -134,6 +132,7 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	default:
 		panic(fmt.Sprintf("ERROR: stepped into an unknown context: %s\n",
 			reflect.TypeOf(ctx).String()))
+		return nil
 	}
 }
 
@@ -149,13 +148,7 @@ func (v *AstVisitor) VisitStatement(ctx *parser.StatementContext) any {
 	return v.Visit(ctx.GetChild(0).(antlr.ParseTree))
 }
 
-func GetBCFileName(fp string) string {
-	ext := filepath.Ext(fp)
-	return strings.Replace(fp, ext, ".bc", 1)
-}
-
-func ProcessSourceFile(file string, fp string) {
-	fmt.Println(GetBCFileName(fp))
+func ProcessSourceFile(file string, fp string, bcName string) {
 	is := antlr.NewInputStream(file)
 	lexer := lexer.NewYupLexer(is)
 	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
@@ -165,7 +158,7 @@ func ProcessSourceFile(file string, fp string) {
 	tree := parser.File()
 	v := NewAstVisitor()
 
-	cu := compiler.NewCompilationUnit(fp)
+	cu := compiler.NewCompilationUnit(fp, bcName)
 	compiler.GetCompilationUnits().Push(cu)
 
 	v.Visit(tree)

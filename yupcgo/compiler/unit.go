@@ -26,6 +26,12 @@ func (s *Stack[T]) Peek() *T {
 	return s.units[len(s.units)-1]
 }
 
+func RemoveIndex[T any](s []T, index int) []T {
+	ret := make([]T, 0)
+	ret = append(ret, s[:index]...)
+	return append(ret, s[index+1:]...)
+}
+
 type CompilationUnit struct {
 	sourceFile string
 	moduleName string
@@ -39,10 +45,10 @@ type CompilationUnit struct {
 	locals     []map[string]LocalVariable
 }
 
-func NewCompilationUnit(sf string) *CompilationUnit {
+func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 	return &CompilationUnit{
 		sf,
-		"",
+		bc,
 		llvm.NewContext(),
 		llvm.NewBuilder(),
 		llvm.NewModule(sf),
@@ -54,12 +60,12 @@ func NewCompilationUnit(sf string) *CompilationUnit {
 	}
 }
 
-func DebugPrintModule() {
-	compilationUnits.Peek().module.Dump()
+func GetBCWriteData() (llvm.Module, string) {
+	mod := compilationUnits.Peek().module
+	p := compilationUnits.Peek().moduleName
+	return mod, p
 }
 
-func RemoveIndex[T any](s []T, index int) []T {
-	ret := make([]T, 0)
-	ret = append(ret, s[:index]...)
-	return append(ret, s[index+1:]...)
+func DebugPrintModule() {
+	compilationUnits.Peek().module.Dump()
 }
