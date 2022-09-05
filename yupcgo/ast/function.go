@@ -30,17 +30,18 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 	}
 
 	returnType := v.Visit(ctx.TypeName()).(llvm.Type)
-	return compiler.CreateFuncSignature(name, paramTypes, returnType, isExported)
+	return compiler.CreateFuncSignature(name, paramTypes, returnType,
+		isExported, &compiler.CompilationUnits.Peek().Module)
 }
 
 func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionContext) any {
 	signature := v.Visit(ctx.FunctionSignature()).(llvm.Value)
 	compiler.CreateBlock()
-	compiler.CreateFunctionEntryBlock(signature)
+	compiler.CreateFunctionEntryBlock(signature, &compiler.CompilationUnits.Peek().Builder)
 
 	v.Visit(ctx.CodeBlock())
 	if signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind {
-		return compiler.BuildVoidReturn()
+		return compiler.BuildVoidReturn(&compiler.CompilationUnits.Peek().Builder)
 	}
 
 	return nil
@@ -68,13 +69,14 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 		args = make([]llvm.Value, 0)
 	}
 
-	return compiler.CallFunction(name, args)
+	return compiler.CallFunction(name, args, &compiler.CompilationUnits.Peek().Builder)
 }
 
 func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any {
 	if ctx.Expression() != nil {
-		return compiler.BuildValueReturn(v.Visit(ctx.Expression()).(llvm.Value))
+		return compiler.BuildValueReturn(v.Visit(ctx.Expression()).(llvm.Value),
+			&compiler.CompilationUnits.Peek().Builder)
 	} else {
-		return compiler.BuildVoidReturn()
+		return compiler.BuildVoidReturn(&compiler.CompilationUnits.Peek().Builder)
 	}
 }

@@ -35,7 +35,6 @@ func RemoveIndex[T any](s []T, index int) []T {
 type CompilationUnit struct {
 	SourceFile string
 	ModuleName string
-	Context    llvm.Context
 	Builder    llvm.Builder
 	Module     llvm.Module
 	ValueStack Stack[[]map[string]llvm.Value]
@@ -49,7 +48,6 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 	return &CompilationUnit{
 		sf,
 		bc,
-		llvm.NewContext(),
 		llvm.NewBuilder(),
 		llvm.NewModule(sf),
 		Stack[[]map[string]llvm.Value]{},

@@ -23,7 +23,9 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 	isExported := ctx.KeywordExport() != nil
 	isConstant := v.Visit(ctx.DeclarationType()).(bool) // true == const, false == var
 
-	compiler.CreateVariable(name, typ, isGlobal, isConstant, isExported)
+	compiler.CreateVariable(name, typ, isGlobal, isConstant,
+		isExported, &compiler.CompilationUnits.Peek().Module,
+		&compiler.CompilationUnits.Peek().Builder)
 
 	if ctx.VariableValue() != nil {
 		value := v.Visit(ctx.VariableValue()).(llvm.Value)
@@ -31,7 +33,8 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 			panic(fmt.Sprintf("ERROR: tried to assign %s to %s\n",
 				value.Type().String(), typ.String()))
 		}
-		compiler.InitializeVariable(name, value, isGlobal)
+		compiler.InitializeVariable(name, value, isGlobal,
+			&compiler.CompilationUnits.Peek().Builder)
 	}
 
 	return nil
@@ -39,5 +42,5 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 
 func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionContext) any {
 	name := ctx.Identifier().GetText()
-	return compiler.GetVariable(name)
+	return compiler.GetVariable(name, &compiler.CompilationUnits.Peek().Builder)
 }

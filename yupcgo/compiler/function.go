@@ -6,9 +6,9 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func CreateFuncSignature(name string, paramTypes []llvm.Type, returnType llvm.Type, isExported bool) llvm.Value {
+func CreateFuncSignature(name string, paramTypes []llvm.Type, returnType llvm.Type, isExported bool, module *llvm.Module) llvm.Value {
 	funcType := llvm.FunctionType(returnType, paramTypes, false)
-	function := llvm.AddFunction(CompilationUnits.Peek().Module, name, funcType)
+	function := llvm.AddFunction(*module, name, funcType)
 	if isExported || name == "main" {
 		function.SetLinkage(llvm.ExternalLinkage)
 	} else {
@@ -20,33 +20,33 @@ func CreateFuncSignature(name string, paramTypes []llvm.Type, returnType llvm.Ty
 	return function
 }
 
-func CreateFunctionEntryBlock(function llvm.Value) {
+func CreateFunctionEntryBlock(function llvm.Value, builder *llvm.Builder) {
 	block := llvm.AddBasicBlock(function, "entry")
-	CompilationUnits.Peek().Builder.SetInsertPoint(block, block.LastInstruction())
+	builder.SetInsertPoint(block, block.LastInstruction())
 
 	if function.ParamsCount() > 0 {
 		for _, p := range function.Params() {
-			alloca := CompilationUnits.Peek().Builder.CreateAlloca(p.Type(), "")
+			alloca := builder.CreateAlloca(p.Type(), "")
 			CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][p.Name()] = LocalVariable{
 				&Variable{p.Name(), false}, alloca,
 			}
-			CompilationUnits.Peek().Builder.CreateStore(p, alloca)
+			builder.CreateStore(p, alloca)
 		}
 	}
 }
 
-func CallFunction(name string, args []llvm.Value) llvm.Value {
+func CallFunction(name string, args []llvm.Value, builder *llvm.Builder) llvm.Value {
 	if f, ok := CompilationUnits.Peek().Functions[name]; ok {
-		return CompilationUnits.Peek().Builder.CreateCall(f, args, "")
+		return builder.CreateCall(f, args, "")
 	} else {
 		panic(fmt.Sprintf("ERROR: tried to call function %s but it doens't exist", name))
 	}
 }
 
-func BuildValueReturn(value llvm.Value) llvm.Value {
-	return CompilationUnits.Peek().Builder.CreateRet(value)
+func BuildValueReturn(value llvm.Value, builder *llvm.Builder) llvm.Value {
+	return builder.CreateRet(value)
 }
 
-func BuildVoidReturn() llvm.Value {
-	return CompilationUnits.Peek().Builder.CreateRetVoid()
+func BuildVoidReturn(builder *llvm.Builder) llvm.Value {
+	return builder.CreateRetVoid()
 }

@@ -21,7 +21,8 @@ type GlobalVariable struct {
 	Value llvm.Value
 }
 
-func CreateVariable(name string, typ llvm.Type, isGlobal bool, isConstant bool, isExported bool) {
+func CreateVariable(name string, typ llvm.Type, isGlobal bool, isConstant bool,
+	isExported bool, module *llvm.Module, builder *llvm.Builder) {
 	_, alreadyGlobal := CompilationUnits.Peek().Globals[name]
 	_, alreadyLocal := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]
 	if alreadyGlobal || alreadyLocal {
@@ -30,7 +31,7 @@ func CreateVariable(name string, typ llvm.Type, isGlobal bool, isConstant bool, 
 	}
 
 	if isGlobal {
-		v := llvm.AddGlobal(CompilationUnits.Peek().Module, typ, name)
+		v := llvm.AddGlobal(*module, typ, name)
 		var linkage llvm.Linkage
 		if isExported {
 			linkage = llvm.ExternalLinkage
@@ -42,19 +43,19 @@ func CreateVariable(name string, typ llvm.Type, isGlobal bool, isConstant bool, 
 		gv := &GlobalVariable{&Variable{name, isConstant}, v}
 		CompilationUnits.Peek().Globals[name] = gv
 	} else {
-		v := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
+		v := builder.CreateAlloca(typ, "")
 		lv := LocalVariable{&Variable{name, isConstant}, v}
 		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = lv
 	}
 }
 
-func InitializeVariable(name string, value llvm.Value, isGlobal bool) {
+func InitializeVariable(name string, value llvm.Value, isGlobal bool, builder *llvm.Builder) {
 	if isGlobal {
 		variable := CompilationUnits.Peek().Globals[name]
 		variable.Value.SetInitializer(value)
 	} else {
 		variable := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]
-		CompilationUnits.Peek().Builder.CreateStore(value, variable.Value)
+		builder.CreateStore(value, variable.Value)
 	}
 }
 
@@ -68,11 +69,11 @@ func FindLocalVariable(name string, i int) LocalVariable {
 	}
 }
 
-func GetVariable(name string) llvm.Value {
+func GetVariable(name string, builder *llvm.Builder) llvm.Value {
 	if v, ok := CompilationUnits.Peek().Globals[name]; ok {
-		return CompilationUnits.Peek().Builder.CreateLoad(v.Value, "")
+		return builder.CreateLoad(v.Value, "")
 	}
 
 	v := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
-	return CompilationUnits.Peek().Builder.CreateLoad(v, "")
+	return builder.CreateLoad(v, "")
 }
