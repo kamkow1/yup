@@ -5,8 +5,6 @@ import (
 	"reflect"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/kamkow1/yup/yupcgo/compiler"
-	"github.com/kamkow1/yup/yupcgo/lexer"
 	"github.com/kamkow1/yup/yupcgo/parser"
 )
 
@@ -146,20 +144,4 @@ func (v *AstVisitor) VisitFile(ctx *parser.FileContext) any {
 
 func (v *AstVisitor) VisitStatement(ctx *parser.StatementContext) any {
 	return v.Visit(ctx.GetChild(0).(antlr.ParseTree))
-}
-
-func ProcessSourceFile(file string, fp string, bcName string) {
-	is := antlr.NewInputStream(file)
-	lexer := lexer.NewYupLexer(is)
-	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
-	parser := parser.NewYupParser(tokens)
-
-	parser.BuildParseTrees = true
-	tree := parser.File()
-	v := NewAstVisitor()
-
-	cu := compiler.NewCompilationUnit(fp, bcName)
-	compiler.GetCompilationUnits().Push(cu)
-
-	v.Visit(tree)
 }

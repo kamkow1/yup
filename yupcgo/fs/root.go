@@ -8,16 +8,19 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/kamkow1/yup/yupcgo/ast"
 	"github.com/kamkow1/yup/yupcgo/compiler"
+	"github.com/kamkow1/yup/yupcgo/lexer"
+	"github.com/kamkow1/yup/yupcgo/parser"
 	"tinygo.org/x/go-llvm"
 )
 
 func WriteBCFile(mod llvm.Module, p string) {
 	if f, err := os.Create(p); err != nil {
-		panic(fmt.Sprintf("ERROR: %s", err.Error()))
+		panic(fmt.Sprintf("ERROR: %s\n", err.Error()))
 	} else if err2 := llvm.WriteBitcodeToFile(mod, f); err != nil {
-		panic(fmt.Sprintf("ERROR: %s", err2.Error()))
+		panic(fmt.Sprintf("ERROR: %s\n", err2.Error()))
 	} else {
 		defer f.Close()
 	}
@@ -28,7 +31,7 @@ func GetBCFileName(fp string) string {
 	bc := strings.Replace(fp, ext, ".bc", 1)
 	cwd, err := os.Getwd()
 	if err != nil {
-		panic(fmt.Sprintf("%s\n", err))
+		panic(fmt.Sprintf("ERROR: %s\n", err))
 	}
 
 	build := path.Join(cwd, "build")
@@ -36,7 +39,7 @@ func GetBCFileName(fp string) string {
 	if os.IsNotExist(err2) {
 		err3 := os.Mkdir(build, 0775)
 		if err3 != nil {
-			panic(fmt.Sprintf("%s\n", err2))
+			panic(fmt.Sprintf("ERROR: %s\n", err2))
 		}
 	}
 
@@ -45,10 +48,26 @@ func GetBCFileName(fp string) string {
 	return full
 }
 
+func ProcessSourceFile(file string, fp string, bcName string) {
+	is := antlr.NewInputStream(file)
+	lexer := lexer.NewYupLexer(is)
+	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
+	parser := parser.NewYupParser(tokens)
+
+	parser.BuildParseTrees = true
+	tree := parser.File()
+	v := ast.NewAstVisitor()
+
+	cu := compiler.NewCompilationUnit(fp, bcName)
+	compiler.GetCompilationUnits().Push(cu)
+
+	v.Visit(tree)
+}
+
 func ProcessPathRecursively(p string) {
 	info, err := os.Stat(p)
 	if err != nil {
-		panic(fmt.Sprintf("ERROR: unable to process path: %s", p))
+		panic(fmt.Sprintf("ERROR: unable to process path: %s\n", p))
 	}
 
 	if info.IsDir() {
@@ -65,7 +84,7 @@ func ProcessPathRecursively(p string) {
 		}
 
 		fileContent := string(fileBytes)
-		ast.ProcessSourceFile(fileContent, abspath, GetBCFileName(abspath))
+		ProcessSourceFile(fileContent, abspath, GetBCFileName(abspath))
 		mod, p := compiler.GetBCWriteData()
 		WriteBCFile(mod, p)
 	}
