@@ -2,9 +2,9 @@ package compiler
 
 func CreateBlock() {
 	m := map[string]LocalVariable{}
-	compilationUnits.Peek().locals = append(compilationUnits.Peek().locals, m)
+	CompilationUnits.Peek().Locals = append(CompilationUnits.Peek().Locals, m)
 }
 
 func RemoveBlock() []map[string]LocalVariable {
-	return RemoveIndex(compilationUnits.Peek().locals, len(compilationUnits.Peek().locals)-1)
+	return RemoveIndex(CompilationUnits.Peek().Locals, len(CompilationUnits.Peek().Locals)-1)
 }

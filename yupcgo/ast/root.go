@@ -130,7 +130,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	default:
 		panic(fmt.Sprintf("ERROR: stepped into an unknown context: %s\n",
 			reflect.TypeOf(ctx).String()))
-		return nil
 	}
 }
 

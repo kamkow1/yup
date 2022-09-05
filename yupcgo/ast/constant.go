@@ -21,8 +21,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		str := ctx.ValueInteger().GetText()
 		i, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
-			//panic(fmt.Sprintf("ERROR: unable to parse int: %s", err))
-			//panic(logging.LogMessage(fmt.Sprintf("unable to parse int: %s", err), cmd.Options.VerboseMode))
+			panic(fmt.Sprintf("ERROR: unable to parse int: %s", err))
 		}
 
 		value = compiler.GetIntegerConstant(i)

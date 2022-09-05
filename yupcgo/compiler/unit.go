@@ -33,16 +33,16 @@ func RemoveIndex[T any](s []T, index int) []T {
 }
 
 type CompilationUnit struct {
-	sourceFile string
-	moduleName string
-	context    llvm.Context
-	builder    llvm.Builder
-	module     llvm.Module
-	valueStack Stack[[]map[string]llvm.Value]
-	typeStack  Stack[[]map[string]llvm.Type]
-	functions  map[string]llvm.Value
-	globals    map[string]*GlobalVariable
-	locals     []map[string]LocalVariable
+	SourceFile string
+	ModuleName string
+	Context    llvm.Context
+	Builder    llvm.Builder
+	Module     llvm.Module
+	ValueStack Stack[[]map[string]llvm.Value]
+	TypeStack  Stack[[]map[string]llvm.Type]
+	Functions  map[string]llvm.Value
+	Globals    map[string]*GlobalVariable
+	Locals     []map[string]LocalVariable
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
@@ -61,11 +61,11 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 }
 
 func GetBCWriteData() (llvm.Module, string) {
-	mod := compilationUnits.Peek().module
-	p := compilationUnits.Peek().moduleName
+	mod := CompilationUnits.Peek().Module
+	p := CompilationUnits.Peek().ModuleName
 	return mod, p
 }
 
 func DebugPrintModule() {
-	compilationUnits.Peek().module.Dump()
+	CompilationUnits.Peek().Module.Dump()
 }

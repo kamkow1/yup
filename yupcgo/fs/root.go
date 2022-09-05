@@ -59,7 +59,7 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 	v := ast.NewAstVisitor()
 
 	cu := compiler.NewCompilationUnit(fp, bcName)
-	compiler.GetCompilationUnits().Push(cu)
+	compiler.CompilationUnits.Push(cu)
 
 	v.Visit(tree)
 }
