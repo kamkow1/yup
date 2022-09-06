@@ -14,7 +14,7 @@ typeAlias:                      KeywordAlias typeName;
 typeAnnotation:                 SymbolColon typeName;
 typeName:                       Identifier typeExtension*;
 typeExtension:                  arrayTypeExtension | SymbolAsterisk | SymbolQuestMark;
-arrayTypeExtension:             SymbolLsqbr expression SymbolRsqbr;
+arrayTypeExtension:             SymbolLsqbr ValueInteger SymbolRsqbr;
 typeNameExpression:             SymbolApostrophe typeName;
 
 importDeclaration:              KeywordImport ValueString;

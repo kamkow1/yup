@@ -1,7 +1,7 @@
 package compiler
 
 import (
-	"strings"
+	"fmt"
 
 	"tinygo.org/x/go-llvm"
 )
@@ -26,24 +26,16 @@ func GetPointerType(typ llvm.Type) llvm.Type {
 	return llvm.PointerType(typ, 0)
 }
 
+func GetArrayType(typ llvm.Type, count int) llvm.Type {
+	return llvm.ArrayType(typ, count)
+}
+
 func GetTypeFromName(name string) llvm.Type {
 	if llvmType, ok := builtinLLVMTypes[name]; ok {
 		return llvmType
-	} else {
-		baseStr := name
-		baseStr = strings.ReplaceAll(baseStr, "*", "")
-		baseType := GetTypeFromName(baseStr)
-
-		suffixes := name
-		suffixes = strings.ReplaceAll(suffixes, baseStr, "")
-		for _, s := range suffixes {
-			if s == '*' {
-				baseType = GetPointerType(baseType)
-			}
-		}
-
-		return baseType
 	}
+
+	panic(fmt.Sprintf("ERROR: unknown type: %s", name))
 }
 
 func AssertType(typ1 llvm.Type, typ2 llvm.Type) bool {
