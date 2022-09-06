@@ -56,7 +56,7 @@ expression:                     constant                                        
         |                       Identifier                                          #identifierExpression
         |                       array                                               #arrayExpression
         |                       addressOf                                           #addressOfExpression
-        |                       expression SymbolLsqbr expression SymbolRsqbr       #indexedAccessExpression
+        |                       expression (SymbolLsqbr expression SymbolRsqbr)+    #indexedAccessExpression
         |                       expression binaryOperator expression                #binaryOperationExpression
         |                       SymbolLparen expression SymbolRparen                #emphasizedExpression
         |                       pointerDereference                                  #pointerDereferenceExpression

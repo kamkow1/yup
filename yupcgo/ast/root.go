@@ -144,3 +144,7 @@ func (v *AstVisitor) VisitFile(ctx *parser.FileContext) any {
 func (v *AstVisitor) VisitStatement(ctx *parser.StatementContext) any {
 	return v.Visit(ctx.GetChild(0).(antlr.ParseTree))
 }
+
+func (v *AstVisitor) VisitEmphasizedExpression(ctx *parser.EmphasizedExpressionContext) any {
+	return v.Visit(ctx.Expression())
+}
