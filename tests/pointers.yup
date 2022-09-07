@@ -1,9 +1,0 @@
-func ptrs(): i32 {
-
-    let a: i32 = 5;
-    let b: i32* = &a;
-
-    let c: i32 = *b;
-
-    return 0;
-}
