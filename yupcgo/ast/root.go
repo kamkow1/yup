@@ -112,10 +112,10 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitBinaryOperationExpression(ctx)
 
 	// Operator
-	case *parser.OperatorContext:
-		return v.VisitOperator(ctx)
-	case *parser.OperatorExpressionContext:
-		return v.VisitOperatorExpression(ctx)
+	case *parser.YupFunctionContext:
+		return v.VisitYupFunction(ctx)
+	case *parser.YupFunctionExpressionContext:
+		return v.VisitYupFunctionExpression(ctx)
 
 	// Comparison Operator
 	case *parser.ComparisonOperatorContext:

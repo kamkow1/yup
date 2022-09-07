@@ -6,10 +6,10 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-var builtinLLVMTypes map[string]llvm.Type
+var BuiltinLLVMTypes map[string]llvm.Type
 
 func init() {
-	builtinLLVMTypes = map[string]llvm.Type{
+	BuiltinLLVMTypes = map[string]llvm.Type{
 		"i1":   llvm.Int1Type(),
 		"i8":   llvm.Int8Type(),
 		"i16":  llvm.Int16Type(),
@@ -31,7 +31,7 @@ func GetArrayType(typ llvm.Type, count int) llvm.Type {
 }
 
 func GetTypeFromName(name string) llvm.Type {
-	if llvmType, ok := builtinLLVMTypes[name]; ok {
+	if llvmType, ok := BuiltinLLVMTypes[name]; ok {
 		return llvmType
 	}
 

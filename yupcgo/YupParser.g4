@@ -38,7 +38,7 @@ functionCallArgList:            expression (SymbolComma expression)*;
 
 binaryOperator:                 KeywordUnsigned? (SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash);
 
-operator:                       Identifier SymbolExclMark SymbolLparen expression+ SymbolRparen;
+yupFunction:                    SymbolAt functionCall;
 
 pointerDereference:             SymbolAsterisk expression;
 addressOf:                      SymbolAmpersand Identifier;
@@ -60,7 +60,7 @@ expression:                     constant                                        
         |                       expression binaryOperator expression                #binaryOperationExpression
         |                       SymbolLparen expression SymbolRparen                #emphasizedExpression
         |                       pointerDereference                                  #pointerDereferenceExpression
-        |                       operator                                            #operatorExpression
+        |                       yupFunction                                         #yupFunctionExpression
         |                       typeNameExpression                                  #typeExpression
         |                       SymbolLparen expression SymbolRparen expression     #typeCastExpression
         |                       expression comparisonOperator expression            #ComparisonExpression;
