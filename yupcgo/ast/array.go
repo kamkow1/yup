@@ -30,3 +30,16 @@ func (v *AstVisitor) VisitIndexedAccessExpression(ctx *parser.IndexedAccessExpre
 
 	return idx
 }
+
+func (v *AstVisitor) VisitArrayElementAssignment(ctx *parser.ArrayElementAssignmentContext) any {
+	name := ctx.Identifier().GetText()
+	array := compiler.FindLocalVariable(name, len(compiler.CompilationUnits.Peek().Locals)-1).Value
+	var idx llvm.Value
+	for _, i := range ctx.AllArrayIndex() {
+		idx = v.Visit(i.(*parser.ArrayIndexContext).Expression()).(llvm.Value)
+	}
+
+	value := v.Visit(ctx.VariableValue()).(llvm.Value)
+	compiler.AssignArrayElement(array, idx, value, &compiler.CompilationUnits.Peek().Builder)
+	return nil
+}
