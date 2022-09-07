@@ -39,8 +39,6 @@ type CompilationUnit struct {
 	Module     llvm.Module
 	ValueStack Stack[[]map[string]llvm.Value]
 	TypeStack  Stack[[]map[string]llvm.Type]
-	Functions  map[string]llvm.Value
-	Globals    map[string]*GlobalVariable
 	Locals     []map[string]LocalVariable
 }
 
@@ -52,8 +50,6 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 		llvm.NewModule(sf),
 		Stack[[]map[string]llvm.Value]{},
 		Stack[[]map[string]llvm.Type]{},
-		map[string]llvm.Value{},
-		map[string]*GlobalVariable{},
 		[]map[string]LocalVariable{},
 	}
 }

@@ -20,11 +20,10 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 	name := ctx.Identifier().GetText()
 	typ := v.Visit(ctx.TypeAnnotation()).(llvm.Type)
 	isGlobal := ctx.KeywordGlobal() != nil
-	isExported := ctx.KeywordExport() != nil
 	isConstant := v.Visit(ctx.DeclarationType()).(bool) // true == const, false == var
 
 	compiler.CreateVariable(name, typ, isGlobal, isConstant,
-		isExported, &compiler.CompilationUnits.Peek().Module,
+		&compiler.CompilationUnits.Peek().Module,
 		&compiler.CompilationUnits.Peek().Builder)
 
 	if ctx.VariableValue() != nil {

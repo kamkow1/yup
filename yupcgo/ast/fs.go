@@ -1,4 +1,4 @@
-package fs
+package ast
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/kamkow1/yup/yupcgo/ast"
 	"github.com/kamkow1/yup/yupcgo/compiler"
 	"github.com/kamkow1/yup/yupcgo/lexer"
 	"github.com/kamkow1/yup/yupcgo/parser"
@@ -56,7 +55,7 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 
 	parser.BuildParseTrees = true
 	tree := parser.File()
-	v := ast.NewAstVisitor()
+	v := NewAstVisitor()
 
 	cu := compiler.NewCompilationUnit(fp, bcName)
 	compiler.CompilationUnits.Push(cu)
@@ -85,7 +84,21 @@ func ProcessPathRecursively(p string) {
 
 		fileContent := string(fileBytes)
 		ProcessSourceFile(fileContent, abspath, GetBCFileName(abspath))
-		mod, p := compiler.GetBCWriteData()
-		WriteBCFile(mod, p)
 	}
+}
+
+func ImportModule(name string) {
+	ProcessPathRecursively(name)
+	mod := compiler.CompilationUnits.Pop().Module
+	if !mod.LastFunction().IsNil() {
+		llvm.AddFunction(compiler.CompilationUnits.Peek().Module,
+			mod.FirstFunction().Name(), mod.FirstFunction().Type())
+	}
+
+	if !mod.LastGlobal().IsNil() {
+		llvm.AddGlobal(compiler.CompilationUnits.Peek().Module,
+			mod.FirstGlobal().Type(), mod.FirstGlobal().Name())
+	}
+
+	llvm.LinkModules(compiler.CompilationUnits.Peek().Module, mod)
 }

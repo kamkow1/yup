@@ -6,53 +6,39 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-type Variable struct {
+type LocalVariable struct {
 	Name    string
 	IsConst bool
+	Value   llvm.Value
 }
 
-type LocalVariable struct {
-	*Variable
-	Value llvm.Value
-}
+func CreateVariable(name string, typ llvm.Type, isGlobal bool,
+	isConstant bool, module *llvm.Module, builder *llvm.Builder) {
+	var alreadyLocal bool
+	if len(CompilationUnits.Peek().Locals) < 1 {
+		alreadyLocal = false
+	} else if _, ok := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]; ok {
+		alreadyLocal = ok
+	}
 
-type GlobalVariable struct {
-	*Variable
-	Value llvm.Value
-}
-
-func CreateVariable(name string, typ llvm.Type, isGlobal bool, isConstant bool,
-	isExported bool, module *llvm.Module, builder *llvm.Builder) {
-	_, alreadyGlobal := CompilationUnits.Peek().Globals[name]
-	_, alreadyLocal := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]
-	if alreadyGlobal || alreadyLocal {
+	if alreadyLocal {
 		panic(fmt.Sprintf("ERROR: variable %s: %s has already been declared",
 			name, typ.String()))
 	}
 
 	if isGlobal {
-		v := llvm.AddGlobal(*module, typ, name)
-		var linkage llvm.Linkage
-		if isExported {
-			linkage = llvm.ExternalLinkage
-		} else {
-			linkage = llvm.PrivateLinkage
-		}
-
-		v.SetLinkage(linkage)
-		gv := &GlobalVariable{&Variable{name, isConstant}, v}
-		CompilationUnits.Peek().Globals[name] = gv
+		llvm.AddGlobal(*module, typ, name)
 	} else {
 		v := builder.CreateAlloca(typ, "")
-		lv := LocalVariable{&Variable{name, isConstant}, v}
+		lv := LocalVariable{name, isConstant, v}
 		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = lv
 	}
 }
 
 func InitializeVariable(name string, value llvm.Value, isGlobal bool, builder *llvm.Builder) {
 	if isGlobal {
-		variable := CompilationUnits.Peek().Globals[name]
-		variable.Value.SetInitializer(value)
+		variable := CompilationUnits.Peek().Module.NamedGlobal(name)
+		variable.SetInitializer(value)
 	} else {
 		variable := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]
 		builder.CreateStore(value, variable.Value)
@@ -62,7 +48,7 @@ func InitializeVariable(name string, value llvm.Value, isGlobal bool, builder *l
 func FindLocalVariable(name string, i int) LocalVariable {
 	if v, ok := CompilationUnits.Peek().Locals[i][name]; ok {
 		return v
-	} else if i > 0 {
+	} else if i >= 1 {
 		return FindLocalVariable(name, i-1)
 	} else {
 		panic(fmt.Sprintf("ERROR: tried to reference an unknown variable: %s", name))
@@ -70,8 +56,9 @@ func FindLocalVariable(name string, i int) LocalVariable {
 }
 
 func GetVariable(name string, builder *llvm.Builder) llvm.Value {
-	if v, ok := CompilationUnits.Peek().Globals[name]; ok {
-		return builder.CreateLoad(v.Value, "")
+	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
+		v := CompilationUnits.Peek().Module.NamedGlobal(name)
+		return builder.CreateLoad(v, "")
 	}
 
 	v := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value

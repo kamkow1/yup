@@ -11,27 +11,34 @@ func (v *AstVisitor) VisitFunctionParameter(ctx *parser.FunctionParameterContext
 }
 
 func (v *AstVisitor) VisitFunctionParameterList(ctx *parser.FunctionParameterListContext) any {
-	var types []llvm.Type
+	var params []compiler.FuncParam
 	for _, p := range ctx.AllFunctionParameter() {
-		types = append(types, v.Visit(p).(llvm.Type))
+		params = append(params, compiler.FuncParam{
+			Name: p.(*parser.FunctionParameterContext).Identifier().GetText(),
+			Type: v.Visit(p).(llvm.Type)})
 	}
 
-	return types
+	return params
 }
 
 func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext) any {
 	name := ctx.Identifier().GetText()
-	isExported := ctx.KeywordExport() != nil
-	var paramTypes []llvm.Type
+	var paramTypes []compiler.FuncParam
 	if ctx.FunctionParameterList() != nil {
-		paramTypes = v.Visit(ctx.FunctionParameterList()).([]llvm.Type)
+		paramTypes = v.Visit(ctx.FunctionParameterList()).([]compiler.FuncParam)
 	} else {
-		paramTypes = make([]llvm.Type, 0)
+		paramTypes = make([]compiler.FuncParam, 0)
 	}
 
 	returnType := v.Visit(ctx.TypeName()).(llvm.Type)
-	return compiler.CreateFuncSignature(name, paramTypes, returnType,
-		isExported, &compiler.CompilationUnits.Peek().Module)
+	f := compiler.CreateFuncSignature(name, paramTypes,
+		returnType, &compiler.CompilationUnits.Peek().Module)
+
+	for i, pt := range paramTypes {
+		f.Param(i).SetName(pt.Name)
+	}
+
+	return f
 }
 
 func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionContext) any {
