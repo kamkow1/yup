@@ -9,7 +9,8 @@ import (
 type functionType func([]string) llvm.Value
 
 var functions map[string]functionType = map[string]functionType{
-	"Cast": Cast,
+	"Cast":   Cast,
+	"Sizeof": Sizeof,
 }
 
 func Cast(args []string) llvm.Value {
@@ -31,6 +32,17 @@ func Cast(args []string) llvm.Value {
 	} else {
 		return CompilationUnits.Peek().Builder.CreateBitCast(load, typ, "")
 	}
+}
+
+func Sizeof(args []string) llvm.Value {
+	typ, ok := BuiltinLLVMTypes[args[0]]
+	if ok {
+		return llvm.SizeOf(typ)
+	}
+
+	value := FindLocalVariable(args[0], len(CompilationUnits.Peek().Locals)-1).Value
+	load := CompilationUnits.Peek().Builder.CreateLoad(value, "")
+	return llvm.SizeOf(load.Type())
 }
 
 func CallBuiltinFunction(name string, args []string) llvm.Value {
