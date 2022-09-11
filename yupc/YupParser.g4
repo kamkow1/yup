@@ -36,7 +36,7 @@ functionParameter:              (KeywordConst? Identifier typeAnnotation ) | Sym
 functionCall:                   Identifier SymbolLparen functionCallArgList? SymbolRparen;
 functionCallArgList:            expression (SymbolComma expression)*;
 
-binaryOperator:                 KeywordUnsigned? (SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash);
+binaryOperator:                 SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash;
 
 yupFunction:                    SymbolAt functionCall;
 
