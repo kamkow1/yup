@@ -18,7 +18,7 @@ void Printf(char *format, ...) {
                     printf("%d", va_arg(ap, int));
                     break;
                 case 'f':
-                    printf("%f", va_arg(ap, double));
+                    printf("%.15f", va_arg(ap, double));
                     break;
                 case 'c':
                     printf("%c", va_arg(ap, int));
