@@ -54,7 +54,17 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		str := ctx.ValueString().GetText()
 		str = TrimLeftChar(str)
 		str = TrimRightChar(str)
-		value = llvm.ConstString(str, true)
+
+		for _, p := range ctx.AllStringPrefix() {
+			pref := p.(*parser.StringPrefixContext)
+			if pref.KeywordGStrPrefix() != nil {
+				value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
+			}
+
+			if pref.KeywordLocalStrPrefix() != nil {
+				value = llvm.ConstString(str, true)
+			}
+		}
 	}
 
 	return value

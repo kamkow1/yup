@@ -47,7 +47,8 @@ ifStatement:					KeywordIf expression ifThenBlock ifElseBlock?;
 ifThenBlock:					codeBlock;
 ifElseBlock:					KeywordElse codeBlock;
 
-constant:                       ValueString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
+stringPrefix:                   KeywordGStrPrefix | KeywordLocalStrPrefix;
+constant:                       (stringPrefix* ValueString) | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 
 comparisonOperator:             KeywordUnsigned? (SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan);
 

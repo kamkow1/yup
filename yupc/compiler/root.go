@@ -104,6 +104,8 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitConstant(ctx)
 	case *parser.ConstantExpressionContext:
 		return v.VisitConstantExpression(ctx)
+	case *parser.StringPrefixContext:
+		return v.VisitStringPrefix(ctx)
 
 	// Binary Operator
 	case *parser.BinaryOperatorContext:
