@@ -54,6 +54,8 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 	}
 }
 
+var CompilationUnits = NewStack[CompilationUnit]()
+
 func GetBCWriteData() (llvm.Module, string) {
 	mod := CompilationUnits.Peek().Module
 	p := CompilationUnits.Peek().ModuleName

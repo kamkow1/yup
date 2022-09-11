@@ -1,4 +1,4 @@
-package ast
+package compiler
 
 import (
 	"fmt"
@@ -9,11 +9,33 @@ import (
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/kamkow1/yup/yupcgo/compiler"
 	"github.com/kamkow1/yup/yupcgo/lexer"
 	"github.com/kamkow1/yup/yupcgo/parser"
 	"tinygo.org/x/go-llvm"
 )
+
+func GetHomeDir() string {
+	dir, err := os.UserHomeDir()
+	if err != nil {
+		panic(fmt.Sprintf("ERROR: %s", err))
+	}
+
+	return dir
+}
+
+func GetCwd() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic(fmt.Sprintf("ERROR: %s", err))
+	}
+
+	return dir
+}
+
+var DefaultImportPaths map[string]string = map[string]string{
+	"$std":  path.Join(GetHomeDir(), "yup_stdlib"),
+	"$root": GetCwd(),
+}
 
 func WriteBCFile(mod llvm.Module, p string) {
 	if f, err := os.Create(p); err != nil {
@@ -57,8 +79,8 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 	tree := parser.File()
 	v := NewAstVisitor()
 
-	cu := compiler.NewCompilationUnit(fp, bcName)
-	compiler.CompilationUnits.Push(cu)
+	cu := NewCompilationUnit(fp, bcName)
+	CompilationUnits.Push(cu)
 
 	v.Visit(tree)
 }
@@ -88,17 +110,51 @@ func ProcessPathRecursively(p string) {
 }
 
 func ImportModule(name string) {
-	ProcessPathRecursively(name)
-	mod := compiler.CompilationUnits.Pop().Module
+	elems := strings.Split(name, "/")
+	if p, ok := DefaultImportPaths[elems[0]]; ok {
+		name = strings.ReplaceAll(name, elems[0], p)
+	}
+
+	if filepath.Ext(name) == ".bc" {
+		module, err := llvm.ParseBitcodeFile(name)
+		if err != nil {
+			panic(fmt.Sprintf("ERROR: import %s: %s", name, err))
+		}
+
+		cu := NewCompilationUnit(name, name)
+		cu.Module = module
+		CompilationUnits.Push(cu)
+	} else if filepath.Ext(name) == ".ll" {
+		ctx := &llvm.Context{}
+		file, err := llvm.NewMemoryBufferFromFile(name)
+		if err != nil {
+			panic(fmt.Sprintf("ERROR: import %s: %s", name, err))
+		}
+
+		fmt.Println(string(file.Bytes()))
+
+		module, err2 := ctx.ParseIR(file)
+		if err2 != nil {
+			panic(fmt.Sprintf("ERROR: import %s: %s", name, err2))
+		}
+
+		cu := NewCompilationUnit(name, name)
+		cu.Module = module
+		CompilationUnits.Push(cu)
+	} else {
+		ProcessPathRecursively(name)
+	}
+
+	mod := CompilationUnits.Pop().Module
 	if !mod.LastFunction().IsNil() {
-		llvm.AddFunction(compiler.CompilationUnits.Peek().Module,
+		llvm.AddFunction(CompilationUnits.Peek().Module,
 			mod.FirstFunction().Name(), mod.FirstFunction().Type())
 	}
 
 	if !mod.LastGlobal().IsNil() {
-		llvm.AddGlobal(compiler.CompilationUnits.Peek().Module,
+		llvm.AddGlobal(CompilationUnits.Peek().Module,
 			mod.FirstGlobal().Type(), mod.FirstGlobal().Name())
 	}
 
-	llvm.LinkModules(compiler.CompilationUnits.Peek().Module, mod)
+	llvm.LinkModules(CompilationUnits.Peek().Module, mod)
 }

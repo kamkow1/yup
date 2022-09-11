@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 
+	"github.com/kamkow1/yup/yupcgo/parser"
 	"tinygo.org/x/go-llvm"
 )
 
@@ -45,6 +46,18 @@ func Sizeof(args []string) llvm.Value {
 	return llvm.SizeOf(load.Type())
 }
 
-func CallBuiltinFunction(name string, args []string) llvm.Value {
-	return functions[name](args)
+func (v *AstVisitor) VisitYupFunctionExpression(ctx *parser.YupFunctionExpressionContext) any {
+	return v.Visit(ctx.YupFunction())
+}
+
+func (v *AstVisitor) VisitYupFunction(ctx *parser.YupFunctionContext) any {
+	callCtx := ctx.FunctionCall().(*parser.FunctionCallContext)
+	name := callCtx.Identifier().GetText()
+	var strArgs []string
+	args := callCtx.FunctionCallArgList().(*parser.FunctionCallArgListContext)
+	for _, a := range args.AllExpression() {
+		strArgs = append(strArgs, a.GetText())
+	}
+
+	return functions[name](strArgs)
 }

@@ -1,29 +1,74 @@
 package compiler
 
 import (
+	"encoding/ascii85"
 	"encoding/binary"
+	"fmt"
+	"strconv"
 
+	"github.com/kamkow1/yup/yupcgo/parser"
 	"tinygo.org/x/go-llvm"
 )
 
-const UnsignedIntMin = 0
-
-func GetIntegerConstant(value int64) llvm.Value {
-	size := binary.Size(value)
-	typ := llvm.IntType(int(size))
-	return llvm.ConstInt(typ, uint64(value), false)
+func (v *AstVisitor) VisitConstantExpression(ctx *parser.ConstantExpressionContext) any {
+	return v.Visit(ctx.Constant())
 }
 
-func GetFloatConstant(value float64) llvm.Value {
-	typ := llvm.FloatType()
-	return llvm.ConstFloat(typ, value)
+func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
+
+	var value llvm.Value
+	if ctx.ValueInteger() != nil {
+		str := ctx.ValueInteger().GetText()
+		i, err := strconv.ParseInt(str, 10, 64)
+		if err != nil {
+			panic(fmt.Sprintf("ERROR: unable to parse int: %s", err))
+		}
+
+		size := binary.Size(i)
+		typ := llvm.IntType(int(size))
+		value = llvm.ConstInt(typ, uint64(i), false)
+	}
+
+	if ctx.ValueFloat() != nil {
+		str := ctx.ValueFloat().GetText()
+		f, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			panic(fmt.Sprintf("ERROR: unable to parse float: %s", err))
+		}
+
+		typ := llvm.FloatType()
+		value = llvm.ConstFloat(typ, f)
+	}
+
+	if ctx.ValueChar() != nil {
+		str := ctx.ValueChar().GetText()
+		c := str[:(len(str)+1)-(len(str)-1)]
+
+		dst := make([]byte, 8)
+		typ := llvm.Int8Type()
+		enc := ascii85.Encode(dst, []byte(c))
+		value = llvm.ConstInt(typ, uint64(byte(enc)), false)
+	}
+
+	if ctx.ValueString() != nil {
+		str := ctx.ValueString().GetText()
+		str = TrimLeftChar(str)
+		str = TrimRightChar(str)
+		value = llvm.ConstString(str, true)
+	}
+
+	return value
 }
 
-func GetCharConstant(value byte) llvm.Value {
-	typ := llvm.Int8Type()
-	return llvm.ConstInt(typ, uint64(value), false)
+func TrimLeftChar(s string) string {
+	for i := range s {
+		if i > 0 {
+			return s[i:]
+		}
+	}
+	return s[:0]
 }
 
-func GetStringConstant(value string) llvm.Value {
-	return llvm.ConstString(value, true)
+func TrimRightChar(s string) string {
+	return s[:len(s)-1]
 }

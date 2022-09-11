@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 
+	"github.com/kamkow1/yup/yupcgo/parser"
 	"tinygo.org/x/go-llvm"
 )
 
@@ -10,39 +11,6 @@ type LocalVariable struct {
 	Name    string
 	IsConst bool
 	Value   llvm.Value
-}
-
-func CreateVariable(name string, typ llvm.Type, isGlobal bool,
-	isConstant bool, module *llvm.Module, builder *llvm.Builder) {
-	var alreadyLocal bool
-	if len(CompilationUnits.Peek().Locals) < 1 {
-		alreadyLocal = false
-	} else if _, ok := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]; ok {
-		alreadyLocal = ok
-	}
-
-	if alreadyLocal {
-		panic(fmt.Sprintf("ERROR: variable %s: %s has already been declared",
-			name, typ.String()))
-	}
-
-	if isGlobal {
-		llvm.AddGlobal(*module, typ, name)
-	} else {
-		v := builder.CreateAlloca(typ, "")
-		lv := LocalVariable{name, isConstant, v}
-		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = lv
-	}
-}
-
-func InitializeVariable(name string, value llvm.Value, isGlobal bool, builder *llvm.Builder) {
-	if isGlobal {
-		variable := CompilationUnits.Peek().Module.NamedGlobal(name)
-		variable.SetInitializer(value)
-	} else {
-		variable := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]
-		builder.CreateStore(value, variable.Value)
-	}
 }
 
 func FindLocalVariable(name string, i int) LocalVariable {
@@ -55,12 +23,67 @@ func FindLocalVariable(name string, i int) LocalVariable {
 	}
 }
 
-func GetVariable(name string, builder *llvm.Builder) llvm.Value {
-	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
-		v := CompilationUnits.Peek().Module.NamedGlobal(name)
-		return builder.CreateLoad(v, "")
+func (v *AstVisitor) VisitVariableValue(ctx *parser.VariableValueContext) any {
+	return v.Visit(ctx.Expression())
+}
+
+func (v *AstVisitor) VisitDeclarationType(ctx *parser.DeclarationTypeContext) any {
+	return ctx.KeywordConst() != nil
+}
+
+func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) any {
+	name := ctx.Identifier().GetText()
+
+	var alreadyLocal bool
+	if len(CompilationUnits.Peek().Locals) < 1 {
+		alreadyLocal = false
+	} else if _, ok := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]; ok {
+		alreadyLocal = ok
 	}
 
-	v := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
-	return builder.CreateLoad(v, "")
+	if alreadyLocal {
+		panic(fmt.Sprintf("ERROR: variable %s has already been declared", name))
+	}
+
+	isGlobal := ctx.KeywordGlobal() != nil
+	isConstant := v.Visit(ctx.DeclarationType()).(bool) // true == const, false == var
+
+	var typ llvm.Type
+	var value llvm.Value
+	isInit := false
+	if ctx.TypeAnnotation() != nil {
+		typ = v.Visit(ctx.TypeAnnotation()).(llvm.Type)
+	} else {
+		value = v.Visit(ctx.VariableValue()).(llvm.Value)
+		typ = value.Type()
+		isInit = true
+	}
+
+	if isGlobal {
+		glb := llvm.AddGlobal(CompilationUnits.Peek().Module, typ, name)
+		if isInit {
+			glb.SetInitializer(value)
+		}
+	} else {
+		v := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
+		lv := LocalVariable{name, isConstant, v}
+		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = lv
+		if isInit {
+			CompilationUnits.Peek().Builder.CreateStore(value, v)
+		}
+	}
+
+	return nil
+}
+
+func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionContext) any {
+	name := ctx.Identifier().GetText()
+	var val llvm.Value
+	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
+		val = CompilationUnits.Peek().Module.NamedGlobal(name)
+		return CompilationUnits.Peek().Builder.CreateLoad(val, "")
+	}
+
+	val = FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
+	return CompilationUnits.Peek().Builder.CreateLoad(val, "")
 }
