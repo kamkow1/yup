@@ -1,5 +1,0 @@
-import "$std/io/iolib.ll";
-
-func PrintF(fmt: i8*, aa: i32) -> void {
-    printf(fmt, aa);
-}
