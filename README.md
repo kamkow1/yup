@@ -1,9 +1,10 @@
 # yup language
 
-## currently the yup compiler is being migrated form C++ to Go (see yupcgo/). <br>
-yupcgo will soon be renamed to yupc as it's going to become 
-the main directory for the development of the yup compiler. 
-The C++ version will still be kept around but probably under a different name
+## UPDATE: 
+
+the yup compiler has officially been migrated from
+C++ to Go. The old C++ version is still kept around
+at https://github.com/kamkow1/old-cpp-yupc.git but is no longer maintained.
 
 ## introduction
 
@@ -15,93 +16,41 @@ It's compiler is implemented using LLVM.
 
 run:
 ```bash
-cd /root/of/project/yup
+cd /root/of/project/yup/yup_stdlib
 chmod +x ./install_stdlib.sh
-./install_stdlib.sh
+./build.sh
+./install_stdlib.sh # installs in ~/yup_stdlib
 ```
 
 now you can refer to the stdlib in your code using "```@std```" <br>
 small example:
 
 ```
-import "@std/memory/memlib_wrap.yup";
+import "$std/io.bc";
+import "$std/memory.bc";
 
-func main(): i32  
-{
-    let a: i8* = __malloc(('i64) 8);
+func main() -> i8 {
+    Printf(g"%s\n", g"hello world!");
 
-    __free(a);
+    var x = Allocate(@Sizeof(i32));
+    Destroy(x);
 
     return 0;
 }
+
 ```
-
-# running tests
-requires Python 3.10 or newer
-
-run the tests:
-```bash
-cd tests
-python3 tests.py
-```
-
-tests are to prevent regressions in the compiler's development
 
 # building from source
 
 As of now, Yup doesn't provide prebuilt binaries so you will 
 have to build the compiler from source. <br>
-Also, the compiler only supports Linux, but that is going to change in the future.
+Also, the compiler only supports Linux, but that is going to change in the future. I do not own a copy of Windows, so if you do, feel free to create a port of the compiler.
 
-Before you compile yupc, you need to build all of the dependencies:
-##### (you will need cmake for this)
-
-#### 1. LLVM
-Read LLVM instructions: <br>
-https://www.llvm.org/docs/CMake.html
-
-#### 2. ANTLR4
-Read ANTLR4 C++ runtime instructions: <br>
-https://github.com/antlr/antlr4/blob/master/runtime/Cpp/README.md
-
-the ANTLR4 runtime can be found in the third_party directory.
-
-In order to build the Yup compiler from source run:
 ```bash
-git clone https://github.com/kamkow1/yup.git
-
-cd /path/to/yup/source/yup
-
-cd yupc
-
-./gen.sh -j /path/to/antlr4tool.jar # generate lexer and parser source files
-
-./build.sh -m release # -m [relrease | debug]
+cd /root/of/project/yup/yupc
+./gen.sh # generates needed ANTLR4 files
+./build.sh # outputs the yupc binary into bin/
 ```
-
-#### 3. Conan dependencies
-
-the rest of the dependencies are provided by Conan
-Learn more on how to install conan: <br>
- https://conan.io/downloads.html
-
-# scripts
-
-## build.sh
-description: <br>
-builds yupc from source (not the dependecies)
-
-arguments: <br>
-*   -m | --mode [build mode]
-    - [release | debug]
-
-## gen.sh
-description: <br>
-generates ANTLR4 source files (lexer and parser)
-
-arguments: <br>
-*   -j | --jar [path]
-    - path: path to antlr4 tool (a .jar file)
 
 ### development roadmap
 * basics [&check;]
@@ -119,7 +68,6 @@ arguments: <br>
         * [&check;] array type
         * [&check;] string type
     - [&check;] global variables
-    - [&check;] external symbols
     - [&#10799;] for loop
     - [&#10799;] while loop
     - [&#10799;] conditional statements ( if + elif + else )
@@ -129,10 +77,6 @@ arguments: <br>
 * OOP [&#10799;]
     - [&#10799;] structs
     - [&#10799;] access modifiers
-* standard libary [&#10799;]
-    - [&#10799;] memory 
-        * [&check;] __malloc()
-        * [&check;] __free()
 * meta programming [&#10799;]
     - [&#10799;] interpreted blocks
     - [&#10799;] generics
