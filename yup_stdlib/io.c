@@ -12,7 +12,16 @@ void Printf(char *format, ...) {
             ptr++;
             switch (*ptr++) {
                 case 's':
-                    printf("%s", va_arg(ap, char *));
+                    printf("%s", va_arg(ap, char*));
+                    break;
+                case 'i':
+                    printf("%d", va_arg(ap, int));
+                    break;
+                case 'f':
+                    printf("%f", va_arg(ap, double));
+                    break;
+                case 'c':
+                    printf("%c", va_arg(ap, int));
                     break;
             }
         } else {
