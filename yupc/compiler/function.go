@@ -1,8 +1,6 @@
 package compiler
 
 import (
-	"fmt"
-
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
 )
@@ -117,43 +115,41 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 // Compiler's built-in functions
 // -----------------------------
 
-type functionType func([]string) llvm.Value
+type functionType func([]any) llvm.Value
 
 var functions map[string]functionType = map[string]functionType{
 	"Cast":   Cast,
 	"Sizeof": Sizeof,
 }
 
-func Cast(args []string) llvm.Value {
-	value := FindLocalVariable(args[0], len(CompilationUnits.Peek().Locals)-1).Value
-	load := CompilationUnits.Peek().Builder.CreateLoad(value, "")
-	typ, ok := BuiltinLLVMTypes[args[1]]
-	if !ok {
-		panic(fmt.Sprintf("ERROR: unknown type: %s", args[1]))
-	}
+func Cast(args []any) llvm.Value {
+	//value := FindLocalVariable(args[0], len(CompilationUnits.Peek().Locals)-1).Value
+	//load := CompilationUnits.Peek().Builder.CreateLoad(value, "")
+	value := args[0].(llvm.Value)
+	typ := args[1].(llvm.Type)
 
-	if load.Type().TypeKind() == llvm.IntegerTypeKind && typ.TypeKind() == llvm.IntegerTypeKind {
-		return CompilationUnits.Peek().Builder.CreateIntCast(load, typ, "")
-	} else if load.Type().TypeKind() == llvm.IntegerTypeKind && typ.TypeKind() == llvm.PointerTypeKind {
-		return CompilationUnits.Peek().Builder.CreateIntToPtr(load, typ, "")
-	} else if load.Type().TypeKind() == llvm.PointerTypeKind && typ.TypeKind() == llvm.IntegerTypeKind {
-		return CompilationUnits.Peek().Builder.CreatePtrToInt(load, typ, "")
-	} else if load.Type().TypeKind() == llvm.PointerTypeKind && typ.TypeKind() == llvm.PointerTypeKind {
-		return CompilationUnits.Peek().Builder.CreatePointerCast(load, typ, "")
+	if value.Type().TypeKind() == llvm.IntegerTypeKind && typ.TypeKind() == llvm.IntegerTypeKind {
+		return CompilationUnits.Peek().Builder.CreateIntCast(value, typ, "")
+	} else if value.Type().TypeKind() == llvm.IntegerTypeKind && typ.TypeKind() == llvm.PointerTypeKind {
+		return CompilationUnits.Peek().Builder.CreateIntToPtr(value, typ, "")
+	} else if value.Type().TypeKind() == llvm.PointerTypeKind && typ.TypeKind() == llvm.IntegerTypeKind {
+		return CompilationUnits.Peek().Builder.CreatePtrToInt(value, typ, "")
+	} else if value.Type().TypeKind() == llvm.PointerTypeKind && typ.TypeKind() == llvm.PointerTypeKind {
+		return CompilationUnits.Peek().Builder.CreatePointerCast(value, typ, "")
 	} else {
-		return CompilationUnits.Peek().Builder.CreateBitCast(load, typ, "")
+		return CompilationUnits.Peek().Builder.CreateBitCast(value, typ, "")
 	}
 }
 
-func Sizeof(args []string) llvm.Value {
-	typ, ok := BuiltinLLVMTypes[args[0]]
-	if ok {
-		return llvm.SizeOf(typ)
+func Sizeof(args []any) llvm.Value {
+	switch t := args[0].(type) {
+	case llvm.Type:
+		return llvm.SizeOf(t)
+	case llvm.Value:
+		return llvm.SizeOf(t.Type())
+	default:
+		panic("ERROR: unknown value in @Sizeof function")
 	}
-
-	value := FindLocalVariable(args[0], len(CompilationUnits.Peek().Locals)-1).Value
-	load := CompilationUnits.Peek().Builder.CreateLoad(value, "")
-	return llvm.SizeOf(load.Type())
 }
 
 func (v *AstVisitor) VisitYupFunctionExpression(ctx *parser.YupFunctionExpressionContext) any {
@@ -163,11 +159,11 @@ func (v *AstVisitor) VisitYupFunctionExpression(ctx *parser.YupFunctionExpressio
 func (v *AstVisitor) VisitYupFunction(ctx *parser.YupFunctionContext) any {
 	callCtx := ctx.FunctionCall().(*parser.FunctionCallContext)
 	name := callCtx.Identifier().GetText()
-	var strArgs []string
+	var arguments []any
 	args := callCtx.FunctionCallArgList().(*parser.FunctionCallArgListContext)
 	for _, a := range args.AllExpression() {
-		strArgs = append(strArgs, a.GetText())
+		arguments = append(arguments, v.Visit(a))
 	}
 
-	return functions[name](strArgs)
+	return functions[name](arguments)
 }

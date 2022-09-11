@@ -69,3 +69,11 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 func (v *AstVisitor) VisitTypeAnnotation(ctx *parser.TypeAnnotationContext) any {
 	return v.Visit(ctx.TypeName())
 }
+
+func (v *AstVisitor) VisitTypeExpression(ctx *parser.TypeExpressionContext) any {
+	return v.Visit(ctx.TypeNameExpression())
+}
+
+func (v *AstVisitor) VisitTypeNameExpression(ctx *parser.TypeNameExpressionContext) any {
+	return v.Visit(ctx.TypeName())
+}
