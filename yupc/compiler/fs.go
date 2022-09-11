@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/kamkow1/yup/yupcgo/lexer"
-	"github.com/kamkow1/yup/yupcgo/parser"
+	"github.com/kamkow1/yup/yupc/lexer"
+	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
 )
 

@@ -3,7 +3,7 @@ package compiler
 import (
 	"fmt"
 
-	"github.com/kamkow1/yup/yupcgo/parser"
+	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
 )
 

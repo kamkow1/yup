@@ -1,4 +1,4 @@
-module github.com/kamkow1/yup/yupcgo
+module github.com/kamkow1/yup/yupc
 
 go 1.18
 

@@ -1,7 +1,7 @@
 package compiler
 
 import (
-	"github.com/kamkow1/yup/yupcgo/parser"
+	"github.com/kamkow1/yup/yupc/parser"
 )
 
 func (v *AstVisitor) VisitImportDeclaration(ctx *parser.ImportDeclarationContext) any {

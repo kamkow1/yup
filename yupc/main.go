@@ -3,7 +3,7 @@ package main
 import (
 	"syscall"
 
-	"github.com/kamkow1/yup/yupcgo/cmd"
+	"github.com/kamkow1/yup/yupc/cmd"
 )
 
 func main() {

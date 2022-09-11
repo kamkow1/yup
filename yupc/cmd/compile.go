@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/kamkow1/yup/yupcgo/compiler"
+	"github.com/kamkow1/yup/yupc/compiler"
 	"github.com/spf13/cobra"
 )
 

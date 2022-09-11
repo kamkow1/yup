@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
-	"github.com/kamkow1/yup/yupcgo/parser"
+	"github.com/kamkow1/yup/yupc/parser"
 )
 
 type AstVisitor struct {
