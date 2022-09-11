@@ -7,3 +7,6 @@
 [submodule "yupc/third_party/antlr4"]
 	path = yupc/third_party/antlr4
 	url = https://github.com/antlr/antlr4
+[submodule "old-cpp-yupc/third_party/CLI11"]
+	path = old-cpp-yupc/third_party/CLI11
+	url = https://github.com/CLIUtils/CLI11
