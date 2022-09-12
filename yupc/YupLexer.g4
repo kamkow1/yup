@@ -43,6 +43,8 @@ SymbolEqual                 :   '==';
 SymbolNotEqual              :   '!=';
 SymbolLessThan              :   '<';
 SymbolMoreThan              :   '>';
+SymbolLessOrEqual           :   '<=';
+SymbolMoreOrEqual           :   '>=';
 
 ValueChar                   :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 ValueString                 :   '"' (~'"' | '\'\'')* '"';

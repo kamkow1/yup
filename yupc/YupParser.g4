@@ -50,7 +50,7 @@ ifElseBlock:					KeywordElse codeBlock;
 stringPrefix:                   KeywordGStrPrefix | KeywordLocalStrPrefix;
 constant:                       (stringPrefix* ValueString) | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 
-comparisonOperator:             KeywordUnsigned? (SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan);
+comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
 expression:                     constant                                            #constantExpression
         |                       functionCall                                        #functionCallExpression
