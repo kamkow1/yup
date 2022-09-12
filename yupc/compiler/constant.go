@@ -67,6 +67,21 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		}
 	}
 
+	if ctx.ValueBool() != nil {
+		var b int
+		if ctx.ValueBool().GetText() == "True" {
+			b = 1
+		} else {
+			b = 0
+		}
+
+		value = llvm.ConstInt(llvm.Int1Type(), uint64(b), false)
+	}
+
+	if ctx.ValueNull() != nil {
+		value = llvm.ConstPointerNull(llvm.PointerType(llvm.Int8Type(), 0))
+	}
+
 	return value
 }
 
