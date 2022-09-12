@@ -119,11 +119,13 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.YupFunctionExpressionContext:
 		return v.VisitYupFunctionExpression(ctx)
 
-	// Comparison Operator
+	// Logic
 	case *parser.ComparisonOperatorContext:
 		return v.VisitComparisonOperator(ctx)
 	case *parser.ComparisonExpressionContext:
 		return v.VisitComparisonExpression(ctx)
+	case *parser.NegatedExpressionContext:
+		return v.VisitNegatedExpression(ctx)
 
 	// Import
 	case *parser.ImportDeclarationContext:

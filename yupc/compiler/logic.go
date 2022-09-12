@@ -120,3 +120,13 @@ func (v *AstVisitor) VisitComparisonExpression(ctx *parser.ComparisonExpressionC
 
 	return value
 }
+
+func (v *AstVisitor) VisitNegatedExpression(ctx *parser.NegatedExpressionContext) any {
+	expr := v.Visit(ctx.Expression()).(llvm.Value)
+	ne := CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntNE),
+		expr, llvm.ConstInt(expr.Type(), 0, false), "")
+	xor := CompilationUnits.Peek().Builder.CreateXor(ne,
+		llvm.ConstInt(llvm.Int1Type(), 1, false), "")
+
+	return xor
+}

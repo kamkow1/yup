@@ -64,7 +64,8 @@ expression:                     constant                                        
         |                       yupFunction                                         #yupFunctionExpression
         |                       typeNameExpression                                  #typeExpression
         |                       SymbolLparen expression SymbolRparen expression     #typeCastExpression
-        |                       expression comparisonOperator expression            #ComparisonExpression;
+        |                       expression comparisonOperator expression            #ComparisonExpression
+        |                       SymbolNot expression                                #NegatedExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator

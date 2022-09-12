@@ -45,6 +45,9 @@ SymbolLessThan              :   '<';
 SymbolMoreThan              :   '>';
 SymbolLessOrEqual           :   '<=';
 SymbolMoreOrEqual           :   '>=';
+SymbolAnd                   :   'and';
+SymbolOr                    :   'or';
+SymbolNot                   :   'not';
 
 ValueChar                   :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 ValueString                 :   '"' (~'"' | '\'\'')* '"';
