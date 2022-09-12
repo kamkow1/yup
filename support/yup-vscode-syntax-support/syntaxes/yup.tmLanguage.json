@@ -31,7 +31,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.yup",
-				"match": "\\b(func|const|global|export|import|return|ref|var|type|alias)\\b"
+				"match": "\\b(func|const|global|import|return|var|type|or|and|not)\\b"
 			}]
 		},
 		"strings": {
