@@ -65,7 +65,9 @@ expression:                     constant                                        
         |                       typeNameExpression                                  #typeExpression
         |                       SymbolLparen expression SymbolRparen expression     #typeCastExpression
         |                       expression comparisonOperator expression            #ComparisonExpression
-        |                       SymbolNot expression                                #NegatedExpression;
+        |                       SymbolNot expression                                #NegatedExpression
+        |                       expression SymbolAnd expression                     #LogicalAndExpression
+        |                       expression SymbolOr expression                      #LogicalOrExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator

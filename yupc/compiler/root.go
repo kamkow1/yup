@@ -126,6 +126,10 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitComparisonExpression(ctx)
 	case *parser.NegatedExpressionContext:
 		return v.VisitNegatedExpression(ctx)
+	case *parser.LogicalAndExpressionContext:
+		return v.VisitLogicalAndExpression(ctx)
+	case *parser.LogicalOrExpressionContext:
+		return v.VisitLogicalOrExpression(ctx)
 
 	// Import
 	case *parser.ImportDeclarationContext:

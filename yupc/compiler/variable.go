@@ -87,3 +87,11 @@ func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionC
 	val = FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
 	return CompilationUnits.Peek().Builder.CreateLoad(val, "")
 }
+
+func (v *AstVisitor) VisitAssignment(ctx *parser.AssignmentContext) any {
+	name := ctx.Identifier().GetText()
+	value := v.Visit(ctx.VariableValue()).(llvm.Value)
+
+	vr := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
+	return CompilationUnits.Peek().Builder.CreateStore(value, vr)
+}
