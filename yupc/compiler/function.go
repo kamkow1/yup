@@ -1,6 +1,8 @@
 package compiler
 
 import (
+	"log"
+
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
 )
@@ -141,14 +143,18 @@ func Cast(args []any) llvm.Value {
 }
 
 func SizeOf(args []any) llvm.Value {
+
+	var result llvm.Value
 	switch t := args[0].(type) {
 	case llvm.Type:
-		return llvm.SizeOf(t)
+		result = llvm.SizeOf(t)
 	case llvm.Value:
-		return llvm.SizeOf(t.Type())
+		result = llvm.SizeOf(t.Type())
 	default:
-		panic("ERROR: unknown value in @SizeOf function")
+		log.Fatal("ERROR: unknown value in @SizeOf function")
 	}
+
+	return result
 }
 
 func TypeNameOf(args []any) llvm.Value {

@@ -1,7 +1,7 @@
 package compiler
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
@@ -14,13 +14,17 @@ type LocalVariable struct {
 }
 
 func FindLocalVariable(name string, i int) LocalVariable {
+
+	var local LocalVariable
 	if v, ok := CompilationUnits.Peek().Locals[i][name]; ok {
-		return v
+		local = v
 	} else if i >= 1 {
-		return FindLocalVariable(name, i-1)
+		local = FindLocalVariable(name, i-1)
 	} else {
-		panic(fmt.Sprintf("ERROR: tried to reference an unknown variable: %s", name))
+		log.Fatalf("ERROR: tried to reference an unknown variable: %s", name)
 	}
+
+	return local
 }
 
 func (v *AstVisitor) VisitVariableValue(ctx *parser.VariableValueContext) any {
@@ -42,7 +46,7 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 	}
 
 	if alreadyLocal {
-		panic(fmt.Sprintf("ERROR: variable %s has already been declared", name))
+		log.Fatalf("ERROR: variable %s has already been declared", name)
 	}
 
 	isGlobal := ctx.KeywordGlobal() != nil

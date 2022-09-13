@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
 	"strings"
 
@@ -18,7 +19,7 @@ func ImportModule(name string) {
 	if filepath.Ext(name) == ".bc" {
 		module, err := llvm.ParseBitcodeFile(name)
 		if err != nil {
-			panic(fmt.Sprintf("ERROR: import %s: %s", name, err))
+			log.Fatalf("ERROR: import %s: %s", name, err)
 		}
 
 		cu := NewCompilationUnit(name, name)
@@ -28,14 +29,14 @@ func ImportModule(name string) {
 		ctx := &llvm.Context{}
 		file, err := llvm.NewMemoryBufferFromFile(name)
 		if err != nil {
-			panic(fmt.Sprintf("ERROR: import %s: %s", name, err))
+			log.Fatalf("ERROR: import %s: %s", name, err)
 		}
 
 		fmt.Println(string(file.Bytes()))
 
 		module, err2 := ctx.ParseIR(file)
 		if err2 != nil {
-			panic(fmt.Sprintf("ERROR: import %s: %s", name, err2))
+			log.Fatalf("ERROR: import %s: %s", name, err2)
 		}
 
 		cu := NewCompilationUnit(name, name)

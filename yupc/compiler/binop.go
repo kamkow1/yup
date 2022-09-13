@@ -1,7 +1,7 @@
 package compiler
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
@@ -12,8 +12,8 @@ func (v *AstVisitor) VisitBinaryOperationExpression(ctx *parser.BinaryOperationE
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
 	if AssertType(v0.Type(), v1.Type()) {
-		panic(fmt.Sprintf("ERROR: cannot perform binary operation on different types: %s & %s",
-			v0.Type().String(), v1.Type().String()))
+		log.Fatalf("ERROR: cannot perform binary operation on different types: %s & %s",
+			v0.Type().String(), v1.Type().String())
 	}
 
 	binop := ctx.BinaryOperator().(*parser.BinaryOperatorContext)

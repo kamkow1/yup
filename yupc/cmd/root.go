@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +19,7 @@ this version of the compiler is written in Go with LLVM bindings (because C++ su
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		panic("ERROR: failed to execute root CLI command")
+		log.Fatal("ERROR: failed to execute root CLI command")
 	}
 }
 

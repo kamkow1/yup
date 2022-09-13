@@ -1,7 +1,7 @@
 package compiler
 
 import (
-	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
@@ -144,9 +144,11 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitImportDeclaration(ctx)
 
 	default:
-		panic(fmt.Sprintf("ERROR: stepped into an unknown context: %s\n",
-			reflect.TypeOf(ctx).String()))
+		log.Panicf("ERROR: stepped into an unimplemented context: %s\n",
+			reflect.TypeOf(ctx).String())
 	}
+
+	panic("ERROR: unreachable")
 }
 
 func (v *AstVisitor) VisitFile(ctx *parser.FileContext) any {

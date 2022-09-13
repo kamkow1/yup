@@ -1,7 +1,7 @@
 package compiler
 
 import (
-	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/kamkow1/yup/yupc/parser"
@@ -33,11 +33,14 @@ func GetArrayType(typ llvm.Type, count int) llvm.Type {
 }
 
 func GetTypeFromName(name string) llvm.Type {
+	var typ llvm.Type
 	if llvmType, ok := BuiltinLLVMTypes[name]; ok {
-		return llvmType
+		typ = llvmType
+	} else {
+		log.Fatalf("ERROR: unknown type: %s", name)
 	}
 
-	panic(fmt.Sprintf("ERROR: unknown type: %s", name))
+	return typ
 }
 
 func AssertType(typ1 llvm.Type, typ2 llvm.Type) bool {
@@ -56,7 +59,7 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 			extCtx := extension.ArrayTypeExtension().(*parser.ArrayTypeExtensionContext)
 			size, err := strconv.Atoi(extCtx.ValueInteger().GetText())
 			if err != nil {
-				panic(fmt.Sprintf("ERROR: failed to parse array size: %d, %s", size, err.Error()))
+				log.Fatalf("ERROR: failed to parse array size: %d, %s", size, err.Error())
 			}
 
 			typ = GetArrayType(typ, size)

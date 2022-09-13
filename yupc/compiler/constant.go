@@ -3,7 +3,7 @@ package compiler
 import (
 	"encoding/ascii85"
 	"encoding/binary"
-	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/kamkow1/yup/yupc/parser"
@@ -21,7 +21,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		str := ctx.ValueInteger().GetText()
 		i, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
-			panic(fmt.Sprintf("ERROR: unable to parse int: %s", err))
+			log.Fatalf("ERROR: unable to parse int: %s", err)
 		}
 
 		size := binary.Size(i)
@@ -33,7 +33,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		str := ctx.ValueFloat().GetText()
 		f, err := strconv.ParseFloat(str, 64)
 		if err != nil {
-			panic(fmt.Sprintf("ERROR: unable to parse float: %s", err))
+			log.Fatalf("ERROR: unable to parse float: %s", err)
 		}
 
 		typ := llvm.FloatType()
