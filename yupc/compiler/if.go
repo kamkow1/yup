@@ -15,32 +15,33 @@ func (v *AstVisitor) VisitIfElseBlock(ctx *parser.IfElseBlockContext) any {
 
 func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 	cond := v.Visit(ctx.Expression()).(llvm.Value)
-	//	function := CompilationUnits.Peek().Builder.GetInsertBlock().Parent()
-	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
-		CompilationUnits.Peek().Builder.GetInsertBlock().Parent(), "")
 
-	elseBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
+	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
 		CompilationUnits.Peek().Builder.GetInsertBlock().Parent(), "")
 
 	mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
 		CompilationUnits.Peek().Builder.GetInsertBlock().Parent(), "")
 
-	br := CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, elseBlock)
+	if ctx.IfElseBlock() != nil {
+		elseBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
+			CompilationUnits.Peek().Builder.GetInsertBlock().Parent(), "")
 
-	CompilationUnits.Peek().Builder.SetInsertPoint(thenBlock, thenBlock.LastInstruction())
-	v.Visit(ctx.IfThenBlock())
+		_ = CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, elseBlock)
 
-	CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
-	//thenBlock = CompilationUnits.Peek().Builder.GetInsertBlock()
+		CompilationUnits.Peek().Builder.SetInsertPoint(thenBlock, thenBlock.LastInstruction())
+		v.Visit(ctx.IfThenBlock())
+		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
 
-	CompilationUnits.Peek().Builder.SetInsertPoint(elseBlock, elseBlock.LastInstruction())
-	v.Visit(ctx.IfElseBlock())
+		CompilationUnits.Peek().Builder.SetInsertPoint(elseBlock, elseBlock.LastInstruction())
+		v.Visit(ctx.IfElseBlock())
+		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+	} else {
+		_ = CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, mergeBlock)
 
-	CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
-	//elseBlock = CompilationUnits.Peek().Builder.GetInsertBlock()
+		CompilationUnits.Peek().Builder.SetInsertPoint(thenBlock, thenBlock.LastInstruction())
+		v.Visit(ctx.IfThenBlock())
+		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+	}
 
-	//phi := CompilationUnits.Peek().Builder.CreatePHI(llvm.DoubleType(), "")
-	//phi.AddIncoming()
-
-	return br
+	return nil
 }
