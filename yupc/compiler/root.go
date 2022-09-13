@@ -131,6 +131,14 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.LogicalOrExpressionContext:
 		return v.VisitLogicalOrExpression(ctx)
 
+	// ifs
+	case *parser.IfStatementContext:
+		return v.VisitIfStatement(ctx)
+	case *parser.IfThenBlockContext:
+		return v.VisitIfThenBlock(ctx)
+	case *parser.IfElseBlockContext:
+		return v.VisitIfElseBlock(ctx)
+
 	// Import
 	case *parser.ImportDeclarationContext:
 		return v.VisitImportDeclaration(ctx)

@@ -9,8 +9,9 @@ func CreateBlock() {
 	CompilationUnits.Peek().Locals = append(CompilationUnits.Peek().Locals, m)
 }
 
-func RemoveBlock() []map[string]LocalVariable {
-	return RemoveIndex(CompilationUnits.Peek().Locals, len(CompilationUnits.Peek().Locals)-1)
+func RemoveBlock() {
+	//return RemoveIndex(CompilationUnits.Peek().Locals, len(CompilationUnits.Peek().Locals)-1)
+	CompilationUnits.Peek().Locals = CompilationUnits.Peek().Locals[:len(CompilationUnits.Peek().Locals)-1]
 }
 
 func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
@@ -19,5 +20,6 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 		v.Visit(st)
 	}
 
-	return RemoveBlock()
+	RemoveBlock()
+	return nil
 }

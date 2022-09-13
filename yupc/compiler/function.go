@@ -118,13 +118,12 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 type functionType func([]any) llvm.Value
 
 var functions map[string]functionType = map[string]functionType{
-	"Cast":   Cast,
-	"Sizeof": Sizeof,
+	"Cast":       Cast,
+	"Sizeof":     SizeOf,
+	"TypeNameOf": TypeNameOf,
 }
 
 func Cast(args []any) llvm.Value {
-	//value := FindLocalVariable(args[0], len(CompilationUnits.Peek().Locals)-1).Value
-	//load := CompilationUnits.Peek().Builder.CreateLoad(value, "")
 	value := args[0].(llvm.Value)
 	typ := args[1].(llvm.Type)
 
@@ -141,15 +140,22 @@ func Cast(args []any) llvm.Value {
 	}
 }
 
-func Sizeof(args []any) llvm.Value {
+func SizeOf(args []any) llvm.Value {
 	switch t := args[0].(type) {
 	case llvm.Type:
 		return llvm.SizeOf(t)
 	case llvm.Value:
 		return llvm.SizeOf(t.Type())
 	default:
-		panic("ERROR: unknown value in @Sizeof function")
+		panic("ERROR: unknown value in @SizeOf function")
 	}
+}
+
+func TypeNameOf(args []any) llvm.Value {
+	val := args[0].(llvm.Value)
+	typeName := val.Type().String()
+
+	return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(typeName, "")
 }
 
 func (v *AstVisitor) VisitYupFunctionExpression(ctx *parser.YupFunctionExpressionContext) any {
