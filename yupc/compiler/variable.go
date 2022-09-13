@@ -94,8 +94,12 @@ func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionC
 
 func (v *AstVisitor) VisitAssignment(ctx *parser.AssignmentContext) any {
 	name := ctx.Identifier().GetText()
+	vr := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1)
+	if vr.IsConst {
+		log.Fatalf("ERROR: cannot reassign a constant: %s", vr.Name)
+	}
+
 	value := v.Visit(ctx.VariableValue()).(llvm.Value)
 
-	vr := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
-	return CompilationUnits.Peek().Builder.CreateStore(value, vr)
+	return CompilationUnits.Peek().Builder.CreateStore(value, vr.Value)
 }

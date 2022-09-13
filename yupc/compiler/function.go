@@ -62,6 +62,14 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	block := llvm.AddBasicBlock(signature, "entry")
 	CompilationUnits.Peek().Builder.SetInsertPoint(block, block.LastInstruction())
 
+	retType := signature.Type().ReturnType().ElementType()
+	if retType.TypeKind() != llvm.VoidTypeKind {
+		name := "RETURN_VALUE"
+		a := CompilationUnits.Peek().Builder.CreateAlloca(retType, name)
+		loc := LocalVariable{name, true, a}
+		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = loc
+	}
+
 	if signature.ParamsCount() > 0 {
 		for _, p := range signature.Params() {
 			alloca := CompilationUnits.Peek().Builder.CreateAlloca(p.Type(), "")
@@ -72,9 +80,14 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	}
 
 	v.Visit(ctx.CodeBlock())
+
 	if signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind {
 		return CompilationUnits.Peek().Builder.CreateRetVoid()
 	}
+
+	returnValue := FindLocalVariable("RETURN_VALUE", len(CompilationUnits.Peek().Locals)-1)
+	load := CompilationUnits.Peek().Builder.CreateLoad(returnValue.Value, "")
+	CompilationUnits.Peek().Builder.CreateRet(load)
 
 	return nil
 }
@@ -107,7 +120,9 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 
 func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any {
 	if ctx.Expression() != nil {
-		return CompilationUnits.Peek().Builder.CreateRet(v.Visit(ctx.Expression()).(llvm.Value))
+		value := v.Visit(ctx.Expression()).(llvm.Value)
+		returnValue := FindLocalVariable("RETURN_VALUE", len(CompilationUnits.Peek().Locals)-1)
+		return CompilationUnits.Peek().Builder.CreateStore(value, returnValue.Value)
 	} else {
 		return CompilationUnits.Peek().Builder.CreateRetVoid()
 	}
