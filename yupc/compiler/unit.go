@@ -26,12 +26,6 @@ func (s *Stack[T]) Peek() *T {
 	return s.units[len(s.units)-1]
 }
 
-func RemoveIndex[T any](s []T, index int) []T {
-	ret := make([]T, 0)
-	ret = append(ret, s[:index]...)
-	return append(ret, s[index+1:]...)
-}
-
 type CompilationUnit struct {
 	SourceFile string
 	ModuleName string
@@ -40,6 +34,7 @@ type CompilationUnit struct {
 	ValueStack Stack[[]map[string]llvm.Value]
 	TypeStack  Stack[[]map[string]llvm.Type]
 	Locals     []map[string]LocalVariable
+	Functions  map[string]Function
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
@@ -51,6 +46,7 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 		Stack[[]map[string]llvm.Value]{},
 		Stack[[]map[string]llvm.Type]{},
 		[]map[string]LocalVariable{},
+		map[string]Function{},
 	}
 }
 

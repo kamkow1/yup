@@ -16,6 +16,13 @@ type FuncParam struct {
 	Type llvm.Type
 }
 
+type Function struct {
+	name      string
+	LLVMValue llvm.Value
+	params    []FuncParam
+	ExitBlock *llvm.BasicBlock
+}
+
 func (v *AstVisitor) VisitFunctionParameter(ctx *parser.FunctionParameterContext) any {
 	return v.Visit(ctx.TypeAnnotation())
 }
@@ -53,19 +60,28 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 		function.Param(i).SetName(pt.Name)
 	}
 
+	CompilationUnits.Peek().Functions[name] = Function{
+		name, function, params, &llvm.BasicBlock{},
+	}
+
 	return function
 }
 
 func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionContext) any {
 	signature := v.Visit(ctx.FunctionSignature()).(llvm.Value)
-	CreateBlock()
-	block := llvm.AddBasicBlock(signature, "entry")
-	CompilationUnits.Peek().Builder.SetInsertPoint(block, block.LastInstruction())
+	function := CompilationUnits.Peek().Functions[signature.Name()]
 
-	retType := signature.Type().ReturnType().ElementType()
-	if retType.TypeKind() != llvm.VoidTypeKind {
+	CreateBlock()
+	entryBlock := llvm.AddBasicBlock(signature, "ENTRY_BLOCK")
+	*function.ExitBlock = llvm.AddBasicBlock(signature, "EXIT_BLOCK")
+	isVoid := signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind
+
+	CompilationUnits.Peek().Builder.SetInsertPointAtEnd(entryBlock)
+
+	if !isVoid {
 		name := "RETURN_VALUE"
-		a := CompilationUnits.Peek().Builder.CreateAlloca(retType, name)
+		a := CompilationUnits.Peek().Builder.CreateAlloca(
+			function.LLVMValue.Type().ReturnType().ElementType(), name)
 		loc := LocalVariable{name, true, a}
 		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = loc
 	}
@@ -81,15 +97,15 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 
 	v.Visit(ctx.CodeBlock())
 
-	if signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind {
+	if !isVoid {
+		returnValue := FindLocalVariable("RETURN_VALUE", len(CompilationUnits.Peek().Locals)-1)
+		load := CompilationUnits.Peek().Builder.CreateLoad(returnValue.Value, "")
+		return CompilationUnits.Peek().Builder.CreateRet(load)
+	} else {
+		CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
+		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.ExitBlock)
 		return CompilationUnits.Peek().Builder.CreateRetVoid()
 	}
-
-	returnValue := FindLocalVariable("RETURN_VALUE", len(CompilationUnits.Peek().Locals)-1)
-	load := CompilationUnits.Peek().Builder.CreateLoad(returnValue.Value, "")
-	CompilationUnits.Peek().Builder.CreateRet(load)
-
-	return nil
 }
 
 func (v *AstVisitor) VisitFunctionCallArgList(ctx *parser.FunctionCallArgListContext) any {
@@ -119,13 +135,16 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 }
 
 func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any {
+	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
+	function := CompilationUnits.Peek().Functions[functionName]
 	if ctx.Expression() != nil {
 		value := v.Visit(ctx.Expression()).(llvm.Value)
 		returnValue := FindLocalVariable("RETURN_VALUE", len(CompilationUnits.Peek().Locals)-1)
-		return CompilationUnits.Peek().Builder.CreateStore(value, returnValue.Value)
-	} else {
-		return CompilationUnits.Peek().Builder.CreateRetVoid()
+		CompilationUnits.Peek().Builder.CreateStore(value, returnValue.Value)
+		return CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 	}
+
+	return CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 }
 
 // -----------------------------

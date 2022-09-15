@@ -11,7 +11,6 @@ func CreateBlock() {
 }
 
 func RemoveBlock() {
-	//return RemoveIndex(CompilationUnits.Peek().Locals, len(CompilationUnits.Peek().Locals)-1)
 	CompilationUnits.Peek().Locals = CompilationUnits.Peek().Locals[:len(CompilationUnits.Peek().Locals)-1]
 }
 

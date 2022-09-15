@@ -16,37 +16,31 @@ func (v *AstVisitor) VisitIfElseBlock(ctx *parser.IfElseBlockContext) any {
 func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 	cond := v.Visit(ctx.Expression()).(llvm.Value)
 
-	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
-		CompilationUnits.Peek().Builder.GetInsertBlock().Parent(), "")
+	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
+	function := CompilationUnits.Peek().Functions[functionName]
+	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.LLVMValue, "")
+
+	var elseBlock llvm.BasicBlock
+	if ctx.IfElseBlock() != nil {
+		elseBlock = llvm.AddBasicBlock(function.LLVMValue, "")
+	}
+
+	mergeBlock := llvm.AddBasicBlock(function.LLVMValue, "")
 
 	if ctx.IfElseBlock() != nil {
-		elseBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
-			CompilationUnits.Peek().Builder.GetInsertBlock().Parent(), "")
-
-		_ = CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, elseBlock)
-
-		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(thenBlock)
-		v.Visit(ctx.IfThenBlock())
-
-		mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
-			CompilationUnits.Peek().Builder.GetInsertBlock().Parent(), "")
-		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
-
-		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(elseBlock)
-		v.Visit(ctx.IfElseBlock())
-		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+		CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, elseBlock)
 	} else {
-		//dummyElseBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
-		//	CompilationUnits.Peek().Builder.GetInsertBlock().Parent(), "")
+		CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, mergeBlock)
+	}
 
-		mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(
-			CompilationUnits.Peek().Builder.GetInsertBlock().Parent(), "")
+	CompilationUnits.Peek().Builder.SetInsertPoint(thenBlock, thenBlock.FirstInstruction())
+	v.Visit(ctx.IfThenBlock())
+	CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 
-		_ = CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, mergeBlock)
-
-		CompilationUnits.Peek().Builder.SetInsertPoint(thenBlock, thenBlock.LastInstruction())
-		v.Visit(ctx.IfThenBlock())
-		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+	if ctx.IfElseBlock() != nil {
+		CompilationUnits.Peek().Builder.SetInsertPoint(elseBlock, elseBlock.FirstInstruction())
+		v.Visit(ctx.IfElseBlock())
+		CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 	}
 
 	return nil
