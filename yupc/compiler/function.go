@@ -47,7 +47,13 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 		params = make([]FuncParam, 0)
 	}
 
-	returnType := v.Visit(ctx.TypeName()).(llvm.Type)
+	var returnType llvm.Type
+	if ctx.SymbolArrow() != nil {
+		returnType = v.Visit(ctx.TypeName()).(llvm.Type)
+	} else {
+		returnType = llvm.VoidType()
+	}
+
 	var types []llvm.Type
 	for _, fp := range params {
 		types = append(types, fp.Type)
