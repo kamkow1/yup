@@ -31,8 +31,6 @@ type CompilationUnit struct {
 	ModuleName string
 	Builder    llvm.Builder
 	Module     llvm.Module
-	ValueStack Stack[[]map[string]llvm.Value]
-	TypeStack  Stack[[]map[string]llvm.Type]
 	Locals     []map[string]LocalVariable
 	Functions  map[string]Function
 }
@@ -43,8 +41,6 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 		bc,
 		llvm.NewBuilder(),
 		llvm.NewModule(sf),
-		Stack[[]map[string]llvm.Value]{},
-		Stack[[]map[string]llvm.Type]{},
 		[]map[string]LocalVariable{},
 		map[string]Function{},
 	}
@@ -56,8 +52,4 @@ func GetBCWriteData() (llvm.Module, string) {
 	mod := CompilationUnits.Peek().Module
 	p := CompilationUnits.Peek().ModuleName
 	return mod, p
-}
-
-func DebugPrintModule() {
-	CompilationUnits.Peek().Module.Dump()
 }
