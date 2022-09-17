@@ -68,7 +68,24 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 		if isInit {
 			glb.SetInitializer(value)
 		}
+
+		if ctx.AttributeList() != nil {
+			attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
+			for _, a := range attrs {
+				switch a.name {
+				case "Link":
+					{
+						linkage := a.params[0]
+						glb.SetLinkage(GetLinkageFromString(linkage))
+					}
+				}
+			}
+		}
 	} else {
+		if ctx.AttributeList() != nil {
+			log.Fatalf("ERROR: local variable %s cannot have an attribute list", name)
+		}
+
 		v := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
 		lv := LocalVariable{name, isConstant, v}
 		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = lv

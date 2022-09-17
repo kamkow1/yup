@@ -44,6 +44,7 @@ SymbolLessThan              :   '<';
 SymbolMoreThan              :   '>';
 SymbolLessOrEqual           :   '<=';
 SymbolMoreOrEqual           :   '>=';
+SymbolHash                  :   '#';
 SymbolAnd                   :   'and';
 SymbolOr                    :   'or';
 SymbolNot                   :   'not';

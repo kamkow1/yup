@@ -11,12 +11,9 @@ func (v *AstVisitor) VisitAddressOfExpression(ctx *parser.AddressOfExpressionCon
 
 func (v *AstVisitor) VisitAddressOf(ctx *parser.AddressOfContext) any {
 	name := ctx.Identifier().GetText()
-	if CompilationUnits.Peek().Module.NamedGlobal(name).IsGlobalConstant() {
+	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
 		return CompilationUnits.Peek().Module.NamedGlobal(name)
 	}
-	/*if global, ok := CompilationUnits.Peek().Globals[name]; ok {
-		return global.Value
-	}*/
 
 	return FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
 }

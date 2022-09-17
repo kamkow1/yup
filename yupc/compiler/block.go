@@ -16,6 +16,7 @@ func RemoveBlock() {
 
 func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 	CreateBlock()
+
 	var ret llvm.Value
 	for _, st := range ctx.AllStatement() {
 		if vv := v.Visit(st); vv != nil {

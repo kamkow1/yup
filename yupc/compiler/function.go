@@ -66,6 +66,28 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 		function.Param(i).SetName(pt.Name)
 	}
 
+	if ctx.AttributeList() != nil {
+		attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
+		for _, a := range attrs {
+			switch a.name {
+			case "GC":
+				{
+					gc := a.params[0]
+					if gc == "default" {
+						function.SetGC("coreclr")
+					} else {
+						function.SetGC(gc)
+					}
+				}
+			case "Link":
+				{
+					linkage := a.params[0]
+					function.SetLinkage(GetLinkageFromString(linkage))
+				}
+			}
+		}
+	}
+
 	CompilationUnits.Peek().Functions[name] = Function{
 		name, function, params, &llvm.BasicBlock{},
 	}
