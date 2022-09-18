@@ -55,8 +55,10 @@ constant:                       (stringPrefix* ValueString) | ValueInteger | Val
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
-expression:                     constant                                            #constantExpression
-        |                       functionCall                                        #functionCallExpression
+forLoopStatement:				KeywordFor arrayBasedLoop codeBlock;
+arrayBasedLoop:					variableDeclare KeywordIn expression;
+
+expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
         |                       array                                               #arrayExpression
         |                       addressOf                                           #addressOfExpression
@@ -72,7 +74,9 @@ expression:                     constant                                        
         |                       expression SymbolAnd expression                     #LogicalAndExpression
         |                       expression SymbolOr expression                      #LogicalOrExpression
         |						SymbolExplicitIdent Identifier						#ExplicitIdentifierExpression
-        |						SymbolExplicitIdent ValueString						#ExplicitStringExpression;
+        |						SymbolExplicitIdent ValueString						#ExplicitStringExpression
+        |						KeywordRange ValueInteger KeywordTo ValueInteger	#RangeExpression
+        |						constant                                            #constantExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator
@@ -82,7 +86,8 @@ statement:                      expression                                      
         |                       functionSignature                                   SymbolTerminator
         |                       importDeclaration                                   SymbolTerminator
         |                       typeDeclaration                                     SymbolTerminator
-        |			ifStatement
+        |						forLoopStatement
+        |						ifStatement
         |                       functionDefinition
         |                       codeBlock
         |                       SymbolTerminator;

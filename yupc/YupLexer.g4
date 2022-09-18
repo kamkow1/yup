@@ -14,6 +14,10 @@ KeywordElse					:	'else';
 KeywordGStrPrefix           :   'g';
 KeywordLocalStrPrefix       :   'l';
 KeywordNullBytePrefix		:	'nb';
+KeywordFor					:	'for';
+KeywordIn					:	'in';
+KeywordRange				:	'range';
+KeywordTo					:	'to';
 
 SymbolAt                    :   '@';
 SymbolApostrophe            :   '\'';

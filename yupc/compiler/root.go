@@ -155,8 +155,12 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.ExplicitStringExpressionContext:
 		return v.VisitExplicitStringExpression(ctx)
 
+	// Loop
+	case *parser.RangeExpressionContext:
+		return v.VisitRangeExpression(ctx)
+
 	default:
-		log.Panicf("ERROR: stepped into an unimplemented context: %s\n",
+		log.Fatalf("ERROR: stepped into an unimplemented context: %s\n",
 			reflect.TypeOf(ctx).String())
 	}
 
