@@ -1,3 +1,3 @@
 #!/bin/sh
 
-go build -x -o bin/yupc main.go
+go build -o bin/yupc main.go

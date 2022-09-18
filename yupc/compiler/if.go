@@ -18,14 +18,14 @@ func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	function := CompilationUnits.Peek().Functions[functionName]
-	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.LLVMValue, "")
+	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.value, "")
 
 	var elseBlock llvm.BasicBlock
 	if ctx.IfElseBlock() != nil {
-		elseBlock = llvm.AddBasicBlock(function.LLVMValue, "")
+		elseBlock = llvm.AddBasicBlock(function.value, "")
 	}
 
-	mergeBlock := llvm.AddBasicBlock(function.LLVMValue, "")
+	mergeBlock := llvm.AddBasicBlock(function.value, "")
 
 	if ctx.IfElseBlock() != nil {
 		CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, elseBlock)
@@ -35,12 +35,12 @@ func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 
 	CompilationUnits.Peek().Builder.SetInsertPoint(thenBlock, thenBlock.FirstInstruction())
 	v.Visit(ctx.IfThenBlock())
-	CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
+	CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
 
 	if ctx.IfElseBlock() != nil {
 		CompilationUnits.Peek().Builder.SetInsertPoint(elseBlock, elseBlock.FirstInstruction())
 		v.Visit(ctx.IfElseBlock())
-		CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
+		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
 	}
 
 	return nil

@@ -18,9 +18,9 @@ type FuncParam struct {
 
 type Function struct {
 	name      string
-	LLVMValue llvm.Value
+	value     llvm.Value
 	params    []FuncParam
-	ExitBlock *llvm.BasicBlock
+	exitBlock *llvm.BasicBlock
 }
 
 func (v *AstVisitor) VisitFunctionParameter(ctx *parser.FunctionParameterContext) any {
@@ -89,7 +89,10 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 	}
 
 	CompilationUnits.Peek().Functions[name] = Function{
-		name, function, params, &llvm.BasicBlock{},
+		name,
+		function,
+		params,
+		&llvm.BasicBlock{},
 	}
 
 	return function
@@ -97,19 +100,19 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 
 func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionContext) any {
 	signature := v.Visit(ctx.FunctionSignature()).(llvm.Value)
+	isVoid := signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind
 	function := CompilationUnits.Peek().Functions[signature.Name()]
 
 	CreateBlock()
-	entryBlock := llvm.AddBasicBlock(signature, "ENTRY_BLOCK")
-	*function.ExitBlock = llvm.AddBasicBlock(signature, "EXIT_BLOCK")
-	isVoid := signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind
+	bodyBlock := llvm.AddBasicBlock(signature, "body")
+	*function.exitBlock = llvm.AddBasicBlock(signature, "exit")
 
-	CompilationUnits.Peek().Builder.SetInsertPointAtEnd(entryBlock)
+	CompilationUnits.Peek().Builder.SetInsertPointAtEnd(bodyBlock)
 
 	if !isVoid {
-		name := "RETURN_VALUE"
-		a := CompilationUnits.Peek().Builder.CreateAlloca(
-			function.LLVMValue.Type().ReturnType().ElementType(), name)
+		name := "__return_value"
+		returnType := function.value.Type().ReturnType().ElementType()
+		a := CompilationUnits.Peek().Builder.CreateAlloca(returnType, name)
 		loc := LocalVariable{name, true, a}
 		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = loc
 	}
@@ -124,15 +127,15 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	}
 
 	v.Visit(ctx.CodeBlock())
+	//CompilationUnits.Peek().Builder.CreateBr(*function.exitBlock)
+	CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.exitBlock)
 
-	if !isVoid {
-		returnValue := FindLocalVariable("RETURN_VALUE", len(CompilationUnits.Peek().Locals)-1)
+	if isVoid {
+		return CompilationUnits.Peek().Builder.CreateRetVoid()
+	} else {
+		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
 		load := CompilationUnits.Peek().Builder.CreateLoad(returnValue.Value, "")
 		return CompilationUnits.Peek().Builder.CreateRet(load)
-	} else {
-		CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
-		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.ExitBlock)
-		return CompilationUnits.Peek().Builder.CreateRetVoid()
 	}
 }
 
@@ -159,6 +162,10 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 	}
 
 	f := CompilationUnits.Peek().Module.NamedFunction(name)
+	if f.IsNil() {
+		log.Fatalf("ERROR: tried to call an unknown function: %s", name)
+	}
+
 	return CompilationUnits.Peek().Builder.CreateCall(f, args, "")
 }
 
@@ -167,12 +174,12 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 	function := CompilationUnits.Peek().Functions[functionName]
 	if ctx.Expression() != nil {
 		value := v.Visit(ctx.Expression()).(llvm.Value)
-		returnValue := FindLocalVariable("RETURN_VALUE", len(CompilationUnits.Peek().Locals)-1)
+		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
 		CompilationUnits.Peek().Builder.CreateStore(value, returnValue.Value)
-		return CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
+		return CompilationUnits.Peek().Builder.CreateBr(*function.exitBlock)
 	}
 
-	return CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
+	return CompilationUnits.Peek().Builder.CreateBr(*function.exitBlock)
 }
 
 // -----------------------------
@@ -182,9 +189,24 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 type functionType func([]any) llvm.Value
 
 var functions map[string]functionType = map[string]functionType{
-	"Cast":       Cast,
-	"Sizeof":     SizeOf,
-	"TypeNameOf": TypeNameOf,
+	"Cast":        Cast,
+	"Sizeof":      SizeOf,
+	"TypeNameOf":  TypeNameOf,
+	"IsTypeEqual": IsTypeEqual,
+}
+
+func IsTypeEqual(args []any) llvm.Value {
+	typ0 := args[0].(llvm.Value).Type()
+	typ1 := args[1].(llvm.Value).Type()
+
+	var result llvm.Value
+	if typ0.TypeKind() == typ1.TypeKind() {
+		result = llvm.ConstInt(llvm.Int1Type(), 1, false)
+	} else {
+		result = llvm.ConstInt(llvm.Int1Type(), 0, false)
+	}
+
+	return result
 }
 
 func Cast(args []any) llvm.Value {
@@ -239,5 +261,10 @@ func (v *AstVisitor) VisitYupFunction(ctx *parser.YupFunctionContext) any {
 		arguments = append(arguments, v.Visit(a))
 	}
 
-	return functions[name](arguments)
+	if f, ok := functions[name]; !ok {
+		log.Fatalf("ERROR: tried to call an unknown built-in function: %s", name)
+		return nil
+	} else {
+		return f(arguments)
+	}
 }
