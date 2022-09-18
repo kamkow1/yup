@@ -62,7 +62,8 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 			}
 
 			if pref.KeywordLocalStrPrefix() != nil {
-				value = llvm.ConstString(str, true)
+				hasNullByte := pref.KeywordNullBytePrefix() != nil
+				value = llvm.ConstString(str, hasNullByte)
 			}
 		}
 	}

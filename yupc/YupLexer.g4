@@ -14,6 +14,7 @@ KeywordElse					:	'else';
 KeywordElif					:	'elif';
 KeywordGStrPrefix           :   'g';
 KeywordLocalStrPrefix       :   'l';
+KeywordNullBytePrefix		:	'nb';
 
 SymbolAt                    :   '@';
 SymbolApostrophe            :   '\'';

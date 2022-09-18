@@ -50,7 +50,7 @@ ifStatement:		        KeywordIf expression ifThenBlock ifElseBlock?;
 ifThenBlock:		        codeBlock;
 ifElseBlock:		        KeywordElse codeBlock;
 
-stringPrefix:                   KeywordGStrPrefix | KeywordLocalStrPrefix;
+stringPrefix:                   KeywordGStrPrefix | (KeywordLocalStrPrefix (SymbolTilde KeywordNullBytePrefix)?);
 constant:                       (stringPrefix* ValueString) | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
