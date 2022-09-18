@@ -12,6 +12,29 @@ Yup is an imperative programming language. It borrows syntax from
 Go, Rust and C. <br>
 It's compiler is implemented using LLVM.
 
+Small example of the language:
+
+```text
+import "$std/io.bc";
+
+#(GC("default"))
+func fac(n: i8) -> i8 {
+	if n == 0 {
+		return 1;
+	} 
+
+	return n * fac(n - 1);
+}
+
+#(GC("default"))
+func main(argc: i32, argv: i8**) -> i8 {
+
+	Printf(g"  %i  ", fac(5)); // prints 120 (5! = 120)
+
+	return 0;
+}
+```
+
 # installing the standard library
 
 run:
@@ -20,24 +43,6 @@ cd /root/of/project/yup/yup_stdlib
 chmod +x ./install_stdlib.sh
 ./build.sh
 ./install_stdlib.sh # installs in ~/yup_stdlib
-```
-
-now you can refer to the stdlib in your code using "```@std```" <br>
-small example:
-
-```
-import "$std/io.bc";
-import "$std/memory.bc";
-
-func main() -> i8 {
-    Printf(g"%s\n", g"hello world!");
-
-    var x = Allocate(@Sizeof(i32));
-    Destroy(x);
-
-    return 0;
-}
-
 ```
 
 # building from source
