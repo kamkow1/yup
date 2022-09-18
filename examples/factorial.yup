@@ -1,0 +1,18 @@
+import "$std/io.bc";
+
+func fac(n: i32) -> i32 {
+	if n == 0 {
+		return 1;
+	}
+
+	return n * fac(n - 1);
+}
+
+func main() -> i32 {
+
+	var n: i32;
+	scan_input(g"give me a number: %i", &n);
+	fmt_print(g"%i! = %i", n, fac(n));
+
+	return 0;
+}
