@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"github.com/kamkow1/yup/yupc/parser"
-	"tinygo.org/x/go-llvm"
 )
 
 func CreateBlock() {
@@ -17,13 +16,12 @@ func RemoveBlock() {
 func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 	CreateBlock()
 
-	var ret llvm.Value
+	var isRet bool
 	for _, st := range ctx.AllStatement() {
-		if vv := v.Visit(st); vv != nil {
-			ret = vv.(llvm.Value)
-		}
+		isRet = st.(*parser.StatementContext).FunctionReturn() != nil
+		v.Visit(st)
 	}
 
 	RemoveBlock()
-	return ret
+	return isRet
 }

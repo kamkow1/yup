@@ -127,7 +127,6 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	}
 
 	v.Visit(ctx.CodeBlock())
-	//CompilationUnits.Peek().Builder.CreateBr(*function.exitBlock)
 	CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.exitBlock)
 
 	if isVoid {

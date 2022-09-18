@@ -34,13 +34,17 @@ func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 	}
 
 	CompilationUnits.Peek().Builder.SetInsertPoint(thenBlock, thenBlock.FirstInstruction())
-	v.Visit(ctx.IfThenBlock())
-	CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+	hasThenReturned := v.Visit(ctx.IfThenBlock()).(bool)
+	if !hasThenReturned {
+		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+	}
 
 	if ctx.IfElseBlock() != nil {
 		CompilationUnits.Peek().Builder.SetInsertPoint(elseBlock, elseBlock.FirstInstruction())
-		v.Visit(ctx.IfElseBlock())
-		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+		hasElseReturned := v.Visit(ctx.IfElseBlock()).(bool)
+		if !hasElseReturned {
+			CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+		}
 	}
 
 	return nil
