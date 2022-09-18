@@ -189,10 +189,46 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 type functionType func([]any) llvm.Value
 
 var functions map[string]functionType = map[string]functionType{
-	"Cast":        Cast,
-	"Sizeof":      SizeOf,
-	"TypeNameOf":  TypeNameOf,
-	"IsTypeEqual": IsTypeEqual,
+	"Cast":           Cast,
+	"SizeOf":         SizeOf,
+	"TypeNameOf":     TypeNameOf,
+	"IsTypeEqual":    IsTypeEqual,
+	"TypeNameOfFunc": TypeNameOfFunc,
+}
+
+const (
+	TNO_GSP_Mode string = "g"
+	TNO_LS_Mode  string = "l"
+	TNO_NB       string = "nb"
+	TNO_NO_NB    string = "no-nb"
+)
+
+func TypeNameOfFunc(args []any) llvm.Value {
+	name := args[0].(string)
+
+	mode := args[1].(string)
+	nullByte := args[2].(string)
+
+	if !CompilationUnits.Peek().Module.NamedFunction(name).IsNil() {
+		function := CompilationUnits.Peek().Module.NamedFunction(name)
+		typ := function.Type().String()
+
+		if mode != TNO_GSP_Mode && mode != TNO_LS_Mode {
+			log.Fatalf("ERROR: @TypeNameOf(): unknown string mode")
+		}
+
+		if mode == TNO_GSP_Mode {
+			return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(typ, "")
+		} else if mode == TNO_LS_Mode {
+			hasNullByte := (nullByte == TNO_NB) != (nullByte == TNO_NO_NB)
+			return llvm.ConstString(typ, hasNullByte)
+		}
+	} else {
+		log.Fatalf("ERROR: unknown function name passed to @TypeNameOfFunc(): %s", name)
+		panic("ERROR: TypeNameOfFunc(): unreachable")
+	}
+
+	panic("ERROR: TypeNameOfFunc(): unreachable")
 }
 
 func IsTypeEqual(args []any) llvm.Value {
@@ -235,7 +271,7 @@ func SizeOf(args []any) llvm.Value {
 	case llvm.Value:
 		result = llvm.SizeOf(t.Type())
 	default:
-		log.Fatal("ERROR: unknown value in @SizeOf function")
+		log.Fatal("ERROR: @SizeOf(): unknown value in function")
 	}
 
 	return result
@@ -245,7 +281,21 @@ func TypeNameOf(args []any) llvm.Value {
 	val := args[0].(llvm.Value)
 	typeName := val.Type().String()
 
-	return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(typeName, "")
+	mode := args[1].(string)
+	nullByte := args[2].(string)
+
+	if mode != TNO_GSP_Mode && mode != TNO_LS_Mode {
+		log.Fatalf("ERROR: @TypeNameOf(): unknown string mode")
+	}
+
+	if mode == TNO_GSP_Mode {
+		return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(typeName, "")
+	} else if mode == TNO_LS_Mode {
+		hasNullByte := (nullByte == TNO_NB) != (nullByte == TNO_NO_NB)
+		return llvm.ConstString(typeName, hasNullByte)
+	}
+
+	panic("ERROR: TypeNameOf(): unreachable")
 }
 
 func (v *AstVisitor) VisitYupFunctionExpression(ctx *parser.YupFunctionExpressionContext) any {

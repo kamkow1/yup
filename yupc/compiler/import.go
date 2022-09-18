@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"fmt"
 	"log"
 	"path/filepath"
 	"strings"
@@ -31,8 +30,6 @@ func ImportModule(name string) {
 		if err != nil {
 			log.Fatalf("ERROR: import %s: %s", name, err)
 		}
-
-		fmt.Println(string(file.Bytes()))
 
 		module, err2 := ctx.ParseIR(file)
 		if err2 != nil {

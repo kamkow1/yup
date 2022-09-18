@@ -70,7 +70,9 @@ expression:                     constant                                        
         |                       expression comparisonOperator expression            #ComparisonExpression
         |                       (SymbolNot | SymbolExclMark) expression             #NegatedExpression
         |                       expression SymbolAnd expression                     #LogicalAndExpression
-        |                       expression SymbolOr expression                      #LogicalOrExpression;
+        |                       expression SymbolOr expression                      #LogicalOrExpression
+        |						SymbolExplicitIdent Identifier						#ExplicitIdentifierExpression
+        |						SymbolExplicitIdent ValueString						#ExplicitStringExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator
