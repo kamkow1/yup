@@ -11,7 +11,6 @@ KeywordFunc                 :   'func';
 KeywordUnsigned             :   'u';
 KeywordIf					:	'if';
 KeywordElse					:	'else';
-KeywordElif					:	'elif';
 KeywordGStrPrefix           :   'g';
 KeywordLocalStrPrefix       :   'l';
 KeywordNullBytePrefix		:	'nb';

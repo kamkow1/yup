@@ -46,9 +46,9 @@ yupFunction:                    SymbolAt functionCall;
 pointerDereference:             SymbolAsterisk expression;
 addressOf:                      SymbolAmpersand Identifier;
 
-ifStatement:		        KeywordIf expression ifThenBlock ifElseBlock?;
-ifThenBlock:		        codeBlock;
-ifElseBlock:		        KeywordElse codeBlock;
+ifStatement:		        	KeywordIf expression ifThenBlock ifElseBlock?;
+ifThenBlock:		        	codeBlock;
+ifElseBlock:		        	KeywordElse codeBlock;
 
 stringPrefix:                   KeywordGStrPrefix | (KeywordLocalStrPrefix (SymbolTilde KeywordNullBytePrefix)?);
 constant:                       (stringPrefix* ValueString) | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
