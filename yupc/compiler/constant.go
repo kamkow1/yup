@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"encoding/ascii85"
-	"encoding/binary"
 	"log"
 	"strconv"
 	"strings"
@@ -25,9 +24,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 			log.Fatalf("ERROR: unable to parse int: %s", err)
 		}
 
-		size := binary.Size(i)
-		typ := llvm.IntType(int(size))
-		value = llvm.ConstInt(typ, uint64(i), false)
+		value = llvm.ConstInt(llvm.Int32Type(), uint64(i), false)
 	}
 
 	if ctx.ValueFloat() != nil {
