@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-void *Allocate(size_t size) {
+void *mem_alloc(size_t size) {
     return malloc(size);
 }
 
-void Destroy(void *ptr) {
+void mem_free(void *ptr) {
     free(ptr);
 }
 
-void *SetMemory(void *block, int value, size_t numBytes) {
-    return memset(block, value, numBytes);
+void *mem_init(void *block, int value, size_t num_bytes) {
+    return memset(block, value, num_bytes);
 }

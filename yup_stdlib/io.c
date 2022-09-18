@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-void Printf(char *format, ...) {
+void fmt_print(char *format, ...) {
     va_list ap;
     va_start(ap, format);
 
