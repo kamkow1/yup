@@ -188,11 +188,11 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 type functionType func([]any) llvm.Value
 
 var functions map[string]functionType = map[string]functionType{
-	"Cast":           Cast,
-	"SizeOf":         SizeOf,
-	"TypeNameOf":     TypeNameOf,
-	"IsTypeEqual":    IsTypeEqual,
-	"TypeNameOfFunc": TypeNameOfFunc,
+	"cast":              Cast,
+	"size_of":           SizeOf,
+	"type_name_of":      TypeNameOf,
+	"is_type_equal":     IsTypeEqual,
+	"type_name_of_func": TypeNameOfFunc,
 }
 
 const (
