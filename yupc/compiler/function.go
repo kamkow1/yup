@@ -126,12 +126,17 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 		}
 	}
 
-	v.Visit(ctx.CodeBlock())
-	CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.exitBlock)
+	hasTerminated := v.Visit(ctx.CodeBlock()).(bool)
 
 	if isVoid {
+		if !hasTerminated {
+			CompilationUnits.Peek().Builder.CreateBr(*function.exitBlock)
+		}
+
+		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.exitBlock)
 		return CompilationUnits.Peek().Builder.CreateRetVoid()
 	} else {
+		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.exitBlock)
 		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
 		load := CompilationUnits.Peek().Builder.CreateLoad(returnValue.Value, "")
 		return CompilationUnits.Peek().Builder.CreateRet(load)
