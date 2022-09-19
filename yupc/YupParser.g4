@@ -11,9 +11,6 @@ codeBlock:                      SymbolLbrace statement* SymbolRbrace;
 attributeList:                  SymbolHash SymbolLparen (attribute (SymbolComma attribute)?)+ SymbolRparen;
 attribute:                      Identifier SymbolLparen ValueString* SymbolRparen;
 
-typeDeclaration:                KeywordType Identifier typeDefinition;
-typeDefinition:                 typeAlias;
-typeAlias:                      KeywordAlias typeName;
 typeAnnotation:                 SymbolColon typeName;
 typeName:                       Identifier typeExtension*;
 typeExtension:                  arrayTypeExtension | SymbolAsterisk | SymbolQuestMark;
@@ -50,8 +47,7 @@ ifStatement:		        	KeywordIf expression ifThenBlock ifElseBlock?;
 ifThenBlock:		        	codeBlock;
 ifElseBlock:		        	KeywordElse codeBlock;
 
-stringPrefix:                   KeywordGStrPrefix | (KeywordLocalStrPrefix (SymbolMinus KeywordNullBytePrefix)?);
-constant:                       (stringPrefix+ ValueString) | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
+constant:                       ValueString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
@@ -88,7 +84,6 @@ statement:                      expression                                      
         |                       arrayElementAssignment                              SymbolTerminator
         |                       functionSignature                                   SymbolTerminator
         |                       importDeclaration                                   SymbolTerminator
-        |                       typeDeclaration                                     SymbolTerminator
         |						continueStatement									SymbolTerminator
         |						breakStatement										SymbolTerminator
         |						forLoopStatement

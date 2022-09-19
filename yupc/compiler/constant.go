@@ -67,17 +67,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 
 		str = strings.Join(newString, "")
 
-		for _, p := range ctx.AllStringPrefix() {
-			pref := p.(*parser.StringPrefixContext)
-			if pref.KeywordGStrPrefix() != nil {
-				value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
-			}
-
-			if pref.KeywordLocalStrPrefix() != nil {
-				hasNullByte := pref.KeywordNullBytePrefix() != nil
-				value = llvm.ConstString(str, hasNullByte)
-			}
-		}
+		value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
 	}
 
 	if ctx.ValueBool() != nil {

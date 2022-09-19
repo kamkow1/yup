@@ -28,12 +28,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitStatement(ctx)
 
 	// Type
-	case *parser.TypeDeclarationContext:
-		return v.VisitTypeDeclaration(ctx)
-	case *parser.TypeDefinitionContext:
-		return v.VisitTypeDefinition(ctx)
-	case *parser.TypeAliasContext:
-		return v.VisitTypeAlias(ctx)
 	case *parser.TypeAnnotationContext:
 		return v.VisitTypeAnnotation(ctx)
 	case *parser.TypeNameContext:
@@ -104,8 +98,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitConstant(ctx)
 	case *parser.ConstantExpressionContext:
 		return v.VisitConstantExpression(ctx)
-	case *parser.StringPrefixContext:
-		return v.VisitStringPrefix(ctx)
 
 	// Binary Operator
 	case *parser.BinaryOperatorContext:
