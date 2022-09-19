@@ -48,7 +48,7 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 	}
 
 	var returnType llvm.Type
-	if ctx.SymbolArrow() != nil {
+	if ctx.TypeName() != nil {
 		returnType = v.Visit(ctx.TypeName()).(llvm.Type)
 	} else {
 		returnType = llvm.VoidType()

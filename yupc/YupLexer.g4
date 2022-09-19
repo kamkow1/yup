@@ -34,7 +34,6 @@ SymbolAmpersand             :   '&';
 SymbolDot                   :   '.';
 SymbolExclMark              :   '!';
 SymbolTilde                 :   '~';
-SymbolArrow                 :   '->';
 SymbolPlus                  :   '+';
 SymbolMinus                 :   '-';
 SymbolSlash                 :   '/';
