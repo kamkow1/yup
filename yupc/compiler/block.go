@@ -16,12 +16,16 @@ func RemoveBlock() {
 func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 	CreateBlock()
 
-	var isRet bool
+	var hasTerminated bool
 	for _, st := range ctx.AllStatement() {
-		isRet = st.(*parser.StatementContext).FunctionReturn() != nil
+		hasReturned := st.(*parser.StatementContext).FunctionReturn() != nil
+		hasBranched := st.(*parser.StatementContext).IfStatement() != nil
+		hasContinued := st.(*parser.StatementContext).ContinueStatement() != nil
+
+		hasTerminated = hasReturned || hasBranched || hasContinued
 		v.Visit(st)
 	}
 
 	RemoveBlock()
-	return isRet
+	return hasTerminated
 }

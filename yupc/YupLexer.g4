@@ -18,6 +18,7 @@ KeywordFor					:	'for';
 KeywordIn					:	'in';
 KeywordRange				:	'range';
 KeywordTo					:	'to';
+KeywordContinue				:	'continue';
 
 SymbolAt                    :   '@';
 SymbolApostrophe            :   '\'';

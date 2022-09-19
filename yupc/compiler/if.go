@@ -18,14 +18,14 @@ func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	function := CompilationUnits.Peek().Functions[functionName]
-	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.value, "")
+	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.value, "if.then")
 
 	var elseBlock llvm.BasicBlock
 	if ctx.IfElseBlock() != nil {
-		elseBlock = llvm.AddBasicBlock(function.value, "")
+		elseBlock = llvm.AddBasicBlock(function.value, "if.else")
 	}
 
-	mergeBlock := llvm.AddBasicBlock(function.value, "")
+	mergeBlock := llvm.AddBasicBlock(function.value, "if.merge")
 
 	if ctx.IfElseBlock() != nil {
 		CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, elseBlock)
@@ -34,16 +34,18 @@ func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 	}
 
 	CompilationUnits.Peek().Builder.SetInsertPoint(thenBlock, thenBlock.FirstInstruction())
-	hasThenReturned := v.Visit(ctx.IfThenBlock()).(bool)
-	if !hasThenReturned {
+	hasThenTerminated := v.Visit(ctx.IfThenBlock()).(bool)
+	if !hasThenTerminated {
 		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+		CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
 	}
 
 	if ctx.IfElseBlock() != nil {
 		CompilationUnits.Peek().Builder.SetInsertPoint(elseBlock, elseBlock.FirstInstruction())
-		hasElseReturned := v.Visit(ctx.IfElseBlock()).(bool)
-		if !hasElseReturned {
+		hasElseTerminated := v.Visit(ctx.IfElseBlock()).(bool)
+		if !hasElseTerminated {
 			CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
 		}
 	}
 

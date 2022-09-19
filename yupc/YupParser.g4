@@ -55,8 +55,10 @@ constant:                       (stringPrefix+ ValueString) | ValueInteger | Val
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
-forLoopStatement:				KeywordFor arrayBasedLoop codeBlock;
+forLoopStatement:				KeywordFor (arrayBasedLoop | conditionBasedLoop) codeBlock;
 arrayBasedLoop:					variableDeclare KeywordIn expression;
+conditionBasedLoop:				expression;
+continueStatement:				KeywordContinue;
 
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
@@ -86,6 +88,7 @@ statement:                      expression                                      
         |                       functionSignature                                   SymbolTerminator
         |                       importDeclaration                                   SymbolTerminator
         |                       typeDeclaration                                     SymbolTerminator
+        |						continueStatement									SymbolTerminator
         |						forLoopStatement
         |						ifStatement
         |                       functionDefinition
