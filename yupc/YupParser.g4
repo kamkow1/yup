@@ -73,7 +73,6 @@ expression:                     functionCall                                    
         |                       expression SymbolAnd expression                     #LogicalAndExpression
         |                       expression SymbolOr expression                      #LogicalOrExpression
         |						SymbolExplicitIdent Identifier						#ExplicitIdentifierExpression
-        |						SymbolExplicitIdent ValueString						#ExplicitStringExpression
         |						KeywordRange ValueInteger KeywordTo ValueInteger	#RangeExpression
         |						constant                                            #constantExpression;
 

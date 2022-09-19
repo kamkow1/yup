@@ -144,8 +144,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	// Explicit
 	case *parser.ExplicitIdentifierExpressionContext:
 		return v.VisitExplicitIdentifierExpression(ctx)
-	case *parser.ExplicitStringExpressionContext:
-		return v.VisitExplicitStringExpression(ctx)
 
 	// Loop
 	case *parser.ForLoopStatementContext:
