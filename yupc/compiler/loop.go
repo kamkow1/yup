@@ -37,6 +37,7 @@ type Loop struct {
 	bodyBlock       llvm.BasicBlock
 	mergeBlock      llvm.BasicBlock
 	skipCurrentIter bool
+	breakLoop       bool
 }
 
 var LoopStack Stack[Loop] = *NewStack[Loop]()
@@ -52,7 +53,7 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 
 		loopBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.value, "for.body")
 		mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.value, "for.merge")
-		LoopStack.Push(&Loop{loopBlock, mergeBlock, false})
+		LoopStack.Push(&Loop{loopBlock, mergeBlock, false, false})
 
 		boolFalse := llvm.ConstInt(llvm.Int1Type(), uint64(0), false)
 		load0 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
@@ -71,6 +72,8 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
 		} else if LoopStack.Peek().skipCurrentIter {
 			CompilationUnits.Peek().Builder.SetInsertPoint(loopBlock, loopBlock.FirstInstruction())
+		} else if LoopStack.Peek().breakLoop {
+			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
 		} else {
 			CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
 			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
@@ -84,4 +87,10 @@ func (v *AstVisitor) VisitContinueStatement(ctx *parser.ContinueStatementContext
 	loop := LoopStack.Peek().bodyBlock
 	LoopStack.Peek().skipCurrentIter = true
 	return CompilationUnits.Peek().Builder.CreateBr(loop)
+}
+
+func (v *AstVisitor) VisitBreakStatement(ctx *parser.BreakStatementContext) any {
+	merge := LoopStack.Peek().mergeBlock
+	LoopStack.Peek().breakLoop = true
+	return CompilationUnits.Peek().Builder.CreateBr(merge)
 }

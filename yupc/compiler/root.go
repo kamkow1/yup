@@ -164,6 +164,8 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitConditionBasedLoop(ctx)
 	case *parser.ContinueStatementContext:
 		return v.VisitContinueStatement(ctx)
+	case *parser.BreakStatementContext:
+		return v.VisitBreakStatement(ctx)
 
 	default:
 		log.Fatalf("ERROR: stepped into an unimplemented context: %s\n",

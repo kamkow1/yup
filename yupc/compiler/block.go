@@ -21,8 +21,9 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 		hasReturned := st.(*parser.StatementContext).FunctionReturn() != nil
 		hasBranched := st.(*parser.StatementContext).IfStatement() != nil
 		hasContinued := st.(*parser.StatementContext).ContinueStatement() != nil
+		hasBroken := st.(*parser.StatementContext).BreakStatement() != nil
 
-		hasTerminated = hasReturned || hasBranched || hasContinued
+		hasTerminated = hasReturned || hasBranched || hasContinued || hasBroken
 		v.Visit(st)
 	}
 

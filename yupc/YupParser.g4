@@ -59,6 +59,7 @@ forLoopStatement:				KeywordFor (arrayBasedLoop | conditionBasedLoop) codeBlock;
 arrayBasedLoop:					variableDeclare KeywordIn expression;
 conditionBasedLoop:				expression;
 continueStatement:				KeywordContinue;
+breakStatement:					KeywordBreak;
 
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
@@ -89,6 +90,7 @@ statement:                      expression                                      
         |                       importDeclaration                                   SymbolTerminator
         |                       typeDeclaration                                     SymbolTerminator
         |						continueStatement									SymbolTerminator
+        |						breakStatement										SymbolTerminator
         |						forLoopStatement
         |						ifStatement
         |                       functionDefinition

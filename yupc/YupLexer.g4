@@ -19,6 +19,7 @@ KeywordIn					:	'in';
 KeywordRange				:	'range';
 KeywordTo					:	'to';
 KeywordContinue				:	'continue';
+KeywordBreak				:	'break';
 
 SymbolAt                    :   '@';
 SymbolApostrophe            :   '\'';
