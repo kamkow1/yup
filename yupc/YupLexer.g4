@@ -5,7 +5,6 @@ KeywordConst                :   'const';
 KeywordGlobal               :   'global';
 KeywordVar                  :   'var';
 KeywordImport               :   'import';
-KeywordFunc                 :   'func';
 KeywordIf					:	'if';
 KeywordElse					:	'else';
 KeywordFor					:	'for';

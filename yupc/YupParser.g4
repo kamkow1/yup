@@ -29,7 +29,7 @@ declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
 
 functionDefinition:             functionSignature codeBlock;
-functionSignature:              attributeList? KeywordFunc Identifier SymbolLparen functionParameterList? SymbolRparen typeName?;
+functionSignature:              attributeList? Identifier SymbolLparen functionParameterList? SymbolRparen typeName?;
 functionParameterList:          functionParameter (SymbolComma functionParameter)*;
 functionReturn:                 KeywordReturn expression?;
 functionParameter:              (KeywordConst? Identifier typeAnnotation) | SymbolVariadicArgs;
