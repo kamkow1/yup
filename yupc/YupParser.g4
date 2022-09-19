@@ -8,7 +8,7 @@ file:                           statement*;
 
 codeBlock:                      SymbolLbrace statement* SymbolRbrace;
 
-attributeList:                  SymbolHash SymbolLparen (attribute (SymbolComma attribute)?)+ SymbolRparen;
+attributeList:                  SymbolHash SymbolLsqbr (attribute (SymbolComma attribute)?)+ SymbolRsqbr;
 attribute:                      Identifier SymbolLparen ValueString* SymbolRparen;
 
 typeAnnotation:                 SymbolColon typeName;
