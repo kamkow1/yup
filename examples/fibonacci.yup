@@ -1,6 +1,6 @@
 import "$std/io.bc";
 
-func fib(n: i32) -> i32 {
+fib(n: i32) i32 {
 	if n == 0 or n == 1 {
 		return n;
 	}
@@ -8,11 +8,11 @@ func fib(n: i32) -> i32 {
 	return fib(n - 1) + fib(n - 2);
 }
 
-func main() -> i32 {
+main() i32 {
 
 	var n: i32;
-	scan_input(g"give me a number: %i", &n);
-	fmt_print(g"  fib(%i) is %i", n, fib(n));
+	scan_input("give me a number: %i", &n);
+	fmt_print("  fib(%i) is %i", n, fib(n));
 
 	return 0;
 }
