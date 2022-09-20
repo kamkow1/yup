@@ -12,7 +12,7 @@ attributeList:                  SymbolHash SymbolLsqbr (attribute (SymbolComma a
 attribute:                      Identifier SymbolLparen ValueString* SymbolRparen;
 
 typeAnnotation:                 SymbolColon typeName;
-typeName:                       Identifier typeExtension*;
+typeName:                       typeExtension* Identifier;
 typeExtension:                  arrayTypeExtension | SymbolAsterisk | SymbolQuestMark;
 arrayTypeExtension:             SymbolLsqbr ValueInteger SymbolRsqbr;
 typeNameExpression:             SymbolApostrophe typeName;

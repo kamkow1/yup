@@ -162,6 +162,7 @@ var BuiltinFunctions map[string]FunctionType = map[string]FunctionType{
 	"cast":          Cast,
 	"size_of":       SizeOf,
 	"is_type_equal": IsTypeEqual,
+	"name_of_type":  NameOfType,
 }
 
 func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
@@ -210,20 +211,19 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 // Compiler's built-in functions
 // -----------------------------
 
-func TypeNameOfFunc(args []any) llvm.Value {
-	name := args[0].(string)
-
-	if !CompilationUnits.Peek().Module.NamedFunction(name).IsNil() {
-		function := CompilationUnits.Peek().Module.NamedFunction(name)
-		typ := function.Type().String()
-
-		return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(typ, "")
-	} else {
-		log.Fatalf("ERROR: unknown function name passed to @TypeNameOfFunc(): %s", name)
-		panic("ERROR: TypeNameOfFunc(): unreachable")
+func NameOfType(args []any) llvm.Value {
+	var typ llvm.Type
+	switch args[0].(type) {
+	case llvm.Value:
+		typ = args[0].(llvm.Value).Type()
+		break
+	case llvm.Type:
+		typ = args[0].(llvm.Type)
+		break
 	}
 
-	panic("ERROR: TypeNameOfFunc(): unreachable")
+	name := typ.String()
+	return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(name, "")
 }
 
 func IsTypeEqual(args []any) llvm.Value {
@@ -270,11 +270,4 @@ func SizeOf(args []any) llvm.Value {
 	}
 
 	return result
-}
-
-func TypeNameOf(args []any) llvm.Value {
-	val := args[0].(llvm.Value)
-	typeName := val.Type().String()
-
-	return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(typeName, "")
 }

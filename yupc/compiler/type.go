@@ -47,9 +47,17 @@ func AssertType(typ1 llvm.Type, typ2 llvm.Type) bool {
 	return typ1.TypeKind() != typ2.TypeKind()
 }
 
+func reverseTypeExtList(array []parser.ITypeExtensionContext) []parser.ITypeExtensionContext {
+	if len(array) == 0 {
+		return array
+	}
+
+	return append(reverseTypeExtList(array[1:]), array[0])
+}
+
 func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 	typ := GetTypeFromName(ctx.Identifier().GetText())
-	for _, ext := range ctx.AllTypeExtension() {
+	for _, ext := range reverseTypeExtList(ctx.AllTypeExtension()) {
 		extension := ext.(*parser.TypeExtensionContext)
 		if extension.SymbolAsterisk() != nil {
 			typ = GetPointerType(typ)
