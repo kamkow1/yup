@@ -156,21 +156,41 @@ func (v *AstVisitor) VisitFunctionCallExpression(ctx *parser.FunctionCallExpress
 	return v.Visit(ctx.FunctionCall())
 }
 
+type FunctionType func([]any) llvm.Value
+
+var BuiltinFunctions map[string]FunctionType = map[string]FunctionType{
+	"cast":          Cast,
+	"size_of":       SizeOf,
+	"is_type_equal": IsTypeEqual,
+}
+
 func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 	name := ctx.Identifier().GetText()
-	var args []llvm.Value
+	var args []any
 	if ctx.FunctionCallArgList() != nil {
-		args = v.Visit(ctx.FunctionCallArgList()).([]llvm.Value)
+		arglist := ctx.FunctionCallArgList().(*parser.FunctionCallArgListContext)
+		for _, a := range arglist.AllExpression() {
+			args = append(args, v.Visit(a))
+		}
 	} else {
-		args = make([]llvm.Value, 0)
+		args = make([]any, 0)
 	}
 
-	f := CompilationUnits.Peek().Module.NamedFunction(name)
-	if f.IsNil() {
-		log.Fatalf("ERROR: tried to call an unknown function: %s", name)
-	}
+	if f, ok := BuiltinFunctions[name]; ok {
+		return f(args)
+	} else {
+		f := CompilationUnits.Peek().Module.NamedFunction(name)
+		if f.IsNil() {
+			log.Fatalf("ERROR: tried to call an unknown function: %s", name)
+		}
 
-	return CompilationUnits.Peek().Builder.CreateCall(f, args, "")
+		var valueArgs []llvm.Value
+		for _, a := range args {
+			valueArgs = append(valueArgs, a.(llvm.Value))
+		}
+
+		return CompilationUnits.Peek().Builder.CreateCall(f, valueArgs, "")
+	}
 }
 
 func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any {
@@ -189,16 +209,6 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 // -----------------------------
 // Compiler's built-in functions
 // -----------------------------
-
-type functionType func([]any) llvm.Value
-
-var functions map[string]functionType = map[string]functionType{
-	"cast":              Cast,
-	"size_of":           SizeOf,
-	"type_name_of":      TypeNameOf,
-	"is_type_equal":     IsTypeEqual,
-	"type_name_of_func": TypeNameOfFunc,
-}
 
 func TypeNameOfFunc(args []any) llvm.Value {
 	name := args[0].(string)
@@ -267,25 +277,4 @@ func TypeNameOf(args []any) llvm.Value {
 	typeName := val.Type().String()
 
 	return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(typeName, "")
-}
-
-func (v *AstVisitor) VisitYupFunctionExpression(ctx *parser.YupFunctionExpressionContext) any {
-	return v.Visit(ctx.YupFunction())
-}
-
-func (v *AstVisitor) VisitYupFunction(ctx *parser.YupFunctionContext) any {
-	callCtx := ctx.FunctionCall().(*parser.FunctionCallContext)
-	name := callCtx.Identifier().GetText()
-	var arguments []any
-	args := callCtx.FunctionCallArgList().(*parser.FunctionCallArgListContext)
-	for _, a := range args.AllExpression() {
-		arguments = append(arguments, v.Visit(a))
-	}
-
-	if f, ok := functions[name]; !ok {
-		log.Fatalf("ERROR: tried to call an unknown built-in function: %s", name)
-		return nil
-	} else {
-		return f(arguments)
-	}
 }

@@ -14,7 +14,6 @@ KeywordTo					:	'to';
 KeywordContinue				:	'continue';
 KeywordBreak				:	'break';
 
-SymbolAt                    :   '@';
 SymbolApostrophe            :   '\'';
 SymbolTerminator            :   ';';
 SymbolAssign                :   '=';
@@ -43,7 +42,6 @@ SymbolMoreThan              :   '>';
 SymbolLessOrEqual           :   '<=';
 SymbolMoreOrEqual           :   '>=';
 SymbolHash                  :   '#';
-SymbolExplicitIdent			:	'%';
 SymbolAnd                   :   'and';
 SymbolOr                    :   'or';
 SymbolNot                   :   'not';

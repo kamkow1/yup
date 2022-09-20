@@ -105,12 +105,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.BinaryOperationExpressionContext:
 		return v.VisitBinaryOperationExpression(ctx)
 
-	// Operator
-	case *parser.YupFunctionContext:
-		return v.VisitYupFunction(ctx)
-	case *parser.YupFunctionExpressionContext:
-		return v.VisitYupFunctionExpression(ctx)
-
 	// Logic
 	case *parser.ComparisonOperatorContext:
 		return v.VisitComparisonOperator(ctx)
@@ -140,10 +134,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitAttributeList(ctx)
 	case *parser.AttributeContext:
 		return v.VisitAttribute(ctx)
-
-	// Explicit
-	case *parser.ExplicitIdentifierExpressionContext:
-		return v.VisitExplicitIdentifierExpression(ctx)
 
 	// Loop
 	case *parser.ForLoopStatementContext:
