@@ -156,13 +156,19 @@ func (v *AstVisitor) VisitFunctionCallExpression(ctx *parser.FunctionCallExpress
 	return v.Visit(ctx.FunctionCall())
 }
 
-type FunctionType func([]any) llvm.Value
+type BuiltInValueFunction func([]any) llvm.Value
 
-var BuiltinFunctions map[string]FunctionType = map[string]FunctionType{
+var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInValueFunction{
 	"cast":          Cast,
 	"size_of":       SizeOf,
 	"is_type_equal": IsTypeEqual,
-	"name_of_type":  NameOfType,
+	"type_to_str":   TypeToStr,
+}
+
+type BuiltInTypeFunction func([]any) llvm.Type
+
+var builtInTypeFunctions map[string]BuiltInTypeFunction = map[string]BuiltInTypeFunction{
+	"type_of": TypeOf,
 }
 
 func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
@@ -177,7 +183,7 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 		args = make([]any, 0)
 	}
 
-	if f, ok := BuiltinFunctions[name]; ok {
+	if f, ok := BuiltInValueFunctions[name]; ok {
 		return f(args)
 	} else {
 		f := CompilationUnits.Peek().Module.NamedFunction(name)
@@ -211,19 +217,15 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 // Compiler's built-in functions
 // -----------------------------
 
-func NameOfType(args []any) llvm.Value {
-	var typ llvm.Type
-	switch args[0].(type) {
-	case llvm.Value:
-		typ = args[0].(llvm.Value).Type()
-		break
-	case llvm.Type:
-		typ = args[0].(llvm.Type)
-		break
-	}
+func TypeOf(args []any) llvm.Type {
+	expr := args[0].(llvm.Value)
+	return expr.Type()
+}
 
-	name := typ.String()
-	return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(name, "")
+func TypeToStr(args []any) llvm.Value {
+	expr := args[0].(llvm.Type)
+	str := expr.String()
+	return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
 }
 
 func IsTypeEqual(args []any) llvm.Value {
