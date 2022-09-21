@@ -39,30 +39,39 @@ func (v *AstVisitor) VisitIndexedAccessExpression(ctx *parser.IndexedAccessExpre
 	return idx
 }
 
+func IsArray(a llvm.Value) bool {
+	return a.Type().ElementType().TypeKind() == llvm.ArrayTypeKind
+}
+
+func IsPointer(a llvm.Value) bool {
+	return a.Type().ElementType().TypeKind() == llvm.PointerTypeKind
+}
+
 func (v *AstVisitor) VisitArrayElementAssignment(ctx *parser.ArrayElementAssignmentContext) any {
 	name := ctx.Identifier().GetText()
 	array := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
-	var idx llvm.Value
-	for _, i := range ctx.AllArrayIndex() {
-		idx = v.Visit(i.(*parser.ArrayIndexContext).Expression()).(llvm.Value)
-	}
-
 	value := v.Visit(ctx.VariableValue()).(llvm.Value)
 
-	var indices []llvm.Value
-	if array.Type().ElementType().TypeKind() == llvm.ArrayTypeKind {
-		indices = append(indices, llvm.ConstInt(llvm.Int64Type(), 0, false))
+	for _, i := range ctx.AllArrayIndex() {
+		idx := v.Visit(i.(*parser.ArrayIndexContext).Expression()).(llvm.Value)
+
+		var indices []llvm.Value
+		if IsArray(array) {
+			i64_0 := llvm.ConstInt(llvm.Int64Type(), 0, false)
+			indices = append(indices, i64_0)
+		}
+
+		indices = append(indices, idx)
+
+		if IsPointer(array) {
+			deref := CompilationUnits.Peek().Builder.CreateLoad(array, "")
+			array = CompilationUnits.Peek().Builder.CreateGEP(deref, indices, "")
+		} else {
+			array = CompilationUnits.Peek().Builder.CreateGEP(array, indices, "")
+		}
 	}
 
-	indices = append(indices, idx)
-	if array.Type().ElementType().TypeKind() == llvm.PointerTypeKind {
-		deref := CompilationUnits.Peek().Builder.CreateLoad(array, "")
-		gep := CompilationUnits.Peek().Builder.CreateGEP(deref, indices, "")
-		CompilationUnits.Peek().Builder.CreateStore(value, gep)
-	} else {
-		gep := CompilationUnits.Peek().Builder.CreateGEP(array, indices, "")
-		CompilationUnits.Peek().Builder.CreateStore(value, gep)
-	}
+	CompilationUnits.Peek().Builder.CreateStore(value, array)
 
 	return nil
 }
