@@ -51,8 +51,8 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 		functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 		function := CompilationUnits.Peek().Functions[functionName]
 
-		loopBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.value, "for.body")
-		mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.value, "for.merge")
+		loopBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.body")
+		mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.merge")
 		LoopStack.Push(&Loop{loopBlock, mergeBlock, false, false})
 
 		boolFalse := llvm.ConstInt(llvm.Int1Type(), uint64(0), false)

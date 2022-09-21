@@ -17,10 +17,10 @@ type FuncParam struct {
 }
 
 type Function struct {
-	name      string
-	value     llvm.Value
-	params    []FuncParam
-	exitBlock *llvm.BasicBlock
+	Name      string
+	Value     llvm.Value
+	Params    []FuncParam
+	ExitBlock *llvm.BasicBlock
 }
 
 func (v *AstVisitor) VisitFunctionParameter(ctx *parser.FunctionParameterContext) any {
@@ -69,10 +69,10 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 	if ctx.AttributeList() != nil {
 		attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
 		for _, a := range attrs {
-			switch a.name {
+			switch a.Name {
 			case "gc":
 				{
-					gc := a.params[0]
+					gc := a.Params[0]
 					if gc == "default" {
 						function.SetGC("coreclr")
 					} else {
@@ -81,7 +81,7 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 				}
 			case "link_type":
 				{
-					linkage := a.params[0]
+					linkage := a.Params[0]
 					function.SetLinkage(GetLinkageFromString(linkage))
 				}
 			}
@@ -105,13 +105,13 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 
 	CreateBlock()
 	bodyBlock := llvm.AddBasicBlock(signature, "body")
-	*function.exitBlock = llvm.AddBasicBlock(signature, "exit")
+	*function.ExitBlock = llvm.AddBasicBlock(signature, "exit")
 
 	CompilationUnits.Peek().Builder.SetInsertPointAtEnd(bodyBlock)
 
 	if !isVoid {
 		name := "__return_value"
-		returnType := function.value.Type().ReturnType().ElementType()
+		returnType := function.Value.Type().ReturnType().ElementType()
 		a := CompilationUnits.Peek().Builder.CreateAlloca(returnType, name)
 		loc := LocalVariable{name, true, a}
 		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = loc
@@ -130,13 +130,13 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 
 	if isVoid {
 		if !hasTerminated {
-			CompilationUnits.Peek().Builder.CreateBr(*function.exitBlock)
+			CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 		}
 
-		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.exitBlock)
+		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.ExitBlock)
 		return CompilationUnits.Peek().Builder.CreateRetVoid()
 	} else {
-		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.exitBlock)
+		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.ExitBlock)
 		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
 		load := CompilationUnits.Peek().Builder.CreateLoad(returnValue.Value, "")
 		return CompilationUnits.Peek().Builder.CreateRet(load)
@@ -201,10 +201,10 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 		value := v.Visit(ctx.Expression()).(llvm.Value)
 		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
 		CompilationUnits.Peek().Builder.CreateStore(value, returnValue.Value)
-		return CompilationUnits.Peek().Builder.CreateBr(*function.exitBlock)
+		return CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 	}
 
-	return CompilationUnits.Peek().Builder.CreateBr(*function.exitBlock)
+	return CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 }
 
 // -----------------------------

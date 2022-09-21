@@ -13,8 +13,8 @@ var Attributes map[string]int = map[string]int{
 }
 
 type Attribute struct {
-	name   string
-	params []string
+	Name   string
+	Params []string
 }
 
 func (v *AstVisitor) VisitAttributeList(ctx *parser.AttributeListContext) any {

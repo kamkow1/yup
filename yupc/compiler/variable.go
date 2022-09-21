@@ -72,10 +72,10 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 		if ctx.AttributeList() != nil {
 			attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
 			for _, a := range attrs {
-				switch a.name {
+				switch a.Name {
 				case "Link":
 					{
-						linkage := a.params[0]
+						linkage := a.Params[0]
 						glb.SetLinkage(GetLinkageFromString(linkage))
 					}
 				}
