@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"log"
-	"reflect"
 
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/kamkow1/yup/yupc/parser"
@@ -142,14 +141,15 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitRangeExpression(ctx)
 	case *parser.ConditionBasedLoopContext:
 		return v.VisitConditionBasedLoop(ctx)
+	case *parser.StatementBasedLoopContext:
+		return v.VisitStatementBasedLoop(ctx)
 	case *parser.ContinueStatementContext:
 		return v.VisitContinueStatement(ctx)
 	case *parser.BreakStatementContext:
 		return v.VisitBreakStatement(ctx)
 
 	default:
-		log.Fatalf("ERROR: stepped into an unimplemented context: %s\n",
-			reflect.TypeOf(ctx).String())
+		log.Fatalf("ERROR: stepped into an unimplemented context: %s\n", ctx.GetText())
 	}
 
 	panic("ERROR: unreachable")

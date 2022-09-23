@@ -33,27 +33,48 @@ func (v *AstVisitor) VisitConditionBasedLoop(ctx *parser.ConditionBasedLoopConte
 	return v.Visit(ctx.Expression())
 }
 
+func (v *AstVisitor) VisitStatementBasedLoop(ctx *parser.StatementBasedLoopContext) any {
+	return nil
+}
+
 type Loop struct {
-	bodyBlock       llvm.BasicBlock
-	mergeBlock      llvm.BasicBlock
-	skipCurrentIter bool
-	breakLoop       bool
+	BodyBlock       llvm.BasicBlock
+	MergeBlock      llvm.BasicBlock
+	SkipCurrentIter bool
+	BreakLoop       bool
+	FinalStatement  *parser.StatementContext
 }
 
 var LoopStack Stack[Loop] = *NewStack[Loop]()
 
+func ResetAfterBranching() {
+	LoopStack.Peek().BreakLoop = false
+	LoopStack.Peek().SkipCurrentIter = false
+}
+
 func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) any {
+	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
+	function := CompilationUnits.Peek().Functions[functionName]
+
+	loopBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.body")
+	mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.merge")
+
+	prepBlock := llvm.AddBasicBlock(function.Value, "for.prep")
+	CompilationUnits.Peek().Builder.CreateBr(prepBlock)
+	CompilationUnits.Peek().Builder.SetInsertPoint(prepBlock, prepBlock.FirstInstruction())
+
+	LoopStack.Push(&Loop{
+		loopBlock,
+		mergeBlock,
+		false,
+		false,
+		nil,
+	})
+
 	if ctx.ConditionBasedLoop() != nil {
 		cond0 := v.Visit(ctx.ConditionBasedLoop()).(llvm.Value)
 		condValue := CompilationUnits.Peek().Builder.CreateAlloca(cond0.Type(), "cond_value")
 		CompilationUnits.Peek().Builder.CreateStore(cond0, condValue)
-
-		functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
-		function := CompilationUnits.Peek().Functions[functionName]
-
-		loopBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.body")
-		mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.merge")
-		LoopStack.Push(&Loop{loopBlock, mergeBlock, false, false})
 
 		boolFalse := llvm.ConstInt(llvm.Int1Type(), uint64(0), false)
 		load0 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
@@ -70,27 +91,68 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 			load1 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
 			CompilationUnits.Peek().Builder.CreateCondBr(load1, loopBlock, mergeBlock)
 			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
-		} else if LoopStack.Peek().skipCurrentIter {
+		} else if LoopStack.Peek().SkipCurrentIter {
 			CompilationUnits.Peek().Builder.SetInsertPoint(loopBlock, loopBlock.FirstInstruction())
-		} else if LoopStack.Peek().breakLoop {
+			ResetAfterBranching()
+		} else if LoopStack.Peek().BreakLoop {
 			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
+			ResetAfterBranching()
 		} else {
 			CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
 			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
 		}
+	} else if ctx.StatementBasedLoop() != nil {
+		CreateBlock()
+		sblctx := ctx.StatementBasedLoop().(*parser.StatementBasedLoopContext)
+		v.Visit(sblctx.Statement(0))
+		LoopStack.Peek().FinalStatement = sblctx.Statement(2).(*parser.StatementContext)
+
+		cond0 := v.Visit(sblctx.Statement(1)).(llvm.Value)
+		condValue := CompilationUnits.Peek().Builder.CreateAlloca(cond0.Type(), "cond_value")
+		CompilationUnits.Peek().Builder.CreateStore(cond0, condValue)
+
+		boolFalse := llvm.ConstInt(llvm.Int1Type(), uint64(0), false)
+		load0 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
+		cmp := CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntNE), load0, boolFalse, "")
+
+		CompilationUnits.Peek().Builder.CreateCondBr(cmp, loopBlock, mergeBlock)
+		CompilationUnits.Peek().Builder.SetInsertPoint(loopBlock, loopBlock.FirstInstruction())
+
+		hasTerminated := v.Visit(ctx.CodeBlock()).(bool)
+		if !hasTerminated {
+			v.Visit(LoopStack.Peek().FinalStatement)
+			cond1 := v.Visit(sblctx.Statement(1)).(llvm.Value)
+			CompilationUnits.Peek().Builder.CreateStore(cond1, condValue)
+
+			load1 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
+			CompilationUnits.Peek().Builder.CreateCondBr(load1, loopBlock, mergeBlock)
+			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
+		} else if LoopStack.Peek().SkipCurrentIter {
+			CompilationUnits.Peek().Builder.SetInsertPoint(loopBlock, loopBlock.FirstInstruction())
+			ResetAfterBranching()
+		} else if LoopStack.Peek().BreakLoop {
+			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
+			ResetAfterBranching()
+		} else {
+			CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
+			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
+		}
+
+		RemoveBlock()
 	}
 
 	return nil
 }
 
 func (v *AstVisitor) VisitContinueStatement(ctx *parser.ContinueStatementContext) any {
-	loop := LoopStack.Peek().bodyBlock
-	LoopStack.Peek().skipCurrentIter = true
+	LoopStack.Peek().SkipCurrentIter = true
+	loop := LoopStack.Peek().BodyBlock
+	v.Visit(LoopStack.Peek().FinalStatement)
 	return CompilationUnits.Peek().Builder.CreateBr(loop)
 }
 
 func (v *AstVisitor) VisitBreakStatement(ctx *parser.BreakStatementContext) any {
-	merge := LoopStack.Peek().mergeBlock
-	LoopStack.Peek().breakLoop = true
+	merge := LoopStack.Peek().MergeBlock
+	LoopStack.Peek().BreakLoop = true
 	return CompilationUnits.Peek().Builder.CreateBr(merge)
 }

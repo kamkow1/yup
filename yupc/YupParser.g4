@@ -49,9 +49,11 @@ constant:                       ValueString | ValueInteger | ValueFloat | ValueB
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
-forLoopStatement:				KeywordFor (arrayBasedLoop | conditionBasedLoop) codeBlock;
+forLoopStatement:				KeywordFor (arrayBasedLoop | conditionBasedLoop | statementBasedLoop) codeBlock;
 arrayBasedLoop:					variableDeclare KeywordIn expression;
 conditionBasedLoop:				expression;
+statementBasedLoop:				statement+;
+finalStatement:					statement;
 continueStatement:				KeywordContinue;
 breakStatement:					KeywordBreak;
 
