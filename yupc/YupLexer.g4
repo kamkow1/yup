@@ -9,7 +9,6 @@ KeywordIf					:	'if';
 KeywordElse					:	'else';
 KeywordFor					:	'for';
 KeywordIn					:	'in';
-KeywordRange				:	'range';
 KeywordTo					:	'to';
 KeywordContinue				:	'continue';
 KeywordBreak				:	'break';

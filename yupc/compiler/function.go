@@ -163,6 +163,7 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 	"size_of":       SizeOf,
 	"is_type_equal": IsTypeEqual,
 	"type_to_str":   TypeToStr,
+	"range": Range,
 }
 
 type BuiltInTypeFunction func([]any) llvm.Type
@@ -272,4 +273,18 @@ func SizeOf(args []any) llvm.Value {
 	}
 
 	return result
+}
+
+func Range(args []any) llvm.Value {
+
+	min := args[0].(int64)
+	max := args[1].(int64)
+
+	var vals []llvm.Value
+	for i := min; i <= max; i++ {
+		ci := llvm.ConstInt(llvm.Int64Type(), uint64(i), false)
+		vals = append(vals, ci)
+	}
+
+	return llvm.ConstArray(llvm.Int64Type(), vals)
 }

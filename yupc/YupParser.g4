@@ -46,6 +46,7 @@ ifThenBlock:		        	codeBlock;
 ifElseBlock:		        	KeywordElse codeBlock;
 
 constant:                       ValueString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
+literalConstantInt:				SymbolApostrophe ValueInteger;
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
@@ -71,8 +72,8 @@ expression:                     functionCall                                    
         |                       (SymbolNot | SymbolExclMark) expression             #NegatedExpression
         |                       expression SymbolAnd expression                     #LogicalAndExpression
         |                       expression SymbolOr expression                      #LogicalOrExpression
-        |						KeywordRange ValueInteger KeywordTo ValueInteger	#RangeExpression
-        |						constant                                            #constantExpression;
+        |						constant                                            #constantExpression
+        |						literalConstantInt		 	  	        			#literalConstantIntExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator

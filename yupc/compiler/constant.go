@@ -87,3 +87,17 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 
 	return value
 }
+
+func (v *AstVisitor) VisitLiteralConstantIntExpression(ctx *parser.LiteralConstantIntExpressionContext) any {
+	return v.Visit(ctx.LiteralConstantInt())
+}
+
+func (v *AstVisitor) VisitLiteralConstantInt(ctx *parser.LiteralConstantIntContext) any {
+	str := ctx.ValueInteger().GetText()
+	i, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		log.Fatalf("ERROR: unable to parse int: %s", err)
+	}
+
+	return i
+}
