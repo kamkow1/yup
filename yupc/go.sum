@@ -10,5 +10,5 @@ github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
 github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
-tinygo.org/x/go-llvm v0.0.0-20220807194512-5cda615524af h1:DhjhOHWtEfG448SrjdzIueOtu78cBSGfkLgvQ7GfEz8=
-tinygo.org/x/go-llvm v0.0.0-20220807194512-5cda615524af/go.mod h1:GFbusT2VTA4I+l4j80b17KFK+6whv69Wtny5U+T8RR0=
+tinygo.org/x/go-llvm v0.0.0-20220915154600-f0899d9783ad h1:rYMB9fEIay0DSuAztK5WTp7ZP26sVQX1wdyioc/f46w=
+tinygo.org/x/go-llvm v0.0.0-20220915154600-f0899d9783ad/go.mod h1:GFbusT2VTA4I+l4j80b17KFK+6whv69Wtny5U+T8RR0=

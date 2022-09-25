@@ -12,8 +12,9 @@ import (
 // ----------------------
 
 type FuncParam struct {
-	Name string
-	Type llvm.Type
+	Name     string
+	IsVarArg bool
+	Type     llvm.Type
 }
 
 type Function struct {
@@ -30,9 +31,19 @@ func (v *AstVisitor) VisitFunctionParameter(ctx *parser.FunctionParameterContext
 func (v *AstVisitor) VisitFunctionParameterList(ctx *parser.FunctionParameterListContext) any {
 	var params []FuncParam
 	for _, p := range ctx.AllFunctionParameter() {
-		params = append(params, FuncParam{
-			Name: p.(*parser.FunctionParameterContext).Identifier().GetText(),
-			Type: v.Visit(p).(llvm.Type)})
+		if p.(*parser.FunctionParameterContext).SymbolVariadicArgs() != nil {
+			params = append(params, FuncParam{
+				IsVarArg: true,
+				Name:     "vargs",
+				Type:     llvm.Type{},
+			})
+		} else {
+			params = append(params, FuncParam{
+				IsVarArg: false,
+				Name:     p.(*parser.FunctionParameterContext).Identifier().GetText(),
+				Type:     v.Visit(p).(llvm.Type),
+			})
+		}
 	}
 
 	return params
@@ -55,14 +66,24 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 	}
 
 	var types []llvm.Type
+	isVarArg := false
 	for _, fp := range params {
+		if fp.IsVarArg {
+			isVarArg = fp.IsVarArg
+			continue
+		}
+
 		types = append(types, fp.Type)
 	}
 
-	funcType := llvm.FunctionType(returnType, types, false)
+	funcType := llvm.FunctionType(returnType, types, isVarArg)
 	function := llvm.AddFunction(CompilationUnits.Peek().Module, name, funcType)
 
 	for i, pt := range params {
+		if pt.IsVarArg {
+			continue
+		}
+
 		function.Param(i).SetName(pt.Name)
 	}
 
@@ -163,7 +184,7 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 	"size_of":       SizeOf,
 	"is_type_equal": IsTypeEqual,
 	"type_to_str":   TypeToStr,
-	"range": Range,
+	"range":         Range,
 }
 
 type BuiltInTypeFunction func([]any) llvm.Type
