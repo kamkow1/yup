@@ -4,11 +4,12 @@ import (
 	"encoding/ascii85"
 	"log"
 	"strconv"
-	"strings"
 
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
 )
+
+type any = interface{}
 
 func (v *AstVisitor) VisitConstantExpression(ctx *parser.ConstantExpressionContext) any {
 	return v.Visit(ctx.Constant())
@@ -52,20 +53,6 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		str := ctx.ValueString().GetText()
 		str = TrimLeftChar(str)
 		str = TrimRightChar(str)
-
-		newString := make([]string, 0)
-		i := 0
-		for i < len(str) {
-			if (i != len(str)-1) && (str[i] == '\\') && (str[i+1] == 'n') {
-				newString = append(newString, "\\0A")
-				i += 2
-			} else {
-				newString = append(newString, string(str[i]))
-				i++
-			}
-		}
-
-		str = strings.Join(newString, "")
 
 		value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
 	}
