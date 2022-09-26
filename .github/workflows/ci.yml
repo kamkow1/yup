@@ -19,11 +19,11 @@ jobs:
         go-version: 1.18
 
     - name: setup LLVM 14
-      run: cd yupc && chmod +x ./llvm.sh && ./llvm.sh 14
+      run: cd yupc && chown "$USER" ./llvm.sh && chmod u+x ./llvm.sh && sudo ./llvm.sh 14
       
     - name: generate ANTLR4 files
-      run: cd yupc && chmod +x ./gen.sh && ./gen.sh
+      run: cd yupc && chmod u+x ./gen.sh && ./gen.sh
       
     - name: build yupc
-      run: cd yupc && chmod +x ./build.sh && ./build.sh
+      run: cd yupc && chmod u+x ./build.sh && ./build.sh
       
