@@ -123,7 +123,11 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 func (v *AstVisitor) VisitContinueStatement(ctx *parser.ContinueStatementContext) any {
 	LoopStack.Peek().SkipCurrentIter = true
 	loop := LoopStack.Peek().BodyBlock
-	v.Visit(LoopStack.Peek().FinalStatement)
+
+	if LoopStack.Peek().FinalStatement != nil {
+		v.Visit(LoopStack.Peek().FinalStatement)
+	}
+
 	return CompilationUnits.Peek().Builder.CreateBr(loop)
 }
 
