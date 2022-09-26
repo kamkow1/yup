@@ -1,10 +1,6 @@
 # yup language
 
-## UPDATE: 
-
-the yup compiler has officially been migrated from
-C++ to Go. The old C++ version is still kept around
-at https://github.com/kamkow1/old-cpp-yupc.git but is no longer maintained.
+![Github Actions](https://github.com/kamkow1/yup/actions/workflows/ci.yml/badge.svg)
 
 ## introduction
 
@@ -17,19 +13,19 @@ Small example of the language:
 ```text
 import "$std/io.bc";
 
-#(GC("default"))
-func fac(n: i8) -> i8 {
+fac(n: i32) i32 {
 	if n == 0 {
 		return 1;
-	} 
+	}
 
 	return n * fac(n - 1);
 }
 
-#(GC("default"))
-func main(argc: i32, argv: i8**) -> i8 {
+main() i32 {
 
-	Printf(g"  %i  ", fac(5)); // prints 120 (5! = 120)
+	var n: i32;
+	scan_input("give me a number: %i", &n);
+	fmt_print("%i! = %i", n, fac(n));
 
 	return 0;
 }
@@ -53,7 +49,11 @@ Also, the compiler only supports Linux, but that is going to change in the futur
 
 ```bash
 cd /root/of/project/yup/yupc
+
 ./gen.sh # generates needed ANTLR4 files
+
+sudo ./llvm.sh 14 # installes LLVM 14.0.6 which is required to build the compiler
+
 ./build.sh # outputs the yupc binary into bin/
 ```
 
