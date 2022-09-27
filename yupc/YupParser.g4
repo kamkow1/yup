@@ -45,9 +45,10 @@ ifStatement:		        KeywordIf expression ifThenBlock ifElseBlock?;
 ifThenBlock:		        codeBlock;
 ifElseBlock:		        KeywordElse codeBlock;
 
-constant:                       ValueString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
+constant:                       multilineString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 literalConstantInt:		SymbolColon ValueInteger;
-literalConstantString:          SymbolColon ValueString;
+literalConstantString:          SymbolColon multilineString;
+multilineString:		ValueString+;
 
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
@@ -76,7 +77,8 @@ expression:                     functionCall                                    
         |                       expression SymbolOr expression                      #LogicalOrExpression
         |			constant                                            #constantExpression
         |			literalConstantInt		 	  	    #literalConstantIntExpression
-        |                       literalConstantString                               #literalConstantStringExpression;
+        |                       literalConstantString                               #literalConstantStringExpression
+        |			multilineString					    #MultilineStringExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator

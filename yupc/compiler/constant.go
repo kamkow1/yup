@@ -49,11 +49,8 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		value = llvm.ConstInt(typ, uint64(byte(enc)), false)
 	}
 
-	if ctx.ValueString() != nil {
-		str := ctx.ValueString().GetText()
-		str = TrimLeftChar(str)
-		str = TrimRightChar(str)
-
+	if ctx.MultilineString() != nil {
+		str := v.Visit(ctx.MultilineString()).(string)
 		value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
 	}
 
@@ -94,5 +91,20 @@ func (v *AstVisitor) VisitLiteralConstantStringExpression(ctx *parser.LiteralCon
 }
 
 func (v *AstVisitor) VisitLiteralConstantString(ctx *parser.LiteralConstantStringContext) any {
-	return TrimLeftChar(TrimRightChar(ctx.ValueString().GetText()))
+	return v.Visit(ctx.MultilineString()).(string)
 }
+
+func (v *AstVisitor) VisitMultilineStringExpression(ctx *parser.MultilineStringExpressionContext) any {
+	return v.Visit(ctx.MultilineString())
+}
+
+func (v *AstVisitor) VisitMultilineString(ctx *parser.MultilineStringContext) any {
+	var buf string
+	for _, s := range ctx.AllValueString() {
+    		str := Dequote(s.GetText())
+		buf += str
+    	}
+
+    	return buf
+}
+

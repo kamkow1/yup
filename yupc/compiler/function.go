@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"log"
+	"fmt"
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
@@ -317,6 +318,8 @@ func Range(args []any) llvm.Value {
 func C(args []any) llvm.Value {
 
 	c := args[0].(string)
+	fmt.Println(c)
+	
 	name := FilenameWithoutExtension(CompilationUnits.Peek().SourceFile) + "_c" + ".c"
 	ioutil.WriteFile(name, []byte(c), 0644)
 

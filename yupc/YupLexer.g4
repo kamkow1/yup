@@ -5,14 +5,16 @@ KeywordConst                :   'const';
 KeywordGlobal               :   'global';
 KeywordVar                  :   'var';
 KeywordImport               :   'import';
-KeywordIf					:	'if';
-KeywordElse					:	'else';
-KeywordFor					:	'for';
-KeywordIn					:	'in';
-KeywordTo					:	'to';
-KeywordContinue				:	'continue';
-KeywordBreak				:	'break';
+KeywordIf		    :	'if';
+KeywordElse		    :	'else';
+KeywordFor		    :	'for';
+KeywordIn		    :	'in';
+KeywordTo		    :	'to';
+KeywordContinue		    :	'continue';
+KeywordBreak		    :	'break';
 
+
+SymbolBackslash		    :   '\\';
 SymbolApostrophe            :   '\'';
 SymbolTerminator            :   ';';
 SymbolAssign                :   '=';
@@ -47,6 +49,8 @@ SymbolNot                   :   'not';
 
 ValueChar                   :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 ValueString                 :   '"' (~'"' | '\'\'')* '"';
+
+
 ValueInteger                :   '-'? '0'..'9'+;
 ValueFloat                  :   '-'? ('0'..'9')+ '.' ('0'..'9')*;
 ValueBool                   :   ('True' | 'False');

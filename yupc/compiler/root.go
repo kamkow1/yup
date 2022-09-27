@@ -105,6 +105,10 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitLiteralConstantStringExpression(ctx)
 	case *parser.LiteralConstantStringContext:
 		return v.VisitLiteralConstantString(ctx)
+	case *parser.MultilineStringExpressionContext:
+    		return v.VisitMultilineStringExpression(ctx)
+    	case *parser.MultilineStringContext:
+        	return v.VisitMultilineString(ctx)
 
 	// Binary Operator
 	case *parser.BinaryOperatorContext:
