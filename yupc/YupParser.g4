@@ -41,22 +41,24 @@ binaryOperator:                 SymbolPlus | SymbolMinus | SymbolAsterisk | Symb
 pointerDereference:             SymbolAsterisk expression;
 addressOf:                      SymbolAmpersand Identifier;
 
-ifStatement:		        	KeywordIf expression ifThenBlock ifElseBlock?;
-ifThenBlock:		        	codeBlock;
-ifElseBlock:		        	KeywordElse codeBlock;
+ifStatement:		        KeywordIf expression ifThenBlock ifElseBlock?;
+ifThenBlock:		        codeBlock;
+ifElseBlock:		        KeywordElse codeBlock;
 
 constant:                       ValueString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
-literalConstantInt:				SymbolApostrophe ValueInteger;
+literalConstantInt:		SymbolColon ValueInteger;
+literalConstantString:          SymbolColon ValueString;
+
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
-forLoopStatement:				KeywordFor (arrayBasedLoop | conditionBasedLoop | statementBasedLoop) codeBlock;
-arrayBasedLoop:					variableDeclare KeywordIn expression;
-conditionBasedLoop:				expression;
-statementBasedLoop:				statement+;
-finalStatement:					statement;
-continueStatement:				KeywordContinue;
-breakStatement:					KeywordBreak;
+forLoopStatement:		KeywordFor (arrayBasedLoop | conditionBasedLoop | statementBasedLoop) codeBlock;
+arrayBasedLoop:			variableDeclare KeywordIn expression;
+conditionBasedLoop:		expression;
+statementBasedLoop:		statement+;
+finalStatement:			statement;
+continueStatement:		KeywordContinue;
+breakStatement:			KeywordBreak;
 
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
@@ -72,8 +74,9 @@ expression:                     functionCall                                    
         |                       (SymbolNot | SymbolExclMark) expression             #NegatedExpression
         |                       expression SymbolAnd expression                     #LogicalAndExpression
         |                       expression SymbolOr expression                      #LogicalOrExpression
-        |						constant                                            #constantExpression
-        |						literalConstantInt		 	  	        			#literalConstantIntExpression;
+        |			constant                                            #constantExpression
+        |			literalConstantInt		 	  	    #literalConstantIntExpression
+        |                       literalConstantString                               #literalConstantStringExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator
@@ -82,10 +85,10 @@ statement:                      expression                                      
         |                       arrayElementAssignment                              SymbolTerminator
         |                       functionSignature                                   SymbolTerminator
         |                       importDeclaration                                   SymbolTerminator
-        |						continueStatement									SymbolTerminator
-        |						breakStatement										SymbolTerminator
-        |						forLoopStatement
-        |						ifStatement
+        |			continueStatement				    SymbolTerminator
+        |			breakStatement					    SymbolTerminator
+        |			forLoopStatement
+        |			ifStatement
         |                       functionDefinition
         |                       codeBlock
         |                       SymbolTerminator;

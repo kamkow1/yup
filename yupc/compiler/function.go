@@ -2,6 +2,9 @@ package compiler
 
 import (
 	"log"
+	"io/ioutil"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
@@ -185,6 +188,7 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 	"is_type_equal": IsTypeEqual,
 	"type_to_str":   TypeToStr,
 	"range":         Range,
+	"C": 		 C,
 }
 
 type BuiltInTypeFunction func([]any) llvm.Type
@@ -308,4 +312,24 @@ func Range(args []any) llvm.Value {
 	}
 
 	return llvm.ConstArray(llvm.Int64Type(), vals)
+}
+
+func C(args []any) llvm.Value {
+
+	c := args[0].(string)
+	name := FilenameWithoutExtension(CompilationUnits.Peek().SourceFile) + "_c" + ".c"
+	ioutil.WriteFile(name, []byte(c), 0644)
+
+	fpath := filepath.Join(GetCwd(), name)
+
+	cmdargs := []string{"-c", "-emit-llvm", "-o", FilenameWithoutExtension(name) + ".bc", "-v", fpath}
+	log.Printf("%s %s\n", "clang", cmdargs)
+	err := exec.Command("clang", cmdargs...).Run()
+
+	log.Printf("COMPILING C: %s\n", fpath)
+
+	// bcname := FilenameWithoutExtension(fpath) +  ".bc"
+	// err2 := exec.Command("llvm-link", "-o", bcname, fpath).Run()
+
+	return llvm.ConstInt(llvm.Int1Type(), BoolToInt(err != nil), false)
 }

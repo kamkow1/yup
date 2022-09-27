@@ -88,3 +88,11 @@ func (v *AstVisitor) VisitLiteralConstantInt(ctx *parser.LiteralConstantIntConte
 
 	return i
 }
+
+func (v *AstVisitor) VisitLiteralConstantStringExpression(ctx *parser.LiteralConstantStringExpressionContext) any {
+	return v.Visit(ctx.LiteralConstantString())
+}
+
+func (v *AstVisitor) VisitLiteralConstantString(ctx *parser.LiteralConstantStringContext) any {
+	return TrimLeftChar(TrimRightChar(ctx.ValueString().GetText()))
+}
