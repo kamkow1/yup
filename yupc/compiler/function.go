@@ -18,6 +18,7 @@ import (
 type FuncParam struct {
 	Name     string
 	IsVarArg bool
+	IsConst  bool
 	Type     llvm.Type
 }
 
@@ -35,6 +36,7 @@ func (v *AstVisitor) VisitFunctionParameter(ctx *parser.FunctionParameterContext
 func (v *AstVisitor) VisitFunctionParameterList(ctx *parser.FunctionParameterListContext) any {
 	var params []FuncParam
 	for _, p := range ctx.AllFunctionParameter() {
+		pp := p.(*parser.FunctionParameterContext)
 		if p.(*parser.FunctionParameterContext).SymbolVariadicArgs() != nil {
 			params = append(params, FuncParam{
 				IsVarArg: true,
@@ -43,8 +45,9 @@ func (v *AstVisitor) VisitFunctionParameterList(ctx *parser.FunctionParameterLis
 			})
 		} else {
 			params = append(params, FuncParam{
+    			        IsConst:  pp.KeywordConst() != nil,
 				IsVarArg: false,
-				Name:     p.(*parser.FunctionParameterContext).Identifier().GetText(),
+				Name:     pp.Identifier().GetText(),
 				Type:     v.Visit(p).(llvm.Type),
 			})
 		}
@@ -143,10 +146,14 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	}
 
 	if signature.ParamsCount() > 0 {
-		for _, p := range signature.Params() {
+		for i, p := range signature.Params() {
 			alloca := CompilationUnits.Peek().Builder.CreateAlloca(p.Type(), "")
 			n := len(CompilationUnits.Peek().Locals) - 1
-			CompilationUnits.Peek().Locals[n][p.Name()] = LocalVariable{p.Name(), false, alloca}
+			CompilationUnits.Peek().Locals[n][p.Name()] = LocalVariable{
+    				p.Name(),
+    				function.Params[i].IsConst,
+    				alloca,
+    			}
 			CompilationUnits.Peek().Builder.CreateStore(p, alloca)
 		}
 	}
