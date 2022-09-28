@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"log"
+	"strconv"
 	"path/filepath"
 	"strings"
 
@@ -59,9 +60,7 @@ func ImportModule(name string) {
 }
 
 func (v *AstVisitor) VisitImportDeclaration(ctx *parser.ImportDeclarationContext) any {
-	name := ctx.ValueString().GetText()
-	name = TrimLeftChar(name)
-	name = TrimRightChar(name)
+	name, _ := strconv.Unquote(ctx.ValueString().GetText())
 	ImportModule(name)
 	return nil
 }

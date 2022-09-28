@@ -50,8 +50,8 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 	}
 
 	if ctx.MultilineString() != nil {
-		str := v.Visit(ctx.MultilineString()).(string)
-		value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
+    		raw := v.Visit(ctx.MultilineString()).(string)
+		value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(raw, "")
 	}
 
 	if ctx.ValueBool() != nil {
@@ -100,11 +100,14 @@ func (v *AstVisitor) VisitMultilineStringExpression(ctx *parser.MultilineStringE
 
 func (v *AstVisitor) VisitMultilineString(ctx *parser.MultilineStringContext) any {
 	var buf string
-	for _, s := range ctx.AllValueString() {
-    		str := Dequote(s.GetText())
+	for i, s := range ctx.AllValueString() {
+		str, _ := strconv.Unquote(s.GetText())
+		if i != len(ctx.AllValueString())-1 {
+			str += "\n"
+		}
+
 		buf += str
-    	}
+	}
 
-    	return buf
+	return buf
 }
-

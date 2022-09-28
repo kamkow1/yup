@@ -29,13 +29,3 @@ func BoolToInt(a bool) uint64 {
 	return *(*uint64)(unsafe.Pointer(&a))&1
 }
 
-func Dequote(str string) string {
-	if len(str) >= 2 {
-		if str[0] == '"' && str[len(str)-1] == '"' {
-			return str[1:len(str)-1]
-    		}
-	}
-
-	return str
-}
-

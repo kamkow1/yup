@@ -45,7 +45,7 @@ ifStatement:		        KeywordIf expression ifThenBlock ifElseBlock?;
 ifThenBlock:		        codeBlock;
 ifElseBlock:		        KeywordElse codeBlock;
 
-constant:                       multilineString | ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
+constant:                       multilineString| ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
 literalConstantInt:		SymbolColon ValueInteger;
 literalConstantString:          SymbolColon multilineString;
 multilineString:		ValueString+;

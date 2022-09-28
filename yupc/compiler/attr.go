@@ -1,16 +1,13 @@
 package compiler
 
 import (
+    	"strconv"
 	"github.com/kamkow1/yup/yupc/parser"
 )
 
 const (
 	AttrFuncGC int = 0
 )
-
-var Attributes map[string]int = map[string]int{
-	"gc": AttrFuncGC,
-}
 
 type Attribute struct {
 	Name   string
@@ -31,8 +28,7 @@ func (v *AstVisitor) VisitAttribute(ctx *parser.AttributeContext) any {
 	name := ctx.Identifier().GetText()
 	var params []string
 	for _, p := range ctx.AllValueString() {
-		p2 := TrimLeftChar(p.GetText())
-		p2 = TrimRightChar(p2)
+    		p2, _ := strconv.Unquote(p.GetText())
 		params = append(params, p2)
 	}
 
