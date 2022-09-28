@@ -63,6 +63,8 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitVariableValue(ctx)
 	case *parser.IdentifierExpressionContext:
 		return v.VisitIdentifierExpression(ctx)
+	case *parser.ExpressionAssignmentContext:
+    		return v.VisitExpressionAssignment(ctx)
 
 	// Function
 	case *parser.FunctionDefinitionContext:

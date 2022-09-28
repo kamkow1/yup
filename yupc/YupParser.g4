@@ -27,6 +27,8 @@ assignment:                     Identifier variableValue;
 variableDeclare:                attributeList? KeywordGlobal? declarationType Identifier typeAnnotation? variableValue?;
 declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
+expressionAssignment:		SymbolAsterisk+ Identifier variableValue;
+
 
 functionDefinition:             functionSignature codeBlock;
 functionSignature:              attributeList? Identifier SymbolLparen functionParameterList? SymbolRparen typeName?;
@@ -49,7 +51,6 @@ constant:                       multilineString| ValueInteger | ValueFloat | Val
 literalConstantInt:		SymbolColon ValueInteger;
 literalConstantString:          SymbolColon multilineString;
 multilineString:		ValueString+;
-
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
@@ -94,6 +95,7 @@ statement:                      expression                                      
         |			continueStatement				    SymbolTerminator
         |			breakStatement					    SymbolTerminator
         |			typeAliasDeclaration				    SymbolTerminator
+        |			expressionAssignment				    SymbolTerminator
         |			forLoopStatement
         |			ifStatement
         |                       functionDefinition
