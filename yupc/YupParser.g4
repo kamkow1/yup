@@ -17,7 +17,7 @@ typeExtension:                  arrayTypeExtension | SymbolAsterisk | SymbolQues
 arrayTypeExtension:             SymbolLsqbr ValueInteger SymbolRsqbr;
 typeNameExpression:             SymbolApostrophe typeName;
 
-importDeclaration:              KeywordImport ValueString;
+importDeclaration:              KeywordImport ValueString+;
 
 arrayElementAssignment:         Identifier arrayIndex* variableValue;
 arrayIndex:                     SymbolLsqbr expression SymbolRsqbr;

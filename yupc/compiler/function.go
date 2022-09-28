@@ -1,6 +1,7 @@
 package compiler
 
 import (
+    	"os"
 	"log"
 	"io/ioutil"
 	"os/exec"
@@ -188,7 +189,7 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 	"is_type_equal": IsTypeEqual,
 	"type_to_str":   TypeToStr,
 	"range":         Range,
-	"C": 		 C,
+	"c": 		 c,
 }
 
 type BuiltInTypeFunction func([]any) llvm.Type
@@ -314,21 +315,21 @@ func Range(args []any) llvm.Value {
 	return llvm.ConstArray(llvm.Int64Type(), vals)
 }
 
-func C(args []any) llvm.Value {
+func c(args []any) llvm.Value {
 
-	c := args[0].(string)
-	name := FilenameWithoutExtension(CompilationUnits.Peek().SourceFile) + "_c" + ".c"
-	ioutil.WriteFile(name, []byte(c), 0644)
+	cc := args[0].(string)
+	name := filepath.Base(FilenameWithoutExtension(CompilationUnits.Peek().SourceFile)) + "_c" + ".c"
+
+	ioutil.WriteFile(name, []byte(cc), 0644)
 
 	fpath := filepath.Join(GetCwd(), name)
 
 	cmdargs := []string{"-c", "-emit-llvm", "-o", FilenameWithoutExtension(name) + ".bc", "-v", fpath}
-	err := exec.Command("clang", cmdargs...).Run()
-
-	log.Printf("COMPILING C: %s\n", fpath)
-
-	// bcname := FilenameWithoutExtension(fpath) +  ".bc"
-	// err2 := exec.Command("llvm-link", "-o", bcname, fpath).Run()
+	cmd := exec.Command("clang", cmdargs...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
 
 	return llvm.ConstInt(llvm.Int1Type(), BoolToInt(err != nil), false)
 }

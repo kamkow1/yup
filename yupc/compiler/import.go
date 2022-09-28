@@ -46,13 +46,15 @@ func ImportModule(name string) {
 
 	mod := CompilationUnits.Pop().Module
 	if !mod.LastFunction().IsNil() {
+    		f := mod.FirstFunction()
 		llvm.AddFunction(CompilationUnits.Peek().Module,
-			mod.FirstFunction().Name(), mod.FirstFunction().Type())
-	}
+			f.Name(), f.Type())
+    	}
 
 	if !mod.LastGlobal().IsNil() {
-		llvm.AddGlobal(CompilationUnits.Peek().Module,
-			mod.FirstGlobal().Type(), mod.FirstGlobal().Name())
+    		g := mod.FirstGlobal()
+    		llvm.AddGlobal(CompilationUnits.Peek().Module,
+    			g.Type(), g.Name())
 	}
 
 	mod.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())
@@ -60,7 +62,10 @@ func ImportModule(name string) {
 }
 
 func (v *AstVisitor) VisitImportDeclaration(ctx *parser.ImportDeclarationContext) any {
-	name, _ := strconv.Unquote(ctx.ValueString().GetText())
-	ImportModule(name)
+    	for _, im := range ctx.AllValueString() {
+		name, _ := strconv.Unquote(im.GetText());
+		ImportModule(name);
+    	}
+    	
 	return nil
 }
