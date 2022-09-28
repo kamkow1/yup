@@ -61,6 +61,10 @@ finalStatement:			statement;
 continueStatement:		KeywordContinue;
 breakStatement:			KeywordBreak;
 
+structDeclaration:		Identifier KeywordStruct SymbolLbrace structField+ SymbolRbrace;
+structField:			Identifier typeAnnotation SymbolTerminator;
+typeAliasDeclaration:		Identifier KeywordTypeAlias typeName;
+
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
         |                       array                                               #arrayExpression
@@ -89,8 +93,10 @@ statement:                      expression                                      
         |                       importDeclaration                                   SymbolTerminator
         |			continueStatement				    SymbolTerminator
         |			breakStatement					    SymbolTerminator
+        |			typeAliasDeclaration				    SymbolTerminator
         |			forLoopStatement
         |			ifStatement
         |                       functionDefinition
         |                       codeBlock
-        |                       SymbolTerminator;
+        |                       SymbolTerminator
+        |			structDeclaration;

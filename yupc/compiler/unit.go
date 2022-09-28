@@ -33,6 +33,7 @@ type CompilationUnit struct {
 	Module     llvm.Module
 	Locals     []map[string]LocalVariable
 	Functions  map[string]Function
+	Structs    map[string]Structure
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
@@ -43,6 +44,7 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 		llvm.NewModule(sf),
 		[]map[string]LocalVariable{},
 		map[string]Function{},
+		map[string]Structure{},
 	}
 }
 

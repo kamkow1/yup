@@ -12,6 +12,8 @@ KeywordIn		    :	'in';
 KeywordTo		    :	'to';
 KeywordContinue		    :	'continue';
 KeywordBreak		    :	'break';
+KeywordStruct		    :   'struct';
+KeywordTypeAlias	    :   'typealias';
 
 SymbolApostrophe            :   '\'';
 SymbolTerminator            :   ';';

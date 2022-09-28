@@ -8,21 +8,18 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-var BuiltinLLVMTypes map[string]llvm.Type
-
-func init() {
-	BuiltinLLVMTypes = map[string]llvm.Type{
-		"i1":   llvm.Int1Type(),
-		"i8":   llvm.Int8Type(),
-		"i16":  llvm.Int16Type(),
-		"i32":  llvm.Int32Type(),
-		"i64":  llvm.Int64Type(),
-		"f32":  llvm.FloatType(),
-		"f128": llvm.FP128Type(),
-		"dbl":  llvm.DoubleType(),
-		"void": llvm.VoidType(),
-	}
+var BuiltinLLVMTypes map[string]llvm.Type = map[string]llvm.Type{
+	"i1":   llvm.Int1Type(),
+	"i8":   llvm.Int8Type(),
+	"i16":  llvm.Int16Type(),
+	"i32":  llvm.Int32Type(),
+	"i64":  llvm.Int64Type(),
+	"f32":  llvm.FloatType(),
+	"f128": llvm.FP128Type(),
+	"void": llvm.VoidType(),
 }
+
+var UserTypes map[string]llvm.Type = map[string]llvm.Type{}
 
 func GetPointerType(typ llvm.Type) llvm.Type {
 	return llvm.PointerType(typ, 0)
@@ -36,7 +33,9 @@ func GetTypeFromName(name string) llvm.Type {
 	var typ llvm.Type
 	if llvmType, ok := BuiltinLLVMTypes[name]; ok {
 		typ = llvmType
-	} else {
+	} else if userType, ok2 := UserTypes[name]; ok2 {
+		typ = userType
+    	} else {
 		log.Fatalf("ERROR: unknown type: %s", name)
 	}
 
@@ -88,3 +87,59 @@ func (v *AstVisitor) VisitTypeExpression(ctx *parser.TypeExpressionContext) any 
 func (v *AstVisitor) VisitTypeNameExpression(ctx *parser.TypeNameExpressionContext) any {
 	return v.Visit(ctx.TypeName())
 }
+
+type Field struct {
+    Name string
+    Type llvm.Type
+}
+
+type Structure struct {
+	Name   string
+	Fields []Field
+}
+
+func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
+	return Field{
+		Name: ctx.Identifier().GetText(),
+		Type: v.Visit(ctx.TypeAnnotation()).(llvm.Type),
+    	}
+}
+
+func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext) any {
+	name := ctx.Identifier().GetText()
+	c := CompilationUnits.Peek().Module.Context()
+	structType := c.StructCreateNamed(name)
+	UserTypes[name] = structType
+
+	var fields []Field
+	for _, fld := range ctx.AllStructField() {
+		fields = append(fields, v.Visit(fld).(Field))
+	}
+
+	strct := Structure{
+		Name:    name,
+		Fields: fields,
+    	}
+
+    	CompilationUnits.Peek().Structs[name] = strct
+
+	var fieldTypes []llvm.Type
+	for _, fld := range fields {
+		fieldTypes = append(fieldTypes, fld.Type)
+    	}
+
+	structType.StructSetBody(fieldTypes, false)
+	UserTypes[name] = structType
+
+    	return structType
+}
+
+func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationContext) any {
+	ogType := v.Visit(ctx.TypeName()).(llvm.Type)
+	name := ctx.Identifier().GetText()
+
+	UserTypes[name] = ogType
+	
+	return nil
+}
+
