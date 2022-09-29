@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"log"
+	"fmt"
 	"strconv"
 
 	"github.com/kamkow1/yup/yupc/parser"
@@ -95,11 +96,11 @@ type Field struct {
 
 type Structure struct {
 	Name   string
-	Fields []Field
+	Fields []*Field
 }
 
 func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
-	return Field{
+	return &Field{
 		Name: ctx.Identifier().GetText(),
 		Type: v.Visit(ctx.TypeAnnotation()).(llvm.Type),
     	}
@@ -111,14 +112,14 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	structType := c.StructCreateNamed(name)
 	UserTypes[name] = structType
 
-	var fields []Field
+	var fields []*Field
 	for _, fld := range ctx.AllStructField() {
-		fields = append(fields, v.Visit(fld).(Field))
+		fields = append(fields, v.Visit(fld).(*Field))
 	}
 
 	strct := Structure{
 		Name:    name,
-		Fields: fields,
+		Fields:  fields,
     	}
 
     	CompilationUnits.Peek().Structs[name] = strct
@@ -141,5 +142,26 @@ func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationC
 	UserTypes[name] = ogType
 	
 	return nil
+}
+
+func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressionContext) any {
+    	strct := v.Visit(ctx.Expression()).(llvm.Value)
+    	name := strct.Type().ElementType().StructName()
+    	fmt.Printf("struct: %s\n", name)
+    	fieldName := ctx.Identifier().GetText()
+	baseStruct, ok := CompilationUnits.Peek().Structs[name]
+	if !ok {
+		log.Fatalf("ERROR: unknown struct type: %s\n", name)
+    	}
+
+	var field llvm.Value
+    	for i, _ := range strct.Type().StructElementTypes() {
+        	fmt.Println(len(baseStruct.Name))
+		if fieldName == baseStruct.Fields[i].Name {
+			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
+		}
+    	}
+
+    	return field
 }
 

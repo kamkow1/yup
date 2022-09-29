@@ -1,0 +1,14 @@
+package compiler
+
+import (
+	"github.com/kamkow1/yup/yupc/parser"
+)
+
+type Structure struct {
+
+	}
+
+func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext) any {
+
+}
+

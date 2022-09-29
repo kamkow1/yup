@@ -122,11 +122,7 @@ func (v *AstVisitor) VisitAssignment(ctx *parser.AssignmentContext) any {
 }
 
 func (v *AstVisitor) VisitExpressionAssignment(ctx *parser.ExpressionAssignmentContext) any {
-    	v0 := FindLocalVariable(ctx.Identifier().GetText(), len(CompilationUnits.Peek().Locals)-1).Value
-	for _ = range ctx.AllSymbolAsterisk() {
-    		v0 = CompilationUnits.Peek().Builder.CreateLoad(v0, "")
-	}
-
+	v0 := v.Visit(ctx.Expression()).(llvm.Value)
 	v1 := v.Visit(ctx.VariableValue()).(llvm.Value)
 	return CompilationUnits.Peek().Builder.CreateStore(v1, v0)
 }

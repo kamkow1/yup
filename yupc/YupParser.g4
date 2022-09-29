@@ -27,7 +27,7 @@ assignment:                     Identifier variableValue;
 variableDeclare:                attributeList? KeywordGlobal? declarationType Identifier typeAnnotation? variableValue?;
 declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
-expressionAssignment:		SymbolAsterisk+ Identifier variableValue;
+expressionAssignment:		expression variableValue;
 
 
 functionDefinition:             functionSignature codeBlock;
@@ -83,7 +83,8 @@ expression:                     functionCall                                    
         |			constant                                            #constantExpression
         |			literalConstantInt		 	  	    #literalConstantIntExpression
         |                       literalConstantString                               #literalConstantStringExpression
-        |			multilineString					    #MultilineStringExpression;
+        |			multilineString					    #MultilineStringExpression
+        |			expression SymbolDot Identifier			    #FieldAccessExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator

@@ -160,12 +160,15 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.BreakStatementContext:
 		return v.VisitBreakStatement(ctx)
 
+	// Struct
 	case *parser.StructDeclarationContext:
     		return v.VisitStructDeclaration(ctx)
     	case *parser.StructFieldContext:
         	return v.VisitStructField(ctx)
         case *parser.TypeAliasDeclarationContext:
             	return v.VisitTypeAliasDeclaration(ctx)
+        case *parser.FieldAccessExpressionContext:
+            	return v.VisitFieldAccessExpression(ctx)
 
 	default:
 		log.Fatalf("ERROR: stepped into an unimplemented context: %s\n", ctx.GetText())
