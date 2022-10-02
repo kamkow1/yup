@@ -5,16 +5,17 @@ KeywordConst                :   'const';
 KeywordGlobal               :   'global';
 KeywordVar                  :   'var';
 KeywordImport               :   'import';
-KeywordIf		    :	'if';
-KeywordElse		    :	'else';
-KeywordFor		    :	'for';
-KeywordIn		    :	'in';
-KeywordTo		    :	'to';
-KeywordContinue		    :	'continue';
-KeywordBreak		    :	'break';
-KeywordStruct		    :   'struct';
-KeywordTypeAlias	    :   'typealias';
+KeywordIf		            :	'if';
+KeywordElse		    		:	'else';
+KeywordFor		    		:	'for';
+KeywordIn		    		:	'in';
+KeywordTo		    		:	'to';
+KeywordContinue		    	:	'continue';
+KeywordBreak		    	:	'break';
+KeywordStruct		    	:   'struct';
+KeywordTypeAlias	    	:   'typealias';
 
+SymbolArrow					:   '->';
 SymbolApostrophe            :   '\'';
 SymbolTerminator            :   ';';
 SymbolAssign                :   '=';
@@ -48,10 +49,9 @@ SymbolOr                    :   'or';
 SymbolNot                   :   'not';
 
 ValueChar                   :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
-// ValueString                 :   '"' (~'"' | '\'\'')* '"';
 fragment EscapedValue	    :   '\\' [abfnrtv\\'"];
-ValueString		    :   '"' (~["\\] | EscapedValue)* '"';
-ValueRawString		    :	'`' ~'`'* '`'; 
+ValueString		    		:   '"' (~["\\] | EscapedValue)* '"';
+ValueRawString		    	:	'`' ~'`'* '`'; 
 
 
 ValueInteger                :   '-'? '0'..'9'+;
