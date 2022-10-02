@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"log"
-	"fmt"
 	"strconv"
 
 	"github.com/kamkow1/yup/yupc/parser"
@@ -36,7 +35,7 @@ func GetTypeFromName(name string) llvm.Type {
 		typ = llvmType
 	} else if userType, ok2 := UserTypes[name]; ok2 {
 		typ = userType
-    	} else {
+	} else {
 		log.Fatalf("ERROR: unknown type: %s", name)
 	}
 
@@ -90,8 +89,8 @@ func (v *AstVisitor) VisitTypeNameExpression(ctx *parser.TypeNameExpressionConte
 }
 
 type Field struct {
-    Name string
-    Type llvm.Type
+	Name string
+	Type llvm.Type
 }
 
 type Structure struct {
@@ -103,7 +102,7 @@ func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
 	return &Field{
 		Name: ctx.Identifier().GetText(),
 		Type: v.Visit(ctx.TypeAnnotation()).(llvm.Type),
-    	}
+	}
 }
 
 func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext) any {
@@ -118,21 +117,21 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	}
 
 	strct := Structure{
-		Name:    name,
-		Fields:  fields,
-    	}
+		Name:   name,
+		Fields: fields,
+	}
 
-    	CompilationUnits.Peek().Structs[name] = strct
+	CompilationUnits.Peek().Structs[name] = strct
 
 	var fieldTypes []llvm.Type
 	for _, fld := range fields {
 		fieldTypes = append(fieldTypes, fld.Type)
-    	}
+	}
 
 	structType.StructSetBody(fieldTypes, false)
 	UserTypes[name] = structType
 
-    	return structType
+	return structType
 }
 
 func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationContext) any {
@@ -140,28 +139,66 @@ func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationC
 	name := ctx.Identifier().GetText()
 
 	UserTypes[name] = ogType
-	
+
 	return nil
 }
 
 func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressionContext) any {
-    	strct := v.Visit(ctx.Expression()).(llvm.Value)
-    	name := strct.Type().ElementType().StructName()
-    	fmt.Printf("struct: %s\n", name)
-    	fieldName := ctx.Identifier().GetText()
-	baseStruct, ok := CompilationUnits.Peek().Structs[name]
-	if !ok {
-		log.Fatalf("ERROR: unknown struct type: %s\n", name)
-    	}
+	strct := v.Visit(ctx.Expression()).(llvm.Value)
+
+	if strct.Type().TypeKind() == llvm.PointerTypeKind {
+		strct = CompilationUnits.Peek().Builder.CreateLoad(strct, "")
+	} else {
+		log.Fatalf("ERROR: cannot access struct fields on a non-pointer type")
+	}
+
+	tmptyp := strct.Type()
+	name := tmptyp.StructName()
+	for tmptyp.TypeKind() == llvm.PointerTypeKind {
+		name = tmptyp.ElementType().StructName()
+		tmptyp = tmptyp.ElementType()
+	}
+
+	fieldName := ctx.Identifier().GetText()
+	baseStruct, _ := CompilationUnits.Peek().Structs[name]
 
 	var field llvm.Value
-    	for i, _ := range strct.Type().StructElementTypes() {
-        	fmt.Println(len(baseStruct.Name))
+	for i, f := range baseStruct.Fields {
+		if fieldName == f.Name {
+			gep := CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
+			field = CompilationUnits.Peek().Builder.CreateLoad(gep, "")
+		}
+	}
+
+	return field
+}
+
+func (v *AstVisitor) VisitFieldAssignment(ctx *parser.FieldAssignmentContext) any {
+	strct := v.Visit(ctx.Expression()).(llvm.Value)
+
+	if strct.Type().TypeKind() == llvm.PointerTypeKind {
+		strct = CompilationUnits.Peek().Builder.CreateLoad(strct, "")
+	} else {
+		log.Fatalf("ERROR: cannot access struct fields on a non-pointer type")
+	}
+
+	tmptyp := strct.Type()
+	name := tmptyp.StructName()
+	for tmptyp.TypeKind() == llvm.PointerTypeKind {
+		name = tmptyp.ElementType().StructName()
+		tmptyp = tmptyp.ElementType()
+	}
+
+	fieldName := ctx.Identifier().GetText()
+	baseStruct, _ := CompilationUnits.Peek().Structs[name]
+
+	var field llvm.Value
+	for i, _ := range tmptyp.StructElementTypes() {
 		if fieldName == baseStruct.Fields[i].Name {
 			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
 		}
-    	}
+	}
 
-    	return field
+	value := v.Visit(ctx.VariableValue()).(llvm.Value)
+	return CompilationUnits.Peek().Builder.CreateStore(value, field)
 }
-

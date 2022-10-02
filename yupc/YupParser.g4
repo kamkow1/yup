@@ -27,7 +27,7 @@ assignment:                     Identifier variableValue;
 variableDeclare:                attributeList? KeywordGlobal? declarationType Identifier typeAnnotation? variableValue?;
 declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
-expressionAssignment:		expression variableValue;
+dereferenceAssignment:          SymbolAsterisk+ expression variableValue;
 
 
 functionDefinition:             functionSignature codeBlock;
@@ -43,28 +43,29 @@ binaryOperator:                 SymbolPlus | SymbolMinus | SymbolAsterisk | Symb
 pointerDereference:             SymbolAsterisk expression;
 addressOf:                      SymbolAmpersand Identifier;
 
-ifStatement:		        KeywordIf expression ifThenBlock ifElseBlock?;
-ifThenBlock:		        codeBlock;
-ifElseBlock:		        KeywordElse codeBlock;
+ifStatement:		            KeywordIf expression ifThenBlock ifElseBlock?;
+ifThenBlock:		            codeBlock;
+ifElseBlock:		            KeywordElse codeBlock;
 
 constant:                       multilineString| ValueInteger | ValueFloat | ValueBool | ValueChar | ValueNull;
-literalConstantInt:		SymbolColon ValueInteger;
+literalConstantInt:		        SymbolColon ValueInteger;
 literalConstantString:          SymbolColon multilineString;
-multilineString:		ValueString+;
+multilineString:		        ValueString+;
 
 comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
-forLoopStatement:		KeywordFor (arrayBasedLoop | conditionBasedLoop | statementBasedLoop) codeBlock;
-arrayBasedLoop:			variableDeclare KeywordIn expression;
-conditionBasedLoop:		expression;
-statementBasedLoop:		statement+;
-finalStatement:			statement;
-continueStatement:		KeywordContinue;
-breakStatement:			KeywordBreak;
+forLoopStatement:		        KeywordFor (arrayBasedLoop | conditionBasedLoop | statementBasedLoop) codeBlock;
+arrayBasedLoop:			        variableDeclare KeywordIn expression;
+conditionBasedLoop:		        expression;
+statementBasedLoop:		        statement+;
+finalStatement:			        statement;
+continueStatement:		        KeywordContinue;
+breakStatement:			        KeywordBreak;
 
-structDeclaration:		Identifier KeywordStruct SymbolLbrace structField+ SymbolRbrace;
-structField:			Identifier typeAnnotation SymbolTerminator;
-typeAliasDeclaration:		Identifier KeywordTypeAlias typeName;
+structDeclaration:		        Identifier KeywordStruct SymbolLbrace structField+ SymbolRbrace;
+structField:			        Identifier typeAnnotation SymbolTerminator;
+fieldAssignment:                expression SymbolDot Identifier variableValue;
+typeAliasDeclaration:		    Identifier KeywordTypeAlias typeName;
 
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
@@ -80,26 +81,27 @@ expression:                     functionCall                                    
         |                       (SymbolNot | SymbolExclMark) expression             #NegatedExpression
         |                       expression SymbolAnd expression                     #LogicalAndExpression
         |                       expression SymbolOr expression                      #LogicalOrExpression
-        |			constant                                            #constantExpression
-        |			literalConstantInt		 	  	    #literalConstantIntExpression
+        |			            constant                                            #constantExpression
+        |			            literalConstantInt		 	  	                    #literalConstantIntExpression
         |                       literalConstantString                               #literalConstantStringExpression
-        |			multilineString					    #MultilineStringExpression
-        |			expression SymbolDot Identifier			    #FieldAccessExpression;
+        |			            multilineString					                    #MultilineStringExpression
+        |			            expression SymbolDot Identifier			            #FieldAccessExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator
+        |                       dereferenceAssignment                               SymbolTerminator
         |                       functionReturn                                      SymbolTerminator
         |                       variableDeclare                                     SymbolTerminator
         |                       arrayElementAssignment                              SymbolTerminator
         |                       functionSignature                                   SymbolTerminator
         |                       importDeclaration                                   SymbolTerminator
-        |			continueStatement				    SymbolTerminator
-        |			breakStatement					    SymbolTerminator
-        |			typeAliasDeclaration				    SymbolTerminator
-        |			expressionAssignment				    SymbolTerminator
-        |			forLoopStatement
-        |			ifStatement
+        |			            continueStatement				                    SymbolTerminator
+        |			            breakStatement					                    SymbolTerminator
+        |			            typeAliasDeclaration				                SymbolTerminator
+        |                       fieldAssignment                                     SymbolTerminator
+        |			            forLoopStatement
+        |			            ifStatement
         |                       functionDefinition
         |                       codeBlock
         |                       SymbolTerminator
-        |			structDeclaration;
+        |			            structDeclaration;

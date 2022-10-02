@@ -83,6 +83,7 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 	CompilationUnits.Push(cu)
 
 	v.Visit(tree)
+	llvm.VerifyModule(CompilationUnits.Peek().Module, llvm.PrintMessageAction)
 }
 
 func ProcessPathRecursively(p string) {

@@ -54,13 +54,15 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 
 	var typ llvm.Type
 	var value llvm.Value
-	isInit := false
+	isInit := ctx.VariableValue() != nil
+	if isInit {
+		value = v.Visit(ctx.VariableValue()).(llvm.Value)
+	}
+
 	if ctx.TypeAnnotation() != nil {
 		typ = v.Visit(ctx.TypeAnnotation()).(llvm.Type)
 	} else {
-		value = v.Visit(ctx.VariableValue()).(llvm.Value)
 		typ = value.Type()
-		isInit = true
 	}
 
 	if isGlobal {
@@ -90,6 +92,7 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 		lv := LocalVariable{name, isConstant, v}
 		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = lv
 		if isInit {
+			value = Cast(value, typ)
 			CompilationUnits.Peek().Builder.CreateStore(value, v)
 		}
 	}
@@ -120,10 +123,3 @@ func (v *AstVisitor) VisitAssignment(ctx *parser.AssignmentContext) any {
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, vr.Value)
 }
-
-func (v *AstVisitor) VisitExpressionAssignment(ctx *parser.ExpressionAssignmentContext) any {
-	v0 := v.Visit(ctx.Expression()).(llvm.Value)
-	v1 := v.Visit(ctx.VariableValue()).(llvm.Value)
-	return CompilationUnits.Peek().Builder.CreateStore(v1, v0)
-}
-

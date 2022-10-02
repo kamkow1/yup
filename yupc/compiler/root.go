@@ -63,8 +63,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitVariableValue(ctx)
 	case *parser.IdentifierExpressionContext:
 		return v.VisitIdentifierExpression(ctx)
-	case *parser.ExpressionAssignmentContext:
-    		return v.VisitExpressionAssignment(ctx)
 
 	// Function
 	case *parser.FunctionDefinitionContext:
@@ -93,6 +91,8 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitAddressOfExpression(ctx)
 	case *parser.PointerDereferenceExpressionContext:
 		return v.VisitPointerDereferenceExpression(ctx)
+	case *parser.DereferenceAssignmentContext:
+		return v.VisitDereferenceAssignment(ctx)
 
 	// Constant
 	case *parser.ConstantContext:
@@ -108,9 +108,9 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.LiteralConstantStringContext:
 		return v.VisitLiteralConstantString(ctx)
 	case *parser.MultilineStringExpressionContext:
-    		return v.VisitMultilineStringExpression(ctx)
-    	case *parser.MultilineStringContext:
-        	return v.VisitMultilineString(ctx)
+		return v.VisitMultilineStringExpression(ctx)
+	case *parser.MultilineStringContext:
+		return v.VisitMultilineString(ctx)
 
 	// Binary Operator
 	case *parser.BinaryOperatorContext:
@@ -162,13 +162,15 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 
 	// Struct
 	case *parser.StructDeclarationContext:
-    		return v.VisitStructDeclaration(ctx)
-    	case *parser.StructFieldContext:
-        	return v.VisitStructField(ctx)
-        case *parser.TypeAliasDeclarationContext:
-            	return v.VisitTypeAliasDeclaration(ctx)
-        case *parser.FieldAccessExpressionContext:
-            	return v.VisitFieldAccessExpression(ctx)
+		return v.VisitStructDeclaration(ctx)
+	case *parser.StructFieldContext:
+		return v.VisitStructField(ctx)
+	case *parser.TypeAliasDeclarationContext:
+		return v.VisitTypeAliasDeclaration(ctx)
+	case *parser.FieldAccessExpressionContext:
+		return v.VisitFieldAccessExpression(ctx)
+	case *parser.FieldAssignmentContext:
+		return v.VisitFieldAssignment(ctx)
 
 	default:
 		log.Fatalf("ERROR: stepped into an unimplemented context: %s\n", ctx.GetText())

@@ -1,9 +1,9 @@
 package compiler
 
 import (
-    	"os"
-	"log"
 	"io/ioutil"
+	"log"
+	//	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -45,7 +45,7 @@ func (v *AstVisitor) VisitFunctionParameterList(ctx *parser.FunctionParameterLis
 			})
 		} else {
 			params = append(params, FuncParam{
-    			        IsConst:  pp.KeywordConst() != nil,
+				IsConst:  pp.KeywordConst() != nil,
 				IsVarArg: false,
 				Name:     pp.Identifier().GetText(),
 				Type:     v.Visit(p).(llvm.Type),
@@ -150,10 +150,10 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 			alloca := CompilationUnits.Peek().Builder.CreateAlloca(p.Type(), "")
 			n := len(CompilationUnits.Peek().Locals) - 1
 			CompilationUnits.Peek().Locals[n][p.Name()] = LocalVariable{
-    				p.Name(),
-    				function.Params[i].IsConst,
-    				alloca,
-    			}
+				p.Name(),
+				function.Params[i].IsConst,
+				alloca,
+			}
 			CompilationUnits.Peek().Builder.CreateStore(p, alloca)
 		}
 	}
@@ -166,13 +166,15 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 		}
 
 		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.ExitBlock)
-		return CompilationUnits.Peek().Builder.CreateRetVoid()
+		CompilationUnits.Peek().Builder.CreateRetVoid()
 	} else {
 		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.ExitBlock)
 		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
 		load := CompilationUnits.Peek().Builder.CreateLoad(returnValue.Value, "")
-		return CompilationUnits.Peek().Builder.CreateRet(load)
+		CompilationUnits.Peek().Builder.CreateRet(load)
 	}
+
+	return llvm.VerifyFunction(function.Value, llvm.PrintMessageAction)
 }
 
 func (v *AstVisitor) VisitFunctionCallArgList(ctx *parser.FunctionCallArgListContext) any {
@@ -191,17 +193,17 @@ func (v *AstVisitor) VisitFunctionCallExpression(ctx *parser.FunctionCallExpress
 type BuiltInValueFunction func([]any) llvm.Value
 
 var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInValueFunction{
-	"cast":          Cast,
+	"cast":          CastWrapper,
 	"size_of":       SizeOf,
 	"is_type_equal": IsTypeEqual,
 	"type_to_str":   TypeToStr,
 	"range":         Range,
-	"c": 		 c,
+	"c":             InlineC,
 }
 
 type BuiltInTypeFunction func([]any) llvm.Type
 
-var builtInTypeFunctions map[string]BuiltInTypeFunction = map[string]BuiltInTypeFunction{
+var BuiltInTypeFunctions map[string]BuiltInTypeFunction = map[string]BuiltInTypeFunction{
 	"type_of": TypeOf,
 }
 
@@ -219,6 +221,8 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 
 	if f, ok := BuiltInValueFunctions[name]; ok {
 		return f(args)
+	} else if f1, ok1 := BuiltInTypeFunctions[name]; ok1 {
+		return f1(args)
 	} else {
 		f := CompilationUnits.Peek().Module.NamedFunction(name)
 		if f.IsNil() {
@@ -276,10 +280,7 @@ func IsTypeEqual(args []any) llvm.Value {
 	return result
 }
 
-func Cast(args []any) llvm.Value {
-	value := args[0].(llvm.Value)
-	typ := args[1].(llvm.Type)
-
+func Cast(value llvm.Value, typ llvm.Type) llvm.Value {
 	if value.Type().TypeKind() == llvm.IntegerTypeKind && typ.TypeKind() == llvm.IntegerTypeKind {
 		return CompilationUnits.Peek().Builder.CreateIntCast(value, typ, "")
 	} else if value.Type().TypeKind() == llvm.IntegerTypeKind && typ.TypeKind() == llvm.PointerTypeKind {
@@ -291,6 +292,12 @@ func Cast(args []any) llvm.Value {
 	} else {
 		return CompilationUnits.Peek().Builder.CreateBitCast(value, typ, "")
 	}
+}
+
+func CastWrapper(args []any) llvm.Value {
+	value := args[0].(llvm.Value)
+	typ := args[1].(llvm.Type)
+	return Cast(value, typ)
 }
 
 func SizeOf(args []any) llvm.Value {
@@ -322,7 +329,7 @@ func Range(args []any) llvm.Value {
 	return llvm.ConstArray(llvm.Int64Type(), vals)
 }
 
-func c(args []any) llvm.Value {
+func InlineC(args []any) llvm.Value {
 
 	cc := args[0].(string)
 	name := filepath.Base(FilenameWithoutExtension(CompilationUnits.Peek().SourceFile)) + "_c" + ".c"
@@ -333,9 +340,9 @@ func c(args []any) llvm.Value {
 
 	cmdargs := []string{"-c", "-emit-llvm", "-o", FilenameWithoutExtension(name) + ".bc", "-v", fpath}
 	cmd := exec.Command("clang", cmdargs...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	// cmd.Stdin = os.Stdin
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
 	err := cmd.Run()
 
 	return llvm.ConstInt(llvm.Int1Type(), BoolToInt(err != nil), false)
