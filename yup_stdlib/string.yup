@@ -1,9 +1,6 @@
 // module for handling strings
 
-#[friends("new_string", 
-		  "string_buffer",
-		  "string_len"
-)]
+#[friends("new_string", "string_buffer", "string_len")]
 String struct {
 	buffer: *i8;
 	len:    i64;
@@ -38,5 +35,22 @@ string_buffer(str: *String) -> *i8 {
 
 string_len(str: *String) -> i64 {
 	return &str.len;
+}
+
+compare_strings(s0: *String, s1: *String) -> i32 {
+	if string_len(s0) != string_len(s1) {
+		return 0;
+	}
+
+	var i: i64 = 0;
+	for i < string_len(s0) {
+		if string_buffer(s0)[i] != string_buffer(s1)[i] {
+			return 0;
+		}
+		
+		i = i + cast(1, 'i64);
+	}
+	
+	return 1;
 }
 
