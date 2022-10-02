@@ -63,7 +63,7 @@ continueStatement:		        KeywordContinue;
 breakStatement:			        KeywordBreak;
 
 structDeclaration:		        Identifier KeywordStruct SymbolLbrace structField+ SymbolRbrace;
-structField:			        Identifier typeAnnotation SymbolTerminator;
+structField:			        KeywordPublic? KeywordInitOnly? Identifier typeAnnotation SymbolTerminator;
 fieldAssignment:                expression SymbolDot Identifier variableValue;
 typeAliasDeclaration:		    Identifier KeywordTypeAlias typeName;
 

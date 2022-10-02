@@ -89,8 +89,11 @@ func (v *AstVisitor) VisitTypeNameExpression(ctx *parser.TypeNameExpressionConte
 }
 
 type Field struct {
-	Name string
-	Type llvm.Type
+	Name     string
+	Type     llvm.Type
+	InitOnly bool
+	Assigned bool
+	Private  bool
 }
 
 type Structure struct {
@@ -100,8 +103,11 @@ type Structure struct {
 
 func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
 	return &Field{
-		Name: ctx.Identifier().GetText(),
-		Type: v.Visit(ctx.TypeAnnotation()).(llvm.Type),
+		Name:     ctx.Identifier().GetText(),
+		Type:     v.Visit(ctx.TypeAnnotation()).(llvm.Type),
+		InitOnly: ctx.KeywordInitOnly() != nil,
+		Assigned: false,
+		Private:  ctx.KeywordPublic() == nil,
 	}
 }
 
@@ -165,6 +171,10 @@ func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressio
 	var field llvm.Value
 	for i, f := range baseStruct.Fields {
 		if fieldName == f.Name {
+			if f.Private {
+				log.Fatalf("ERROR: cannot access a private field")
+			}
+
 			gep := CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
 			field = CompilationUnits.Peek().Builder.CreateLoad(gep, "")
 		}
@@ -193,9 +203,14 @@ func (v *AstVisitor) VisitFieldAssignment(ctx *parser.FieldAssignmentContext) an
 	baseStruct, _ := CompilationUnits.Peek().Structs[name]
 
 	var field llvm.Value
-	for i, _ := range tmptyp.StructElementTypes() {
-		if fieldName == baseStruct.Fields[i].Name {
+	for i, f := range baseStruct.Fields {
+		if fieldName == f.Name {
+			if f.InitOnly && f.Assigned {
+				log.Fatalf("ERROR: initonly field assigned more than once")
+			}
+
 			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
+			f.Assigned = true
 		}
 	}
 
