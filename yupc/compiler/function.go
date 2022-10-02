@@ -174,7 +174,8 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 		CompilationUnits.Peek().Builder.CreateRet(load)
 	}
 
-	return llvm.VerifyFunction(*function.Value, llvm.PrintMessageAction)
+	//return llvm.VerifyFunction(*function.Value, llvm.PrintMessageAction)
+	return nil
 }
 
 func (v *AstVisitor) VisitFunctionCallArgList(ctx *parser.FunctionCallArgListContext) any {
