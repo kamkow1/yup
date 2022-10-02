@@ -2,7 +2,6 @@ lexer grammar YupLexer;
 
 KeywordReturn               :   'return';
 KeywordConst                :   'const';
-KeywordGlobal               :   'global';
 KeywordVar                  :   'var';
 KeywordImport               :   'import';
 KeywordIf		            :	'if';

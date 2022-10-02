@@ -49,7 +49,7 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 		log.Fatalf("ERROR: variable %s has already been declared", name)
 	}
 
-	isGlobal := ctx.KeywordGlobal() != nil
+	isGlobal := CompilationUnits.Peek().Builder.GetInsertBlock().IsNil()
 	isConstant := v.Visit(ctx.DeclarationType()).(bool) // true == const, false == var
 
 	var typ llvm.Type
