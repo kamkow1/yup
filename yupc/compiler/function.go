@@ -24,7 +24,7 @@ type FuncParam struct {
 
 type Function struct {
 	Name      string
-	Value     llvm.Value
+	Value     *llvm.Value
 	Params    []FuncParam
 	ExitBlock *llvm.BasicBlock
 }
@@ -118,7 +118,7 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 
 	CompilationUnits.Peek().Functions[name] = Function{
 		name,
-		function,
+		&function,
 		params,
 		&llvm.BasicBlock{},
 	}
@@ -174,7 +174,7 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 		CompilationUnits.Peek().Builder.CreateRet(load)
 	}
 
-	return llvm.VerifyFunction(function.Value, llvm.PrintMessageAction)
+	return llvm.VerifyFunction(*function.Value, llvm.PrintMessageAction)
 }
 
 func (v *AstVisitor) VisitFunctionCallArgList(ctx *parser.FunctionCallArgListContext) any {
@@ -225,6 +225,7 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 		return f1(args)
 	} else {
 		f := CompilationUnits.Peek().Module.NamedFunction(name)
+
 		if f.IsNil() {
 			log.Fatalf("ERROR: tried to call an unknown function: %s", name)
 		}

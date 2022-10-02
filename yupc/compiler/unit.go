@@ -32,19 +32,21 @@ type CompilationUnit struct {
 	Builder    llvm.Builder
 	Module     llvm.Module
 	Locals     []map[string]LocalVariable
+	Globals    map[string]llvm.Value
 	Functions  map[string]Function
 	Structs    map[string]Structure
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 	return &CompilationUnit{
-		sf,
-		bc,
-		llvm.NewBuilder(),
-		llvm.NewModule(sf),
-		[]map[string]LocalVariable{},
-		map[string]Function{},
-		map[string]Structure{},
+		SourceFile: sf,
+		ModuleName: bc,
+		Builder:    llvm.NewBuilder(),
+		Module:     llvm.NewModule(sf),
+		Locals:     []map[string]LocalVariable{},
+		Globals:    map[string]llvm.Value{},
+		Functions:  map[string]Function{},
+		Structs:    map[string]Structure{},
 	}
 }
 

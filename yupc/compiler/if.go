@@ -18,14 +18,14 @@ func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	function := CompilationUnits.Peek().Functions[functionName]
-	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "if.then")
+	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(*function.Value, "if.then")
 
 	var elseBlock llvm.BasicBlock
 	if ctx.IfElseBlock() != nil {
-		elseBlock = llvm.AddBasicBlock(function.Value, "if.else")
+		elseBlock = llvm.AddBasicBlock(*function.Value, "if.else")
 	}
 
-	mergeBlock := llvm.AddBasicBlock(function.Value, "if.merge")
+	mergeBlock := llvm.AddBasicBlock(*function.Value, "if.merge")
 
 	if ctx.IfElseBlock() != nil {
 		CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, elseBlock)

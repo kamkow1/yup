@@ -46,16 +46,21 @@ func ImportModule(name string) {
 
 	unit := CompilationUnits.Pop()
 	mod := unit.Module
-	if !mod.LastFunction().IsNil() {
-		f := mod.FirstFunction()
-		llvm.AddFunction(CompilationUnits.Peek().Module,
-			f.Name(), f.Type().ElementType())
+	for name, _ := range unit.Functions {
+		fnc := mod.NamedFunction(name)
+		llvm.AddFunction(CompilationUnits.Peek().Module, name, fnc.Type().ElementType())
+
+		CompilationUnits.Peek().Functions[name] = Function{
+			Name:      name,
+			Params:    make([]FuncParam, 0),
+			Value:     &fnc,
+			ExitBlock: nil,
+		}
 	}
 
-	if !mod.LastGlobal().IsNil() {
-		g := mod.FirstGlobal()
-		llvm.AddGlobal(CompilationUnits.Peek().Module,
-			g.Type(), g.Name())
+	for name, _ := range unit.Globals {
+		glb := mod.NamedGlobal(name)
+		llvm.AddGlobal(CompilationUnits.Peek().Module, glb.Type(), name)
 	}
 
 	for name, strct := range unit.Structs {

@@ -32,10 +32,10 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	function := CompilationUnits.Peek().Functions[functionName]
 
-	loopBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.body")
-	mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.merge")
+	loopBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(*function.Value, "for.body")
+	mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(*function.Value, "for.merge")
 
-	prepBlock := llvm.AddBasicBlock(function.Value, "for.prep")
+	prepBlock := llvm.AddBasicBlock(*function.Value, "for.prep")
 	CompilationUnits.Peek().Builder.CreateBr(prepBlock)
 	CompilationUnits.Peek().Builder.SetInsertPoint(prepBlock, prepBlock.FirstInstruction())
 

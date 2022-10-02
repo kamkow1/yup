@@ -83,6 +83,9 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 				}
 			}
 		}
+
+		CompilationUnits.Peek().Globals[name] = glb
+
 	} else {
 		if ctx.AttributeList() != nil {
 			log.Fatalf("ERROR: local variable %s cannot have an attribute list", name)
