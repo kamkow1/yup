@@ -44,7 +44,8 @@ func ImportModule(name string) {
 		ProcessPathRecursively(name)
 	}
 
-	mod := CompilationUnits.Pop().Module
+	unit := CompilationUnits.Pop()
+	mod := unit.Module
 	if !mod.LastFunction().IsNil() {
 		f := mod.FirstFunction()
 		llvm.AddFunction(CompilationUnits.Peek().Module,
@@ -55,6 +56,10 @@ func ImportModule(name string) {
 		g := mod.FirstGlobal()
 		llvm.AddGlobal(CompilationUnits.Peek().Module,
 			g.Type(), g.Name())
+	}
+
+	for name, strct := range unit.Structs {
+		CompilationUnits.Peek().Structs[name] = strct
 	}
 
 	mod.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())
