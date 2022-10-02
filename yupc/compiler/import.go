@@ -2,8 +2,8 @@ package compiler
 
 import (
 	"log"
-	"strconv"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/kamkow1/yup/yupc/parser"
@@ -46,15 +46,15 @@ func ImportModule(name string) {
 
 	mod := CompilationUnits.Pop().Module
 	if !mod.LastFunction().IsNil() {
-    		f := mod.FirstFunction()
+		f := mod.FirstFunction()
 		llvm.AddFunction(CompilationUnits.Peek().Module,
 			f.Name(), f.Type())
-    	}
+	}
 
 	if !mod.LastGlobal().IsNil() {
-    		g := mod.FirstGlobal()
-    		llvm.AddGlobal(CompilationUnits.Peek().Module,
-    			g.Type(), g.Name())
+		g := mod.FirstGlobal()
+		llvm.AddGlobal(CompilationUnits.Peek().Module,
+			g.Type(), g.Name())
 	}
 
 	mod.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())
@@ -62,10 +62,10 @@ func ImportModule(name string) {
 }
 
 func (v *AstVisitor) VisitImportDeclaration(ctx *parser.ImportDeclarationContext) any {
-    	for _, im := range ctx.AllValueString() {
-		name, _ := strconv.Unquote(im.GetText());
-		ImportModule(name);
-    	}
-    	
+	for _, im := range ctx.AllValueString() {
+		name, _ := strconv.Unquote(im.GetText())
+		ImportModule(name)
+	}
+
 	return nil
 }

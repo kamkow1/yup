@@ -1,8 +1,8 @@
 package compiler
 
 import (
-    	"strconv"
 	"github.com/kamkow1/yup/yupc/parser"
+	"strconv"
 )
 
 const (
@@ -28,7 +28,7 @@ func (v *AstVisitor) VisitAttribute(ctx *parser.AttributeContext) any {
 	name := ctx.Identifier().GetText()
 	var params []string
 	for _, p := range ctx.AllValueString() {
-    		p2, _ := strconv.Unquote(p.GetText())
+		p2, _ := strconv.Unquote(p.GetText())
 		params = append(params, p2)
 	}
 

@@ -1,9 +1,9 @@
 package compiler
 
 import (
-    	"unsafe"
 	"path"
 	"strings"
+	"unsafe"
 )
 
 // replce with Dequote()
@@ -26,6 +26,5 @@ func FilenameWithoutExtension(fn string) string {
 }
 
 func BoolToInt(a bool) uint64 {
-	return *(*uint64)(unsafe.Pointer(&a))&1
+	return *(*uint64)(unsafe.Pointer(&a)) & 1
 }
-
