@@ -48,7 +48,7 @@ func ImportModule(name string) {
 	if !mod.LastFunction().IsNil() {
 		f := mod.FirstFunction()
 		llvm.AddFunction(CompilationUnits.Peek().Module,
-			f.Name(), f.Type())
+			f.Name(), f.Type().ElementType())
 	}
 
 	if !mod.LastGlobal().IsNil() {
