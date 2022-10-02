@@ -1,18 +1,4 @@
 // module for handling memory management
 
-c(:"#include <stdlib.h>"
-"#include <string.h>"
-""
-"void *mem_alloc(size_t size) {"
-"	return malloc(size);"
-"}"
-""
-"void mem_free(void *mem) {"
-"	free(mem);"
-"}"
-""
-"void *mem_init(void *arr, int c, size_t n) {"
-"	return memset(arr, c, n);"
-"}"
-);
-
+malloc(size: i64) -> *i8;
+free(ptr: *i8);
