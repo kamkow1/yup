@@ -2,3 +2,4 @@
 
 malloc(size: i64) -> *i8;
 free(ptr: *i8);
+memset(arr: *i8, count: i32, size: i64) -> *i8;

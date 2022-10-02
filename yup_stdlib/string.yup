@@ -1,0 +1,42 @@
+// module for handling strings
+
+#[friends("new_string", 
+		  "string_buffer",
+		  "string_len"
+)]
+String struct {
+	buffer: *i8;
+	len:    i64;
+}
+
+string_calc_length(str: *i8) -> i64 {
+	var c: i64 = 0;
+	for str[c] != cast(0, 'i8) {
+		c = c + cast(1, 'i64);
+	}
+	
+	return c;
+}
+
+malloc(s: i64) -> *i8;
+new_string(b: *i8) -> *String {
+	const str: *String = malloc(size_of('String));
+	&str.buffer = b;
+	&str.len = string_calc_length(b); 
+	
+	return str;
+}
+
+free(ptr: *i8);
+delete_string(str: *String) {
+	free(cast(str, '*i8));
+}
+
+string_buffer(str: *String) -> *i8 {
+	return &str.buffer;
+}
+
+string_len(str: *String) -> i64 {
+	return &str.len;
+}
+
