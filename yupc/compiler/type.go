@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/kamkow1/yup/yupc/parser"
@@ -36,7 +35,7 @@ func GetTypeFromName(name string) llvm.Type {
 	} else if userType, ok2 := UserTypes[name]; ok2 {
 		typ = userType
 	} else {
-		log.Fatalf("ERROR: unknown type: %s", name)
+		LogError("unknown type: %s", name)
 	}
 
 	return typ
@@ -66,7 +65,7 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 			extCtx := extension.ArrayTypeExtension().(*parser.ArrayTypeExtensionContext)
 			size, err := strconv.Atoi(extCtx.ValueInteger().GetText())
 			if err != nil {
-				log.Fatalf("ERROR: failed to parse array size: %d, %s", size, err.Error())
+				LogError("failed to parse array size: %d, %s", size, err.Error())
 			}
 
 			typ = GetArrayType(typ, size)
@@ -163,7 +162,7 @@ func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressio
 	if strct.Type().TypeKind() == llvm.PointerTypeKind {
 		strct = CompilationUnits.Peek().Builder.CreateLoad(strct, "")
 	} else {
-		log.Fatalf("ERROR: cannot access struct fields on a non-pointer type")
+		LogError("cannot access struct fields on a non-pointer type")
 	}
 
 	tmptyp := strct.Type()
@@ -193,7 +192,7 @@ func (v *AstVisitor) VisitFieldAssignment(ctx *parser.FieldAssignmentContext) an
 	if strct.Type().TypeKind() == llvm.PointerTypeKind {
 		strct = CompilationUnits.Peek().Builder.CreateLoad(strct, "")
 	} else {
-		log.Fatalf("ERROR: cannot access struct fields on a non-pointer type")
+		LogError("cannot access struct fields on a non-pointer type")
 	}
 
 	tmptyp := strct.Type()
@@ -210,7 +209,7 @@ func (v *AstVisitor) VisitFieldAssignment(ctx *parser.FieldAssignmentContext) an
 	for i, f := range baseStruct.Fields {
 		if fieldName == f.Name {
 			if f.InitOnly && f.Assigned {
-				log.Fatalf("ERROR: initonly field assigned more than once")
+				LogError("initonly field assigned more than once")
 			}
 
 			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")

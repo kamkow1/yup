@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -17,7 +16,7 @@ import (
 func GetHomeDir() string {
 	dir, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatalf("ERROR: %s", err)
+		LogError(err.Error())
 	}
 
 	return dir
@@ -26,7 +25,7 @@ func GetHomeDir() string {
 func GetCwd() string {
 	dir, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("ERROR: %s", err)
+		LogError(err.Error())
 	}
 
 	return dir
@@ -39,9 +38,9 @@ var DefaultImportPaths map[string]string = map[string]string{
 
 func WriteBCFile(mod llvm.Module, p string) {
 	if f, err := os.Create(p); err != nil {
-		log.Fatalf("ERROR: %s\n", err.Error())
+		LogError(err.Error())
 	} else if err2 := llvm.WriteBitcodeToFile(mod, f); err != nil {
-		log.Fatalf("ERROR: %s\n", err2.Error())
+		LogError(err2.Error())
 	} else {
 		defer f.Close()
 	}
@@ -52,7 +51,7 @@ func GetBCFileName(fp string) string {
 	bc := strings.Replace(fp, ext, ".bc", 1)
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("ERROR: %s\n", err)
+		LogError(err.Error())
 	}
 
 	build := path.Join(cwd, "build")
@@ -60,7 +59,7 @@ func GetBCFileName(fp string) string {
 	if os.IsNotExist(err2) {
 		err3 := os.Mkdir(build, 0775)
 		if err3 != nil {
-			log.Fatalf("ERROR: %s\n", err2)
+			LogError(err3.Error())
 		}
 	}
 
@@ -89,7 +88,7 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 func ProcessPathRecursively(p string) {
 	info, err := os.Stat(p)
 	if err != nil {
-		log.Fatalf("ERROR: unable to process path: %s\n", p)
+		LogError("unable to process path: %s", p)
 	}
 
 	if info.IsDir() {
@@ -102,7 +101,7 @@ func ProcessPathRecursively(p string) {
 
 		fileBytes, err := ioutil.ReadFile(abspath)
 		if err != nil {
-			log.Fatalf("ERROR: an error has occurend when reading file: %s", abspath)
+			LogError("an error has occurend when reading file: %s", abspath)
 		}
 
 		fileContent := string(fileBytes)

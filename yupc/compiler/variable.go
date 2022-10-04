@@ -1,8 +1,6 @@
 package compiler
 
 import (
-	"log"
-
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
 )
@@ -21,7 +19,7 @@ func FindLocalVariable(name string, i int) LocalVariable {
 	} else if i >= 1 {
 		local = FindLocalVariable(name, i-1)
 	} else {
-		log.Fatalf("ERROR: tried to reference an unknown variable: %s", name)
+		LogError("tried to reference an unknown variable: %s", name)
 	}
 
 	return local
@@ -46,7 +44,7 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 	}
 
 	if alreadyLocal {
-		log.Fatalf("ERROR: variable %s has already been declared", name)
+		LogError("variable %s has already been declared", name)
 	}
 
 	isGlobal := CompilationUnits.Peek().Builder.GetInsertBlock().IsNil()
@@ -75,7 +73,7 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 			attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
 			for _, a := range attrs {
 				switch a.Name {
-				case "Link":
+				case "link_type":
 					{
 						linkage := a.Params[0]
 						glb.SetLinkage(GetLinkageFromString(linkage))
@@ -88,7 +86,7 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 
 	} else {
 		if ctx.AttributeList() != nil {
-			log.Fatalf("ERROR: local variable %s cannot have an attribute list", name)
+			LogError("local variable %s cannot have an attribute list", name)
 		}
 
 		v := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
@@ -119,7 +117,7 @@ func (v *AstVisitor) VisitAssignment(ctx *parser.AssignmentContext) any {
 	name := ctx.Identifier().GetText()
 	vr := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1)
 	if vr.IsConst {
-		log.Fatalf("ERROR: cannot reassign a constant: %s", vr.Name)
+		LogError("cannot reassign a constant: %s", vr.Name)
 	}
 
 	value := v.Visit(ctx.VariableValue()).(llvm.Value)

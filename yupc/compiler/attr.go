@@ -5,10 +5,6 @@ import (
 	"strconv"
 )
 
-const (
-	AttrFuncGC int = 0
-)
-
 type Attribute struct {
 	Name   string
 	Params []string

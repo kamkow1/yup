@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"encoding/ascii85"
-	"log"
 	"strconv"
 
 	"github.com/kamkow1/yup/yupc/parser"
@@ -22,7 +21,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		str := ctx.ValueInteger().GetText()
 		i, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
-			log.Fatalf("ERROR: unable to parse int: %s", err)
+			LogError("unable to parse int: %s", err)
 		}
 
 		value = llvm.ConstInt(llvm.Int32Type(), uint64(i), false)
@@ -32,7 +31,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		str := ctx.ValueFloat().GetText()
 		f, err := strconv.ParseFloat(str, 64)
 		if err != nil {
-			log.Fatalf("ERROR: unable to parse float: %s", err)
+			LogError("unable to parse float: %s", err)
 		}
 
 		typ := llvm.FloatType()
@@ -50,7 +49,7 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 	}
 
 	if ctx.MultilineString() != nil {
-    		raw := v.Visit(ctx.MultilineString()).(string)
+		raw := v.Visit(ctx.MultilineString()).(string)
 		value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(raw, "")
 	}
 
@@ -80,7 +79,7 @@ func (v *AstVisitor) VisitLiteralConstantInt(ctx *parser.LiteralConstantIntConte
 	str := ctx.ValueInteger().GetText()
 	i, err := strconv.ParseInt(str, 10, 64)
 	if err != nil {
-		log.Fatalf("ERROR: unable to parse int: %s", err)
+		LogError("unable to parse int: %s", err)
 	}
 
 	return i

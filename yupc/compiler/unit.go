@@ -38,6 +38,9 @@ type CompilationUnit struct {
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
+	
+	GlobalCompilerInfo.File = sf
+	
 	return &CompilationUnit{
 		SourceFile: sf,
 		ModuleName: bc,

@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"io/ioutil"
-	"log"
 	//	"os"
 	"os/exec"
 	"path/filepath"
@@ -98,15 +97,6 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 		attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
 		for _, a := range attrs {
 			switch a.Name {
-			case "gc":
-				{
-					gc := a.Params[0]
-					if gc == "default" {
-						function.SetGC("coreclr")
-					} else {
-						function.SetGC(gc)
-					}
-				}
 			case "link_type":
 				{
 					linkage := a.Params[0]
@@ -228,7 +218,7 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 		f := CompilationUnits.Peek().Module.NamedFunction(name)
 
 		if f.IsNil() {
-			log.Fatalf("ERROR: tried to call an unknown function: %s", name)
+			LogError("tried to call an unknown function: %s", name)
 		}
 
 		var valueArgs []llvm.Value
@@ -311,7 +301,7 @@ func SizeOf(args []any) llvm.Value {
 	case llvm.Value:
 		result = llvm.SizeOf(t.Type())
 	default:
-		log.Fatal("ERROR: @SizeOf(): unknown value in function")
+		LogError("size_of(): unknown value in function")
 	}
 
 	return result
