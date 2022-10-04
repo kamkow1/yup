@@ -14,7 +14,6 @@ KeywordBreak		    	:	'break';
 KeywordStruct		    	:   'struct';
 KeywordTypeAlias	    	:   'typealias';
 KeywordInitOnly				:	'initonly';
-KeywordPublic				:	'pub';
 
 SymbolArrow					:   '->';
 SymbolApostrophe            :   '\'';

@@ -93,13 +93,11 @@ type Field struct {
 	Type     llvm.Type
 	InitOnly bool
 	Assigned bool
-	Private  bool
 }
 
 type Structure struct {
-	Name    string
-	Fields  []*Field
-	Friends []string
+	Name   string
+	Fields []*Field
 }
 
 func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
@@ -108,7 +106,6 @@ func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
 		Type:     v.Visit(ctx.TypeAnnotation()).(llvm.Type),
 		InitOnly: ctx.KeywordInitOnly() != nil,
 		Assigned: false,
-		Private:  ctx.KeywordPublic() == nil,
 	}
 }
 
@@ -133,23 +130,9 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 		fields = append(fields, v.Visit(fld).(*Field))
 	}
 
-	var attrs []*Attribute
-	if ctx.AttributeList() != nil {
-		attrs = append(attrs, v.Visit(ctx.AttributeList()).([]*Attribute)...)
-	}
-
-	var friends []string
-	for _, attr := range attrs {
-		switch attr.Name {
-		case "friends":
-			friends = attr.Params
-		}
-	}
-
 	strct := Structure{
-		Name:    name,
-		Fields:  fields,
-		Friends: friends,
+		Name:   name,
+		Fields: fields,
 	}
 
 	CompilationUnits.Peek().Structs[name] = strct
@@ -194,13 +177,8 @@ func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressio
 	baseStruct, _ := CompilationUnits.Peek().Structs[name]
 
 	var field llvm.Value
-	currentFunc := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	for i, f := range baseStruct.Fields {
 		if fieldName == f.Name {
-			if f.Private && !CheckIfFriend(baseStruct.Friends, currentFunc) {
-				log.Fatalf("ERROR: cannot access private fields in a non-friend function")
-			}
-
 			gep := CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
 			field = CompilationUnits.Peek().Builder.CreateLoad(gep, "")
 		}
@@ -229,15 +207,10 @@ func (v *AstVisitor) VisitFieldAssignment(ctx *parser.FieldAssignmentContext) an
 	baseStruct, _ := CompilationUnits.Peek().Structs[name]
 
 	var field llvm.Value
-	currentFunc := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	for i, f := range baseStruct.Fields {
 		if fieldName == f.Name {
 			if f.InitOnly && f.Assigned {
 				log.Fatalf("ERROR: initonly field assigned more than once")
-			}
-
-			if f.Private && !CheckIfFriend(baseStruct.Friends, currentFunc) {
-				log.Fatalf("ERROR: cannot access private fields in a non-friend function")
 			}
 
 			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
