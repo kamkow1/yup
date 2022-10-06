@@ -27,7 +27,8 @@ assignment:                     Identifier variableValue;
 variableDeclare:                attributeList? declarationType Identifier typeAnnotation? variableValue?;
 declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
-dereferenceAssignment:          SymbolAsterisk+ expression variableValue;
+expressionAssignment:           expression variableValue;
+// dereferenceAssignment:          SymbolAsterisk+ expression variableValue;
 
 
 functionDefinition:             functionSignature codeBlock;
@@ -63,7 +64,7 @@ continueStatement:		        KeywordContinue;
 breakStatement:			        KeywordBreak;
 
 structDeclaration:		        attributeList? Identifier KeywordStruct SymbolLbrace structField+ SymbolRbrace;
-structField:			        KeywordInitOnly? Identifier typeAnnotation SymbolTerminator;
+structField:			        Identifier typeAnnotation SymbolTerminator;
 fieldAssignment:                expression SymbolDot Identifier variableValue;
 typeAliasDeclaration:		    Identifier KeywordTypeAlias typeName;
 
@@ -89,7 +90,8 @@ expression:                     functionCall                                    
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator
-        |                       dereferenceAssignment                               SymbolTerminator
+        |                       expressionAssignment                                SymbolTerminator
+        // |                       dereferenceAssignment                               SymbolTerminator
         |                       functionReturn                                      SymbolTerminator
         |                       variableDeclare                                     SymbolTerminator
         |                       arrayElementAssignment                              SymbolTerminator

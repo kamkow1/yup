@@ -27,6 +27,7 @@ func (v *AstVisitor) VisitPointerDereference(ctx *parser.PointerDereferenceConte
 	return CompilationUnits.Peek().Builder.CreateLoad(ptr, "")
 }
 
+/*
 func (v *AstVisitor) VisitDereferenceAssignment(ctx *parser.DereferenceAssignmentContext) any {
 	ptr := v.Visit(ctx.Expression()).(llvm.Value)
 	for _ = range ctx.AllSymbolAsterisk() {
@@ -37,3 +38,4 @@ func (v *AstVisitor) VisitDereferenceAssignment(ctx *parser.DereferenceAssignmen
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, ptr)
 }
+*/

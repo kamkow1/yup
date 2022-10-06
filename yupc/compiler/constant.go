@@ -8,8 +8,6 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-type any = interface{}
-
 func (v *AstVisitor) VisitConstantExpression(ctx *parser.ConstantExpressionContext) any {
 	return v.Visit(ctx.Constant())
 }

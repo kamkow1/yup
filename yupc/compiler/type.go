@@ -7,7 +7,7 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-var BuiltinLLVMTypes map[string]llvm.Type = map[string]llvm.Type{
+var Types map[string]llvm.Type = map[string]llvm.Type{
 	"i1":   llvm.Int1Type(),
 	"i8":   llvm.Int8Type(),
 	"i16":  llvm.Int16Type(),
@@ -17,8 +17,6 @@ var BuiltinLLVMTypes map[string]llvm.Type = map[string]llvm.Type{
 	"f128": llvm.FP128Type(),
 	"void": llvm.VoidType(),
 }
-
-var UserTypes map[string]llvm.Type = map[string]llvm.Type{}
 
 func GetPointerType(typ llvm.Type) llvm.Type {
 	return llvm.PointerType(typ, 0)
@@ -30,10 +28,8 @@ func GetArrayType(typ llvm.Type, count int) llvm.Type {
 
 func GetTypeFromName(name string) llvm.Type {
 	var typ llvm.Type
-	if llvmType, ok := BuiltinLLVMTypes[name]; ok {
+	if llvmType, ok := Types[name]; ok {
 		typ = llvmType
-	} else if userType, ok2 := UserTypes[name]; ok2 {
-		typ = userType
 	} else {
 		LogError("unknown type: %s", name)
 	}
@@ -88,45 +84,31 @@ func (v *AstVisitor) VisitTypeNameExpression(ctx *parser.TypeNameExpressionConte
 }
 
 type Field struct {
-	Name     string
-	Type     llvm.Type
-	InitOnly bool
-	Assigned bool
+	Name string
+	Type llvm.Type
 }
 
 type Structure struct {
 	Name   string
-	Fields []*Field
+	Fields []Field
 }
 
 func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
-	return &Field{
-		Name:     ctx.Identifier().GetText(),
-		Type:     v.Visit(ctx.TypeAnnotation()).(llvm.Type),
-		InitOnly: ctx.KeywordInitOnly() != nil,
-		Assigned: false,
+	return Field{
+		Name: ctx.Identifier().GetText(),
+		Type: v.Visit(ctx.TypeAnnotation()).(llvm.Type),
 	}
-}
-
-func CheckIfFriend(frList []string, frName string) bool {
-	for _, f := range frList {
-		if f == frName {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext) any {
 	name := ctx.Identifier().GetText()
 	c := CompilationUnits.Peek().Module.Context()
 	structType := c.StructCreateNamed(name)
-	UserTypes[name] = structType
+	Types[name] = structType
 
-	var fields []*Field
+	var fields []Field
 	for _, fld := range ctx.AllStructField() {
-		fields = append(fields, v.Visit(fld).(*Field))
+		fields = append(fields, v.Visit(fld).(Field))
 	}
 
 	strct := Structure{
@@ -142,7 +124,6 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	}
 
 	structType.StructSetBody(fieldTypes, false)
-	UserTypes[name] = structType
 
 	return structType
 }
@@ -151,25 +132,24 @@ func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationC
 	ogType := v.Visit(ctx.TypeName()).(llvm.Type)
 	name := ctx.Identifier().GetText()
 
-	UserTypes[name] = ogType
+	Types[name] = ogType
 
 	return nil
 }
 
 func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressionContext) any {
 	strct := v.Visit(ctx.Expression()).(llvm.Value)
+	isptr := strct.Type().TypeKind() == llvm.PointerTypeKind
 
-	if strct.Type().TypeKind() == llvm.PointerTypeKind {
+	if isptr {
 		strct = CompilationUnits.Peek().Builder.CreateLoad(strct, "")
-	} else {
-		LogError("cannot access struct fields on a non-pointer type")
 	}
 
-	tmptyp := strct.Type()
-	name := tmptyp.StructName()
-	for tmptyp.TypeKind() == llvm.PointerTypeKind {
-		name = tmptyp.ElementType().StructName()
-		tmptyp = tmptyp.ElementType()
+	var name string
+	if isptr {
+		name = strct.Type().ElementType().StructName()
+	} else {
+		name = strct.Type().StructName()
 	}
 
 	fieldName := ctx.Identifier().GetText()
@@ -178,45 +158,10 @@ func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressio
 	var field llvm.Value
 	for i, f := range baseStruct.Fields {
 		if fieldName == f.Name {
-			gep := CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
-			field = CompilationUnits.Peek().Builder.CreateLoad(gep, "")
+			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
+			//field = CompilationUnits.Peek().Builder.CreateLoad(gep, "")
 		}
 	}
 
 	return field
-}
-
-func (v *AstVisitor) VisitFieldAssignment(ctx *parser.FieldAssignmentContext) any {
-	strct := v.Visit(ctx.Expression()).(llvm.Value)
-
-	if strct.Type().TypeKind() == llvm.PointerTypeKind {
-		strct = CompilationUnits.Peek().Builder.CreateLoad(strct, "")
-	} else {
-		LogError("cannot access struct fields on a non-pointer type")
-	}
-
-	tmptyp := strct.Type()
-	name := tmptyp.StructName()
-	for tmptyp.TypeKind() == llvm.PointerTypeKind {
-		name = tmptyp.ElementType().StructName()
-		tmptyp = tmptyp.ElementType()
-	}
-
-	fieldName := ctx.Identifier().GetText()
-	baseStruct, _ := CompilationUnits.Peek().Structs[name]
-
-	var field llvm.Value
-	for i, f := range baseStruct.Fields {
-		if fieldName == f.Name {
-			if f.InitOnly && f.Assigned {
-				LogError("initonly field assigned more than once")
-			}
-
-			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
-			f.Assigned = true
-		}
-	}
-
-	value := v.Visit(ctx.VariableValue()).(llvm.Value)
-	return CompilationUnits.Peek().Builder.CreateStore(value, field)
 }

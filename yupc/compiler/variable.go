@@ -55,6 +55,7 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 	isInit := ctx.VariableValue() != nil
 	if isInit {
 		value = v.Visit(ctx.VariableValue()).(llvm.Value)
+		typ = value.Type()
 	}
 
 	if ctx.TypeAnnotation() != nil {
@@ -123,4 +124,11 @@ func (v *AstVisitor) VisitAssignment(ctx *parser.AssignmentContext) any {
 	value := v.Visit(ctx.VariableValue()).(llvm.Value)
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, vr.Value)
+}
+
+func (v *AstVisitor) VisitExpressionAssignment(ctx *parser.ExpressionAssignmentContext) any {
+	expr := v.Visit(ctx.Expression()).(llvm.Value)
+	value := v.Visit(ctx.VariableValue()).(llvm.Value)
+
+	return CompilationUnits.Peek().Builder.CreateStore(value, expr)
 }

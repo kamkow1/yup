@@ -13,7 +13,6 @@ KeywordContinue		    	:	'continue';
 KeywordBreak		    	:	'break';
 KeywordStruct		    	:   'struct';
 KeywordTypeAlias	    	:   'typealias';
-KeywordInitOnly				:	'initonly';
 
 SymbolArrow					:   '->';
 SymbolApostrophe            :   '\'';

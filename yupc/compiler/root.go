@@ -5,6 +5,8 @@ import (
 	"github.com/kamkow1/yup/yupc/parser"
 )
 
+type any = interface{}
+
 type CompilerInfo struct {
 	File string
 	Line int
@@ -135,9 +137,12 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.PointerDereferenceExpressionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitPointerDereferenceExpression(ctx)
-	case *parser.DereferenceAssignmentContext:
+	// case *parser.DereferenceAssignmentContext:
+	// GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+	// return v.VisitDereferenceAssignment(ctx)
+	case *parser.ExpressionAssignmentContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitDereferenceAssignment(ctx)
+		return v.VisitExpressionAssignment(ctx)
 
 	// Constant
 	case *parser.ConstantContext:
