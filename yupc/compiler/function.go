@@ -184,18 +184,59 @@ func (v *AstVisitor) VisitFunctionCallExpression(ctx *parser.FunctionCallExpress
 type BuiltInValueFunction func([]any) llvm.Value
 
 var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInValueFunction{
-	"cast":          CastWrapper,
-	"size_of":       SizeOf,
-	"is_type_equal": IsTypeEqual,
-	"type_to_str":   TypeToStr,
-	"range":         Range,
-	"c":             InlineC,
+	"cast": func(args []any) llvm.Value {
+		return Cast(args[0].(llvm.Value), args[1].(llvm.Type))
+	},
+	"size_of": func(args []any) llvm.Value {
+		var result llvm.Value
+		switch t := args[0].(type) {
+		case llvm.Type:
+			result = llvm.SizeOf(t)
+		case llvm.Value:
+			result = llvm.SizeOf(t.Type())
+		}
+
+		return result
+	},
+	"printable_type": func(args []any) llvm.Value {
+		str := args[0].(llvm.Value).Type().String()
+		return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
+	},
+	"range": func(args []any) llvm.Value {
+		min := args[0].(int64)
+		max := args[1].(int64)
+
+		var vals []llvm.Value
+		for i := min; i <= max; i++ {
+			ci := llvm.ConstInt(llvm.Int64Type(), uint64(i), false)
+			vals = append(vals, ci)
+		}
+
+		return llvm.ConstArray(llvm.Int64Type(), vals)
+	},
+	"inline_c": func(args []any) llvm.Value {
+		cc := args[0].(string)
+		sf := CompilationUnits.Peek().SourceFile
+		name := filepath.Base(FilenameWithoutExtension(sf)) + "_c" + ".c"
+
+		ioutil.WriteFile(name, []byte(cc), 0644)
+
+		fpath := filepath.Join(GetCwd(), name)
+		bcname := FilenameWithoutExtension(name) + ".bc"
+		cmdargs := []string{"-c", "-emit-llvm", "-o", bcname, "-v", fpath}
+		cmd := exec.Command("clang", cmdargs...)
+
+		err := cmd.Run()
+		return llvm.ConstInt(llvm.Int1Type(), BoolToInt(err != nil), false)
+	},
 }
 
 type BuiltInTypeFunction func([]any) llvm.Type
 
 var BuiltInTypeFunctions map[string]BuiltInTypeFunction = map[string]BuiltInTypeFunction{
-	"type_of": TypeOf,
+	"type_of": func(args []any) llvm.Type {
+		return args[0].(llvm.Value).Type()
+	},
 }
 
 func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
@@ -243,35 +284,6 @@ func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any 
 	return CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 }
 
-// -----------------------------
-// Compiler's built-in functions
-// -----------------------------
-
-func TypeOf(args []any) llvm.Type {
-	expr := args[0].(llvm.Value)
-	return expr.Type()
-}
-
-func TypeToStr(args []any) llvm.Value {
-	expr := args[0].(llvm.Type)
-	str := expr.String()
-	return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
-}
-
-func IsTypeEqual(args []any) llvm.Value {
-	typ0 := args[0].(llvm.Value).Type()
-	typ1 := args[1].(llvm.Value).Type()
-
-	var result llvm.Value
-	if typ0.TypeKind() == typ1.TypeKind() {
-		result = llvm.ConstInt(llvm.Int1Type(), 1, false)
-	} else {
-		result = llvm.ConstInt(llvm.Int1Type(), 0, false)
-	}
-
-	return result
-}
-
 func Cast(value llvm.Value, typ llvm.Type) llvm.Value {
 	if value.Type().TypeKind() == llvm.IntegerTypeKind && typ.TypeKind() == llvm.IntegerTypeKind {
 		return CompilationUnits.Peek().Builder.CreateIntCast(value, typ, "")
@@ -284,58 +296,4 @@ func Cast(value llvm.Value, typ llvm.Type) llvm.Value {
 	} else {
 		return CompilationUnits.Peek().Builder.CreateBitCast(value, typ, "")
 	}
-}
-
-func CastWrapper(args []any) llvm.Value {
-	value := args[0].(llvm.Value)
-	typ := args[1].(llvm.Type)
-	return Cast(value, typ)
-}
-
-func SizeOf(args []any) llvm.Value {
-
-	var result llvm.Value
-	switch t := args[0].(type) {
-	case llvm.Type:
-		result = llvm.SizeOf(t)
-	case llvm.Value:
-		result = llvm.SizeOf(t.Type())
-	default:
-		LogError("size_of(): unknown value in function")
-	}
-
-	return result
-}
-
-func Range(args []any) llvm.Value {
-
-	min := args[0].(int64)
-	max := args[1].(int64)
-
-	var vals []llvm.Value
-	for i := min; i <= max; i++ {
-		ci := llvm.ConstInt(llvm.Int64Type(), uint64(i), false)
-		vals = append(vals, ci)
-	}
-
-	return llvm.ConstArray(llvm.Int64Type(), vals)
-}
-
-func InlineC(args []any) llvm.Value {
-
-	cc := args[0].(string)
-	name := filepath.Base(FilenameWithoutExtension(CompilationUnits.Peek().SourceFile)) + "_c" + ".c"
-
-	ioutil.WriteFile(name, []byte(cc), 0644)
-
-	fpath := filepath.Join(GetCwd(), name)
-
-	cmdargs := []string{"-c", "-emit-llvm", "-o", FilenameWithoutExtension(name) + ".bc", "-v", fpath}
-	cmd := exec.Command("clang", cmdargs...)
-	// cmd.Stdin = os.Stdin
-	// cmd.Stdout = os.Stdout
-	// cmd.Stderr = os.Stderr
-	err := cmd.Run()
-
-	return llvm.ConstInt(llvm.Int1Type(), BoolToInt(err != nil), false)
 }
