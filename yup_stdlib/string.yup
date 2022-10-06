@@ -1,39 +1,21 @@
-String struct {
-	buffer: *i8;
-	len:    i64;
-}
 
-string_calc_length(str: *String) -> i64 {
+string_length(str: *i8) -> i64 {
 	var c: i64 = 0;
-	for (&str.buffer)[c] != cast(0, 'i8) {
+	for str[c] != cast(0, 'i8) {
 		c = c + cast(1, 'i64);
 	}
 	
 	return c;
 }
 
-malloc(s: i64) -> *i8;
-new_string(b: *i8) -> *String {
-	const str: *String = malloc(size_of('String));
-	&str.buffer = b;
-	&str.len = string_calc_length(str); 
-	
-	return str;
-}
-
-free(ptr: *i8);
-delete_string(str: *String) {
-	free(cast(str, '*i8));
-}
-
-compare_strings(s0: *String, s1: *String) -> i32 {
-	if string_calc_length(s0) != string_calc_length(s1) {
+compare_strings(s0: *i8, s1: *i8) -> i32 {
+	if string_length(s0) != string_length(s1) {
 		return 0;
 	}
 
 	var i: i64 = 0;
-	for i < string_calc_length(s0) {
-		if (&s0.buffer)[i] != (&s1.buffer)[i] {
+	for i < string_length(s0) {
+		if s0[i] != s1[i] {
 			return 0;
 		}
 		
