@@ -1,5 +1,4 @@
-// module for handling IO
 
-printf(fmt: *i8, ...) -> i32;
-scanf(fmt: *i8, ...) -> i32;
+fnc printf(fmt: *i8, ...) -> i32;
+fnc scanf(fmt: *i8, ...) -> i32;
 
