@@ -1,5 +1,6 @@
 lexer grammar YupLexer;
 
+KeywordType					:	'tp';
 KeywordFunction				:   'fnc';
 KeywordReturn               :   'return';
 KeywordConst                :   'const';
@@ -13,7 +14,7 @@ KeywordTo		    		:	'to';
 KeywordContinue		    	:	'continue';
 KeywordBreak		    	:	'break';
 KeywordStruct		    	:   'struct';
-KeywordTypeAlias	    	:   'typealias';
+KeywordTypeAlias	    	:   'alias';
 
 SymbolArrow					:   '->';
 SymbolApostrophe            :   '\'';

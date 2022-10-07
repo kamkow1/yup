@@ -63,10 +63,10 @@ finalStatement:			        statement;
 continueStatement:		        KeywordContinue;
 breakStatement:			        KeywordBreak;
 
-structDeclaration:		        attributeList? Identifier KeywordStruct SymbolLbrace structField+ SymbolRbrace;
+structDeclaration:		        attributeList? KeywordType Identifier KeywordStruct SymbolLbrace structField+ SymbolRbrace;
 structField:			        Identifier typeAnnotation SymbolTerminator;
 fieldAssignment:                expression SymbolDot Identifier variableValue;
-typeAliasDeclaration:		    Identifier KeywordTypeAlias typeName;
+typeAliasDeclaration:		    KeywordType Identifier KeywordTypeAlias typeName;
 
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
