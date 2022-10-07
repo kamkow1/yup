@@ -1,5 +1,6 @@
 lexer grammar YupLexer;
 
+KeywordFunction				:   'fnc';
 KeywordReturn               :   'return';
 KeywordConst                :   'const';
 KeywordVar                  :   'var';

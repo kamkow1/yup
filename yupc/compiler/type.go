@@ -7,15 +7,18 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-var Types map[string]llvm.Type = map[string]llvm.Type{
-	"i1":   llvm.Int1Type(),
-	"i8":   llvm.Int8Type(),
-	"i16":  llvm.Int16Type(),
-	"i32":  llvm.Int32Type(),
-	"i64":  llvm.Int64Type(),
-	"f32":  llvm.FloatType(),
-	"f128": llvm.FP128Type(),
-	"void": llvm.VoidType(),
+func InitTypeMap() map[string]llvm.Type {
+	return map[string]llvm.Type{
+		"i1":      llvm.Int1Type(),
+		"i8":      llvm.Int8Type(),
+		"i16":     llvm.Int16Type(),
+		"i32":     llvm.Int32Type(),
+		"i64":     llvm.Int64Type(),
+		"f32":     llvm.FloatType(),
+		"f128":    llvm.FP128Type(),
+		"x64fp80": llvm.X86FP80Type(),
+		"void":    llvm.VoidType(),
+	}
 }
 
 func GetPointerType(typ llvm.Type) llvm.Type {
@@ -27,10 +30,8 @@ func GetArrayType(typ llvm.Type, count int) llvm.Type {
 }
 
 func GetTypeFromName(name string) llvm.Type {
-	var typ llvm.Type
-	if llvmType, ok := Types[name]; ok {
-		typ = llvmType
-	} else {
+	typ, ok := CompilationUnits.Peek().Types[name]
+	if !ok {
 		LogError("unknown type: %s", name)
 	}
 
@@ -104,7 +105,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	name := ctx.Identifier().GetText()
 	c := CompilationUnits.Peek().Module.Context()
 	structType := c.StructCreateNamed(name)
-	Types[name] = structType
+	CompilationUnits.Peek().Types[name] = structType
 
 	var fields []Field
 	for _, fld := range ctx.AllStructField() {
@@ -132,7 +133,7 @@ func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationC
 	ogType := v.Visit(ctx.TypeName()).(llvm.Type)
 	name := ctx.Identifier().GetText()
 
-	Types[name] = ogType
+	CompilationUnits.Peek().Types[name] = ogType
 
 	return nil
 }

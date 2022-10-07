@@ -35,6 +35,7 @@ type CompilationUnit struct {
 	Globals    map[string]llvm.Value
 	Functions  map[string]Function
 	Structs    map[string]Structure
+	Types 	   map[string]llvm.Type
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
@@ -50,6 +51,7 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 		Globals:    map[string]llvm.Value{},
 		Functions:  map[string]Function{},
 		Structs:    map[string]Structure{},
+		Types:		InitTypeMap(),
 	}
 }
 

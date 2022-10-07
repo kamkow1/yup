@@ -9,6 +9,16 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
+func GlobalExists(gs []string, g string) bool {
+	for _, gg := range gs {
+		if gg == g {
+			return true
+		}
+	}
+
+	return false
+}
+
 func ImportModule(name string) {
 	elems := strings.Split(name, "/")
 	if p, ok := DefaultImportPaths[elems[0]]; ok {
@@ -45,9 +55,21 @@ func ImportModule(name string) {
 
 	unit := CompilationUnits.Pop()
 	mod := unit.Module
+
+	for name, typ := range unit.Types {
+		_, ok := CompilationUnits.Peek().Types[name]
+		if !ok {
+			CompilationUnits.Peek().Types[name] = typ
+		}
+	}
+
+	for name, strct := range unit.Structs {
+		CompilationUnits.Peek().Structs[name] = strct
+	}
+
 	for name, _ := range unit.Functions {
 		fnc := mod.NamedFunction(name)
-		llvm.AddFunction(CompilationUnits.Peek().Module, name, fnc.Type().ElementType())
+		fnc = llvm.AddFunction(CompilationUnits.Peek().Module, name, fnc.Type().ElementType())
 
 		CompilationUnits.Peek().Functions[name] = Function{
 			Name:      name,
@@ -57,13 +79,14 @@ func ImportModule(name string) {
 		}
 	}
 
+	var addedGlobals []string
 	for name, _ := range unit.Globals {
 		glb := mod.NamedGlobal(name)
-		llvm.AddGlobal(CompilationUnits.Peek().Module, glb.Type(), name)
-	}
+		addedGlobals = append(addedGlobals, name)
 
-	for name, strct := range unit.Structs {
-		CompilationUnits.Peek().Structs[name] = strct
+		if !GlobalExists(addedGlobals, name) {
+			llvm.AddGlobal(CompilationUnits.Peek().Module, glb.Type(), name)
+		}
 	}
 
 	mod.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())
