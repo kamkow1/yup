@@ -1,0 +1,50 @@
+// this part of the tutorial demonstrates conventions used in yup
+
+/*
+naming convention:
+	in yup we use the snake-case naming convention for variables and functions
+	and pascal-case for structs and type aliases.
+
+naming variables/constants:
+	- avoid too long names
+		- bad: function_result
+		- good: fn_res
+	- uppercase global variables and constants
+		- example 1: const PI = 3.14;
+		- example 2: var SOME_STATE = -1;
+		
+naming types:
+	- structs
+		- use pascal-case to name the struct
+		- use snake-case for the fields
+		- use short names for initialized structs
+			- example 1: const scsn = new_somecomplexstructname();
+				original type name: SomeComplexStructName
+	- aliases
+		- use pascal-case for the alias
+		
+naming modules/files:
+	we use snake-case for naming files/modules in yup:
+	example:
+	project/some_component.yup
+	project/sub_dir/another_file.yup
+	imports.yup
+*/
+
+// example function:
+fnc do_some_work() {
+
+}
+
+// example types
+tp MyCoolType {
+	field_one: i32;
+	field_two: f64;
+}
+
+tp String alias *i8;
+
+
+fnc main() -> i32 {
+	return 0;
+}
