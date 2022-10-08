@@ -1,0 +1,80 @@
+
+/*
+yup function formula:
+	fnc <func name>(<parameter list>) -> <return type> {
+		function body
+		...
+	}
+*/
+// example:
+
+fnc example_function(a: i32, b: *i8, c: **i32) -> i32 {
+	return 2;
+}
+
+/*
+return types explained:
+	when a function is declared with a return type, it returns
+	that type with a return statement, but if a function has no
+	return type, it implicitly has a void return type. a function
+	that returns void still can be annotated with the void type
+	but it's kind of pointless.
+*/
+// implicit void return type:
+fnc implicit_void(a: i32, b: i32) {
+
+}
+
+// explicit void return type:
+fnc explicit_void(a: i32, b: i32) -> void {
+
+}
+
+/*
+returning from a function:
+	1. if a function is declared with a non-void return type, it must
+	be terminated with a return statement with an expression 
+	which type corresponds to the function return type.
+	
+	2. if a function returns void, there's no need for a return statement,
+	but due to compiler bugs, when branching you may need to explicitly
+	insert an empty return statement.
+*/
+// example return statement:
+fnc return_statement() -> i32 {
+	return 20;
+}
+
+// explicit return in a void function:
+fnc explicit_void_return() {
+	return; // no expression provided
+}
+
+/*
+function parameters:
+	1. function parameters must have a name and a type, the only exception
+	is when declaring a function with a variable number of parameters.
+	
+	3. function parameters can have a constant annotation, which makes them
+	constant in the function body.
+	
+	4. as of now, yup only supports declaring functions with variadic parameters.
+	you cannot use the variadic arguments yet. this feature will be implemented soon.
+*/
+
+// example of function parameters:
+fnc params(a: i32, b: *i8, c: i32) {
+
+}
+
+// varargs
+fnc varargs(a: i32, b: *i8, ...) {
+
+}
+
+// declaring a function without a body
+fnc external_func() -> *i8;
+
+fnc main() -> i32 {
+	return 0;
+}
