@@ -16,6 +16,7 @@ func InitTypeMap() map[string]llvm.Type {
 		"i32":     llvm.Int32Type(),
 		"i64":     llvm.Int64Type(),
 		"f32":     llvm.FloatType(),
+		"f64":     llvm.DoubleType(),
 		"f128":    llvm.FP128Type(),
 		"x64fp80": llvm.X86FP80Type(),
 		"void":    llvm.VoidType(),
