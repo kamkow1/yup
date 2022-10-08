@@ -132,61 +132,100 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 		for _, attr := range attrs {
 			switch attr.Name {
 			case "auto_new":
-				fncname := "new_" + strings.ToLower(name)
-				var params []FuncParam
-				for _, p := range fields {
-					paramName := "_" + p.Name
-					fp := FuncParam{
+				{
+					fncname := "new_" + strings.ToLower(name)
+					var params []FuncParam
+					for _, p := range fields {
+						paramName := "_" + p.Name
+						fp := FuncParam{
+							Name:     paramName,
+							IsVarArg: false,
+							IsConst:  true,
+							Type:     p.Type,
+						}
+
+						params = append(params, fp)
+					}
+
+					var paramTypes []llvm.Type
+					for _, p := range params {
+						paramTypes = append(paramTypes, p.Type)
+					}
+
+					rtType := GetPointerType(structType)
+					ft := llvm.FunctionType(rtType, paramTypes, false)
+					function := llvm.AddFunction(CompilationUnits.Peek().Module, fncname, ft)
+
+					CompilationUnits.Peek().Functions[fncname] = Function{
+						Name:      fncname,
+						Value:     &function,
+						Params:    params,
+						ExitBlock: &llvm.BasicBlock{},
+					}
+
+					bodyblock := llvm.AddBasicBlock(function, "gen_body")
+					CompilationUnits.Peek().Builder.SetInsertPointAtEnd(bodyblock)
+
+					structValue := CompilationUnits.Peek().Builder.CreateAlloca(rtType, "")
+					mallocCall := CompilationUnits.Peek().Builder.CreateMalloc(structType, "")
+					CompilationUnits.Peek().Builder.CreateStore(mallocCall, structValue)
+
+					var paramAllocas []llvm.Value
+					for i, p := range paramTypes {
+						alloca := CompilationUnits.Peek().Builder.CreateAlloca(p, "")
+						CompilationUnits.Peek().Builder.CreateStore(function.Param(i), alloca)
+
+						paramAllocas = append(paramAllocas, alloca)
+					}
+
+					for i, _ := range fields {
+						ld := CompilationUnits.Peek().Builder.CreateLoad(structValue, "")
+						field := CompilationUnits.Peek().Builder.CreateStructGEP(ld, i, "")
+						allocald := CompilationUnits.Peek().Builder.CreateLoad(paramAllocas[i], "")
+						CompilationUnits.Peek().Builder.CreateStore(allocald, field)
+					}
+
+					ld := CompilationUnits.Peek().Builder.CreateLoad(structValue, "")
+					CompilationUnits.Peek().Builder.CreateRet(ld)
+				}
+			case "auto_free":
+				{
+					fncname := "free_" + strings.ToLower(name)
+					var params []FuncParam
+					paramName := "_" + strings.ToLower(name)
+					paramType := GetPointerType(structType)
+					p := FuncParam{
 						Name:     paramName,
 						IsVarArg: false,
 						IsConst:  true,
-						Type:     p.Type,
+						Type:     paramType,
 					}
 
-					params = append(params, fp)
+					params = append(params, p)
+
+					var paramTypes []llvm.Type
+					paramTypes = append(paramTypes, paramType)
+
+					ft := llvm.FunctionType(llvm.VoidType(), paramTypes, false)
+					function := llvm.AddFunction(CompilationUnits.Peek().Module, fncname, ft)
+
+					CompilationUnits.Peek().Functions[fncname] = Function{
+						Name:      fncname,
+						Value:     &function,
+						Params:    params,
+						ExitBlock: &llvm.BasicBlock{},
+					}
+
+					bodyblock := llvm.AddBasicBlock(function, "gen_body")
+					CompilationUnits.Peek().Builder.SetInsertPointAtEnd(bodyblock)
+
+					paramAlloca := CompilationUnits.Peek().Builder.CreateAlloca(paramType, "")
+					CompilationUnits.Peek().Builder.CreateStore(function.Param(0), paramAlloca)
+
+					ld := CompilationUnits.Peek().Builder.CreateLoad(paramAlloca, "")
+					CompilationUnits.Peek().Builder.CreateFree(ld)
+					CompilationUnits.Peek().Builder.CreateRetVoid()
 				}
-
-				var paramTypes []llvm.Type
-				for _, p := range params {
-					paramTypes = append(paramTypes, p.Type)
-				}
-
-				rtType := GetPointerType(structType)
-				ft := llvm.FunctionType(rtType, paramTypes, false)
-				function := llvm.AddFunction(CompilationUnits.Peek().Module, fncname, ft)
-
-				CompilationUnits.Peek().Functions[fncname] = Function{
-					fncname,
-					&function,
-					params,
-					&llvm.BasicBlock{},
-				}
-
-				bodyblock := llvm.AddBasicBlock(function, "gen_body")
-				CompilationUnits.Peek().Builder.SetInsertPointAtEnd(bodyblock)
-
-				structValue := CompilationUnits.Peek().Builder.CreateAlloca(rtType, "")
-				mallocCall := CompilationUnits.Peek().Builder.CreateMalloc(structType, "")
-				CompilationUnits.Peek().Builder.CreateStore(mallocCall, structValue)
-
-				var paramAllocas []llvm.Value
-				for i, p := range paramTypes {
-					alloca := CompilationUnits.Peek().Builder.CreateAlloca(p, "")
-					param := function.Param(i)
-					CompilationUnits.Peek().Builder.CreateStore(param, alloca)
-
-					paramAllocas = append(paramAllocas, alloca)
-				}
-
-				for i, _ := range fields {
-					ld := CompilationUnits.Peek().Builder.CreateLoad(structValue, "")
-					field := CompilationUnits.Peek().Builder.CreateStructGEP(ld, i, "")
-					allocald := CompilationUnits.Peek().Builder.CreateLoad(paramAllocas[i], "")
-					CompilationUnits.Peek().Builder.CreateStore(allocald, field)
-				}
-
-				ld := CompilationUnits.Peek().Builder.CreateLoad(structValue, "")
-				CompilationUnits.Peek().Builder.CreateRet(ld)
 			}
 		}
 	}
