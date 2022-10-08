@@ -1,0 +1,8 @@
+import "$std/yup_stdlib.yup"; // we need $std/io.yup module 
+
+fnc main() -> i32 {
+
+	printf("hello world\n"); // prints hello world to stdout
+
+	return 0;
+}

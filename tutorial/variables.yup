@@ -1,0 +1,84 @@
+
+// example global constant
+const SOME_GLOBAL_CONSTANT = 8;
+
+// example global variable
+var some_global_var = 111;
+
+/*
+global variables MUST be compile-time constants. This means
+that a global variable cannot be a dereference of an adress of another global
+variable. Below code is illegal:
+
+const NUMBER = 99;
+const ADDR = &NUMBER; 
+const DEREF = *ADDR; // will cause an error
+
+NOTICE: as of now, yup doesn't support global string pointers,
+so we cannot do something like this:
+
+const MY_STRING = "hello";
+*/
+
+fnc main() -> i32 {
+
+	/*
+	const - creates a constant. constants can be only initialized
+		and cannot be assigned later.
+	var - creates a variable. unlike constants, variables can
+		be reassigned.
+	
+	type annotations are optional. if a type annotation is provided,
+		then the assigned expression is automaically casted
+		to the annotated type.
+	*/
+	
+	// example constant
+	const hello = "this is some text";
+	const number = 292;
+	
+	// example variable
+	var hey = "hey hey";
+	hey = "hahha";
+	
+	// auto casting
+	const casted: i64 = 38;
+	
+	/*
+	explanation:
+		all integers are 32 bit by default, but if we declare
+		the constant/variable as 64 bit, the 32 bit number will be
+		automatically casted to i64. The same goes for other types
+		like structs, pointers etc.
+		
+		this is quite useful when allocating memory with malloc().
+		C vs Yup:
+		
+		In C we would do:
+		
+		typedef struct {
+			int a;
+		} Demo;
+		
+		...
+		Demo *pd = (Demo*)malloc(sizeof(Demo));
+		...
+		
+		And in Yup:
+		
+		tp Demo strutc {
+			a: i32;
+		}
+		
+		...
+		const pd: *Demo = malloc(size_of('Demo));
+		...
+		
+		malloc() returns void * type (*i8 in LLVM IR) so we'd have to cast
+		it to our struct type (Demo*). In yup if we annotate the
+		variable/constant with a type the expression is auto casted to that type,
+		so there's no need to redundantly type (Demo*)
+	*/
+
+	return 0;
+}
