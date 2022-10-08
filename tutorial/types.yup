@@ -1,0 +1,112 @@
+import "$std/mem.yup";
+
+/*
+types:
+	- i1 ~ 0 or 1
+	- i8 ~ byte / character
+	- i16 ~ 16 bit int
+	- i32 ~ 32 bit int
+	- i64 ~ 64 bit int
+	- f32 ~ 32 bit float
+	- f64 ~ 64 bit float
+	- f128 ~ 128 bit float
+	- x86fp80 ~ 80 bit float
+
+user types:
+	as of now, yup supports two kinds of types:
+	- struct types
+	- alias types
+	
+	to create a type we use the `tp` keyword
+	formula:
+	
+	tp <type name> <type kind> <body>
+	
+	more about types in yup is explained below:
+*/
+
+/*
+struct types:
+	to declare a struct type, we use the `struct` keyword.
+	
+	formula:
+	tp <struct name> struct {
+		struct fields
+		...
+	}
+*/
+
+// struct type
+tp MyCoolType struct {
+	field1: i32;
+	field2: *i8;
+}
+
+/*
+struct behind-the-sceens code generation:
+	in yup structs support attributes. for now, we only have
+	code generation attributes: auto_new() and auto_free().
+	
+	auto_new():
+	generates a constructor-like function that constructs
+	all of the fields of a struct.
+	
+	why?
+	let's create a simple example struct:
+*/
+
+tp CodegenExampleA struct {
+	a: i32;
+	b: i32;
+}
+
+// now we'd have to create a constructor manually:
+fnc new_codegen_example_a(_a: i32, _b: i32) -> *CodegenExampleA {
+	const cea: *CodegenExampleA = malloc(size_of('CodegenExampleA));
+	&cea.a = _a;
+	&cea.b = _b;
+	
+	return cea;
+}
+
+// function that frees the struct:
+fnc free_codegen_example_a(cea: *CodegenExampleA) {
+	free(cast(cea, '*i8));
+}
+
+// As we can see, these constructor-like and freeing functions are quite needless
+// and only make use write more boiletplate code.
+// what if we could generate these functions?
+
+#[auto_new(), auto_free()] // no need to write boilerplate code
+tp CodegenExampleB struct {
+	a: i32;
+	b: i32;
+}
+
+/*
+type aliases:
+	in yup we can declare aliases for already existing types.
+	for that we use the `alias` keyword.
+	
+	formula:
+	tp <new type name> alias <existing type>
+*/
+
+// type alias
+tp string alias *i8;
+
+
+fnc main() -> i32 {
+
+	// using the type alias
+	const a: string = "hello world";
+	
+	// using generated functions
+	
+	const ceb = new_codegenexampleb(90, 20);
+	
+	free_codegenexampleb(ceb);
+
+	return 0;
+}
