@@ -12,9 +12,10 @@ attributeList:                  SymbolHash SymbolLsqbr (attribute (SymbolComma a
 attribute:                      Identifier SymbolLparen (ValueString (SymbolComma ValueString)*)? SymbolRparen;
 
 typeAnnotation:                 SymbolColon typeName;
-typeName:                       typeExtension* Identifier;
+typeName:                       (typeExtension* Identifier) | structType;
 typeExtension:                  arrayTypeExtension | SymbolAsterisk | SymbolQuestMark;
 arrayTypeExtension:             SymbolLsqbr ValueInteger SymbolRsqbr;
+structType:                     SymbolLbrace (typeName (SymbolComma typeName)*)? SymbolRbrace;
 
 importDeclaration:              KeywordImport ValueString+;
 
@@ -68,6 +69,7 @@ fieldAssignment:                expression SymbolDot Identifier variableValue;
 typeAliasDeclaration:		    KeywordType Identifier KeywordTypeAlias typeName;
 structInit:                     Identifier SymbolDot SymbolLbrace (fieldInit (SymbolComma fieldInit)*)? SymbolRbrace;
 fieldInit:                      SymbolDot Identifier variableValue;
+constStructInit:                SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
@@ -87,7 +89,9 @@ expression:                     functionCall                                    
         |                       literalConstantString                               #literalConstantStringExpression
         |			            multilineString					                    #MultilineStringExpression
         |			            expression SymbolDot Identifier			            #FieldAccessExpression
-        |                       structInit                                          #StructInitExpression;
+        |                       structInit                                          #StructInitExpression
+        |                       constStructInit                                     #ConstStructInitExpression
+        |                       SymbolApostrophe typeName                           #LiteralTypeExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator

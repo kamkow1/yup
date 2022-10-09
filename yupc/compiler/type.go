@@ -52,23 +52,39 @@ func reverseTypeExtList(array []parser.ITypeExtensionContext) []parser.ITypeExte
 	return append(reverseTypeExtList(array[1:]), array[0])
 }
 
-func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
-	typ := GetTypeFromName(ctx.Identifier().GetText())
-	for _, ext := range reverseTypeExtList(ctx.AllTypeExtension()) {
-		extension := ext.(*parser.TypeExtensionContext)
-		if extension.SymbolAsterisk() != nil {
-			typ = GetPointerType(typ)
-		}
+func (v *AstVisitor) VisitLiteralTypeExpression(ctx *parser.LiteralTypeExpressionContext) any {
+	return v.Visit(ctx.TypeName())
+}
 
-		if extension.ArrayTypeExtension() != nil {
-			extCtx := extension.ArrayTypeExtension().(*parser.ArrayTypeExtensionContext)
-			size, err := strconv.Atoi(extCtx.ValueInteger().GetText())
-			if err != nil {
-				LogError("failed to parse array size: %d, %s", size, err.Error())
+func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
+
+	var typ llvm.Type
+	if ctx.Identifier() != nil {
+		typ = GetTypeFromName(ctx.Identifier().GetText())
+		for _, ext := range reverseTypeExtList(ctx.AllTypeExtension()) {
+			extension := ext.(*parser.TypeExtensionContext)
+			if extension.SymbolAsterisk() != nil {
+				typ = GetPointerType(typ)
 			}
 
-			typ = GetArrayType(typ, size)
+			if extension.ArrayTypeExtension() != nil {
+				extCtx := extension.ArrayTypeExtension().(*parser.ArrayTypeExtensionContext)
+				size, err := strconv.Atoi(extCtx.ValueInteger().GetText())
+				if err != nil {
+					LogError("failed to parse array size: %d, %s", size, err.Error())
+				}
+
+				typ = GetArrayType(typ, size)
+			}
 		}
+	} else {
+		strtp := ctx.StructType().(*parser.StructTypeContext)
+		var types []llvm.Type
+		for _, tp := range strtp.AllTypeName() {
+			types = append(types, v.Visit(tp).(llvm.Type))
+		}
+
+		typ = llvm.StructType(types, false)
 	}
 
 	return typ
@@ -265,4 +281,17 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	}
 
 	return malloc
+}
+
+func (v *AstVisitor) VisitConstStructInitExpression(ctx *parser.ConstStructInitExpressionContext) any {
+	return v.Visit(ctx.ConstStructInit())
+}
+
+func (v *AstVisitor) VisitConstStructInit(ctx *parser.ConstStructInitContext) any {
+	var values []llvm.Value
+	for _, expr := range ctx.AllExpression() {
+		values = append(values, v.Visit(expr).(llvm.Value))
+	}
+
+	return llvm.ConstStruct(values, false)
 }

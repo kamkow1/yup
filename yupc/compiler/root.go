@@ -57,6 +57,9 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.ArrayTypeExtensionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitArrayTypeExtension(ctx)
+	case *parser.LiteralTypeExpressionContext:
+		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+		return v.VisitLiteralTypeExpression(ctx)
 
 	// Array
 	//case *parser.ArrayElementAssignmentContext:
@@ -255,6 +258,12 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.FieldInitContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitFieldInit(ctx)
+	case *parser.ConstStructInitExpressionContext:
+		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+		return v.VisitConstStructInitExpression(ctx)
+	case *parser.ConstStructInitContext:
+		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+		return v.VisitConstStructInit(ctx)
 
 	default:
 		LogError("stepped into an unimplemented context: %s\n", ctx.GetText())
