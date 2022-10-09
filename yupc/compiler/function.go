@@ -137,9 +137,9 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 
 	if signature.ParamsCount() > 0 {
 		for i, p := range signature.Params() {
-			alloca := CompilationUnits.Peek().Builder.CreateAlloca(p.Type(), "")
-			n := len(CompilationUnits.Peek().Locals) - 1
-			CompilationUnits.Peek().Locals[n][p.Name()] = LocalVariable{
+			alloca := CreateAllocation(p.Type())
+			loclen := len(CompilationUnits.Peek().Locals) - 1
+			CompilationUnits.Peek().Locals[loclen][p.Name()] = LocalVariable{
 				p.Name(),
 				function.Params[i].IsConst,
 				alloca,

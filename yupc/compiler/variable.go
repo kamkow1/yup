@@ -92,15 +92,19 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 				LogError("local variable %s cannot have an attribute list", name)
 			}
 
-			v := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
-			lv := LocalVariable{name, isConstant, v}
-			CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = lv
+			alloca := CreateAllocation(typ)
+			loclen := len(CompilationUnits.Peek().Locals) - 1
+			CompilationUnits.Peek().Locals[loclen][name] = LocalVariable{
+				Name:    name,
+				IsConst: isConstant,
+				Value:   alloca,
+			}
+
 			if isInit {
 				value = Cast(value, typ)
-				CompilationUnits.Peek().Builder.CreateStore(value, v)
+				CompilationUnits.Peek().Builder.CreateStore(value, alloca)
 			}
 		}
-
 	}
 
 	return nil
