@@ -15,7 +15,6 @@ typeAnnotation:                 SymbolColon typeName;
 typeName:                       typeExtension* Identifier;
 typeExtension:                  arrayTypeExtension | SymbolAsterisk | SymbolQuestMark;
 arrayTypeExtension:             SymbolLsqbr ValueInteger SymbolRsqbr;
-typeNameExpression:             SymbolApostrophe typeName;
 
 importDeclaration:              KeywordImport ValueString+;
 
@@ -76,7 +75,6 @@ expression:                     functionCall                                    
         |                       expression binaryOperator expression                #binaryOperationExpression
         |                       SymbolLparen expression SymbolRparen                #emphasizedExpression
         |                       pointerDereference                                  #pointerDereferenceExpression
-        |                       typeNameExpression                                  #typeExpression
         |                       SymbolLparen expression SymbolRparen expression     #typeCastExpression
         |                       expression comparisonOperator expression            #ComparisonExpression
         |                       (SymbolNot | SymbolExclMark) expression             #NegatedExpression

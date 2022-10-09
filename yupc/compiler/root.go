@@ -57,12 +57,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.ArrayTypeExtensionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitArrayTypeExtension(ctx)
-	case *parser.TypeNameExpressionContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitTypeNameExpression(ctx)
-	case *parser.TypeExpressionContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitTypeExpression(ctx)
 
 	// Array
 	case *parser.ArrayElementAssignmentContext:

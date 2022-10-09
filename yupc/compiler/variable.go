@@ -104,6 +104,11 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 
 func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionContext) any {
 	name := ctx.Identifier().GetText()
+
+	if tp, ok := CompilationUnits.Peek().Types[name]; ok {
+		return tp
+	}
+
 	var val llvm.Value
 	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
 		val = CompilationUnits.Peek().Module.NamedGlobal(name)
