@@ -19,23 +19,6 @@ func (v *AstVisitor) VisitAddressOf(ctx *parser.AddressOfContext) any {
 }
 
 func (v *AstVisitor) VisitPointerDereferenceExpression(ctx *parser.PointerDereferenceExpressionContext) any {
-	return v.Visit(ctx.PointerDereference())
-}
-
-func (v *AstVisitor) VisitPointerDereference(ctx *parser.PointerDereferenceContext) any {
 	ptr := v.Visit(ctx.Expression()).(llvm.Value)
 	return CompilationUnits.Peek().Builder.CreateLoad(ptr, "")
 }
-
-/*
-func (v *AstVisitor) VisitDereferenceAssignment(ctx *parser.DereferenceAssignmentContext) any {
-	ptr := v.Visit(ctx.Expression()).(llvm.Value)
-	for _ = range ctx.AllSymbolAsterisk() {
-		ptr = CompilationUnits.Peek().Builder.CreateLoad(ptr, "")
-	}
-
-	value := v.Visit(ctx.VariableValue()).(llvm.Value)
-
-	return CompilationUnits.Peek().Builder.CreateStore(value, ptr)
-}
-*/

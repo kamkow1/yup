@@ -271,19 +271,11 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	strct := CompilationUnits.Peek().Types[name]
 	structBase := CompilationUnits.Peek().Structs[name]
 
-	// malloc := CompilationUnits.Peek().Builder.CreateMalloc(strct, "")
-	mallocfn := CompilationUnits.Peek().Module.NamedFunction("malloc")
-	if mallocfn.IsNil() {
-		pts := []llvm.Type{llvm.Int64Type()}
-		ft := llvm.FunctionType(llvm.PointerType(llvm.Int8Type(), 0), pts, false)
-		mallocfn = llvm.AddFunction(CompilationUnits.Peek().Module, "malloc", ft)
-	}
-
-	args := []llvm.Value{llvm.SizeOf(strct)}
-	malloc := CompilationUnits.Peek().Builder.CreateCall(mallocfn, args, "")
+	malloc := CompilationUnits.Peek().Builder.CreateMalloc(strct, "")
 	allocatedStruct := Cast(malloc, llvm.PointerType(strct, 0))
 
-	for i, fld := range structBase.Fields {
+	for i := 0; i < len(ctx.AllFieldInit()); i++ {
+		fld := structBase.Fields[i]
 		fieldptr := GetStructFieldPtr(allocatedStruct, fld.Name, true)
 		init := v.Visit(ctx.FieldInit(i)).(llvm.Value)
 		CompilationUnits.Peek().Builder.CreateStore(init, fieldptr)

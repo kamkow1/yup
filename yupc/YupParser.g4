@@ -41,7 +41,6 @@ functionCallArgList:            expression (SymbolComma expression)*;
 
 binaryOperator:                 SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash;
 
-pointerDereference:             SymbolAsterisk expression;
 addressOf:                      SymbolAmpersand Identifier;
 
 ifStatement:		            KeywordIf expression ifThenBlock ifElseBlock?;
@@ -78,7 +77,7 @@ expression:                     functionCall                                    
         |                       expression (SymbolLsqbr expression SymbolRsqbr)+    #indexedAccessExpression
         |                       expression binaryOperator expression                #binaryOperationExpression
         |                       SymbolLparen expression SymbolRparen                #emphasizedExpression
-        |                       pointerDereference                                  #pointerDereferenceExpression
+        |                       expression SymbolDot SymbolAsterisk                 #pointerDereferenceExpression
         |                       SymbolLparen expression SymbolRparen expression     #typeCastExpression
         |                       expression comparisonOperator expression            #ComparisonExpression
         |                       (SymbolNot | SymbolExclMark) expression             #NegatedExpression

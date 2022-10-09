@@ -125,9 +125,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.AddressOfContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitAddressOf(ctx)
-	case *parser.PointerDereferenceContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitPointerDereference(ctx)
 	case *parser.AddressOfExpressionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitAddressOfExpression(ctx)
