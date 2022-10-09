@@ -66,6 +66,8 @@ structDeclaration:		        attributeList? KeywordType Identifier KeywordStruct 
 structField:			        Identifier typeAnnotation SymbolTerminator;
 fieldAssignment:                expression SymbolDot Identifier variableValue;
 typeAliasDeclaration:		    KeywordType Identifier KeywordTypeAlias typeName;
+structInit:                     Identifier SymbolDot SymbolLbrace (fieldInit (SymbolComma fieldInit)*)? SymbolRbrace;
+fieldInit:                      SymbolDot Identifier variableValue;
 
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
@@ -84,7 +86,8 @@ expression:                     functionCall                                    
         |			            literalConstantInt		 	  	                    #literalConstantIntExpression
         |                       literalConstantString                               #literalConstantStringExpression
         |			            multilineString					                    #MultilineStringExpression
-        |			            expression SymbolDot Identifier			            #FieldAccessExpression;
+        |			            expression SymbolDot Identifier			            #FieldAccessExpression
+        |                       structInit                                          #StructInitExpression;
 
 statement:                      expression                                          SymbolTerminator
         |                       assignment                                          SymbolTerminator

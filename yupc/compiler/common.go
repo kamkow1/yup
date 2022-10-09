@@ -50,3 +50,28 @@ func CreateAllocation(typ llvm.Type) llvm.Value {
 	CompilationUnits.Peek().Builder.CreateCall(lifetimeStart, args, "")
 	return alloca
 }
+
+func GetStructFieldPtr(strct llvm.Value, fieldname string, ismalloc bool) llvm.Value {
+	isptr := strct.Type().TypeKind() == llvm.PointerTypeKind
+	if isptr && !ismalloc {
+		strct = CompilationUnits.Peek().Builder.CreateLoad(strct, "")
+	}
+
+	var strctname string
+	if isptr {
+		strctname = strct.Type().ElementType().StructName()
+	} else {
+		strctname = strct.Type().StructName()
+	}
+
+	baseStruct, _ := CompilationUnits.Peek().Structs[strctname]
+
+	var field llvm.Value
+	for i, f := range baseStruct.Fields {
+		if fieldname == f.Name {
+			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
+		}
+	}
+
+	return field
+}

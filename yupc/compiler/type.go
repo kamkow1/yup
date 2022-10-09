@@ -237,29 +237,32 @@ func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationC
 
 func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressionContext) any {
 	strct := v.Visit(ctx.Expression()).(llvm.Value)
-	isptr := strct.Type().TypeKind() == llvm.PointerTypeKind
-
-	if isptr {
-		strct = CompilationUnits.Peek().Builder.CreateLoad(strct, "")
-	}
-
-	var name string
-	if isptr {
-		name = strct.Type().ElementType().StructName()
-	} else {
-		name = strct.Type().StructName()
-	}
-
 	fieldName := ctx.Identifier().GetText()
-	baseStruct, _ := CompilationUnits.Peek().Structs[name]
 
-	var field llvm.Value
-	for i, f := range baseStruct.Fields {
-		if fieldName == f.Name {
-			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
-			//field = CompilationUnits.Peek().Builder.CreateLoad(gep, "")
-		}
+	return GetStructFieldPtr(strct, fieldName, false)
+}
+
+func (v *AstVisitor) VisitStructInitExpression(ctx *parser.StructInitExpressionContext) any {
+	return v.Visit(ctx.StructInit())
+}
+
+func (v *AstVisitor) VisitFieldInit(ctx *parser.FieldInitContext) any {
+	return v.Visit(ctx.VariableValue())
+}
+
+func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
+	name := ctx.Identifier().GetText()
+	strct := CompilationUnits.Peek().Types[name]
+	structBase := CompilationUnits.Peek().Structs[name]
+
+	malloc := CompilationUnits.Peek().Builder.CreateMalloc(strct, "")
+	allocatedStruct := Cast(malloc, llvm.PointerType(strct, 0))
+
+	for i, fld := range structBase.Fields {
+		fieldptr := GetStructFieldPtr(allocatedStruct, fld.Name, true)
+		init := v.Visit(ctx.FieldInit(i)).(llvm.Value)
+		CompilationUnits.Peek().Builder.CreateStore(init, fieldptr)
 	}
 
-	return field
+	return malloc
 }
