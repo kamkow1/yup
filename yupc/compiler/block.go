@@ -20,10 +20,17 @@ func TrackAllocation(alloca llvm.Value) {
 	TrackedAllocations = append(TrackedAllocations, alloca)
 }
 
+var TrackedHeapMallocs []llvm.Value = make([]llvm.Value, 0)
+
+func TrackHeapMalloc(m llvm.Value) {
+	TrackedHeapMallocs = append(TrackedHeapMallocs, m)
+}
+
 func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 	CreateBlock()
 
 	var hasTerminated bool
+	var freeHeapLocals bool
 	for _, st := range ctx.AllStatement() {
 		hasReturned := st.(*parser.StatementContext).FunctionReturn() != nil
 		hasBranched := st.(*parser.StatementContext).IfStatement() != nil
@@ -31,7 +38,15 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 		hasBroken := st.(*parser.StatementContext).BreakStatement() != nil
 
 		hasTerminated = hasReturned || hasBranched || hasContinued || hasBroken
+		freeHeapLocals = !hasReturned
 		v.Visit(st)
+	}
+
+	if freeHeapLocals {
+		for _, hm := range TrackedHeapMallocs {
+			ld := CompilationUnits.Peek().Builder.CreateLoad(hm, "")
+			CompilationUnits.Peek().Builder.CreateFree(Cast(ld, llvm.PointerType(llvm.Int8Type(), 0)))
+		}
 	}
 
 	llvmLifeTimeEnd := CompilationUnits.Peek().Module.NamedFunction("llvm.lifetime.end")

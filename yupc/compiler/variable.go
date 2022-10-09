@@ -101,7 +101,15 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 			}
 
 			if isInit {
-				value = Cast(value, typ)
+				if value.InstructionOpcode() == llvm.Call {
+					for i := 0; i < value.OperandsCount(); i++ {
+						fn := value.Operand(i).IsAFunction()
+						if !fn.IsNil() {
+							TrackHeapMalloc(alloca)
+						}
+					}
+				}
+
 				CompilationUnits.Peek().Builder.CreateStore(value, alloca)
 			}
 		}
