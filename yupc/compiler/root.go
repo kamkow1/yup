@@ -59,18 +59,18 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitArrayTypeExtension(ctx)
 
 	// Array
-	case *parser.ArrayElementAssignmentContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitArrayElementAssignment(ctx)
+	//case *parser.ArrayElementAssignmentContext:
+	//	GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+	//	return v.VisitArrayElementAssignment(ctx)
 	case *parser.ArrayIndexContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitArrayIndex(ctx)
-	case *parser.ArrayContext:
+	case *parser.ConstArrayContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitArray(ctx)
-	case *parser.ArrayExpressionContext:
+		return v.VisitConstArray(ctx)
+	case *parser.ConstArrayExpressionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitArrayExpression(ctx)
+		return v.VisitConstArrayExpression(ctx)
 	case *parser.IndexedAccessExpressionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitIndexedAccessExpression(ctx)

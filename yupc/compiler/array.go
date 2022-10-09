@@ -5,18 +5,22 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func (v *AstVisitor) VisitArrayExpression(ctx *parser.ArrayExpressionContext) any {
-	return v.Visit(ctx.Array())
+func (v *AstVisitor) VisitConstArrayExpression(ctx *parser.ConstArrayExpressionContext) any {
+	return v.Visit(ctx.ConstArray())
 }
 
-func (v *AstVisitor) VisitArray(ctx *parser.ArrayContext) any {
+func (v *AstVisitor) VisitConstArray(ctx *parser.ConstArrayContext) any {
 	var vals []llvm.Value
 	for _, expr := range ctx.AllExpression() {
 		val := v.Visit(expr).(llvm.Value)
+		if !val.IsConstant() {
+			LogError("expression `%s` is not a constant", expr.GetText())
+		}
+
 		vals = append(vals, val)
 	}
 
-	typ := vals[0].Type().ElementType()
+	typ := vals[0].Type()
 	arrtyp := llvm.ArrayType(typ, len(vals))
 	return llvm.ConstArray(arrtyp, vals)
 }
@@ -33,8 +37,8 @@ func (v *AstVisitor) VisitIndexedAccessExpression(ctx *parser.IndexedAccessExpre
 		}
 
 		indices = append(indices, val)
-		gep := CompilationUnits.Peek().Builder.CreateGEP(array, indices, "")
-		idx = CompilationUnits.Peek().Builder.CreateLoad(gep, "")
+		idx = CompilationUnits.Peek().Builder.CreateGEP(array, indices, "")
+		//idx = CompilationUnits.Peek().Builder.CreateLoad(gep, "")
 	}
 
 	return idx
@@ -48,7 +52,7 @@ func IsPointer(a llvm.Value) bool {
 	return a.Type().ElementType().TypeKind() == llvm.PointerTypeKind
 }
 
-func (v *AstVisitor) VisitArrayElementAssignment(ctx *parser.ArrayElementAssignmentContext) any {
+/*func (v *AstVisitor) VisitArrayElementAssignment(ctx *parser.ArrayElementAssignmentContext) any {
 	name := ctx.Identifier().GetText()
 	array := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
 	value := v.Visit(ctx.VariableValue()).(llvm.Value)
@@ -75,4 +79,4 @@ func (v *AstVisitor) VisitArrayElementAssignment(ctx *parser.ArrayElementAssignm
 	CompilationUnits.Peek().Builder.CreateStore(value, array)
 
 	return nil
-}
+}*/

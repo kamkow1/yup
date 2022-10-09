@@ -20,7 +20,7 @@ importDeclaration:              KeywordImport ValueString+;
 
 arrayElementAssignment:         Identifier arrayIndex* variableValue;
 arrayIndex:                     SymbolLsqbr expression SymbolRsqbr;
-array:                          SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
+constArray:                     SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
 
 assignment:                     Identifier variableValue;
 variableDeclare:                attributeList? declarationType Identifier (SymbolComma Identifier)* typeAnnotation? variableValue?;
@@ -69,7 +69,7 @@ typeAliasDeclaration:		    KeywordType Identifier KeywordTypeAlias typeName;
 
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression
-        |                       array                                               #arrayExpression
+        |                       constArray                                          #constArrayExpression
         |                       addressOf                                           #addressOfExpression
         |                       expression (SymbolLsqbr expression SymbolRsqbr)+    #indexedAccessExpression
         |                       expression binaryOperator expression                #binaryOperationExpression
@@ -92,7 +92,7 @@ statement:                      expression                                      
         // |                       dereferenceAssignment                               SymbolTerminator
         |                       functionReturn                                      SymbolTerminator
         |                       variableDeclare                                     SymbolTerminator
-        |                       arrayElementAssignment                              SymbolTerminator
+        // |                       arrayElementAssignment                              SymbolTerminator
         |                       functionSignature                                   SymbolTerminator
         |                       importDeclaration                                   SymbolTerminator
         |			            continueStatement				                    SymbolTerminator
