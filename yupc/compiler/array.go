@@ -16,8 +16,9 @@ func (v *AstVisitor) VisitArray(ctx *parser.ArrayContext) any {
 		vals = append(vals, val)
 	}
 
-	typ := vals[0].Type()
-	return llvm.ConstArray(typ, vals)
+	typ := vals[0].Type().ElementType()
+	arrtyp := llvm.ArrayType(typ, len(vals))
+	return llvm.ConstArray(arrtyp, vals)
 }
 
 func (v *AstVisitor) VisitIndexedAccessExpression(ctx *parser.IndexedAccessExpressionContext) any {

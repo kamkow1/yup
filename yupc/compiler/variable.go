@@ -34,69 +34,73 @@ func (v *AstVisitor) VisitDeclarationType(ctx *parser.DeclarationTypeContext) an
 }
 
 func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) any {
-	name := ctx.Identifier().GetText()
-
-	var alreadyLocal bool
-	if len(CompilationUnits.Peek().Locals) < 1 {
-		alreadyLocal = false
-	} else if _, ok := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]; ok {
-		alreadyLocal = ok
+	var names []string
+	for _, id := range ctx.AllIdentifier() {
+		names = append(names, id.GetText())
 	}
 
-	if alreadyLocal {
-		LogError("variable %s has already been declared", name)
-	}
-
-	isGlobal := CompilationUnits.Peek().Builder.GetInsertBlock().IsNil()
-	isConstant := v.Visit(ctx.DeclarationType()).(bool) // true == const, false == var
-
-	var typ llvm.Type
-	var value llvm.Value
-	isInit := ctx.VariableValue() != nil
-	if isInit {
-		value = v.Visit(ctx.VariableValue()).(llvm.Value)
-		typ = value.Type()
-	}
-
-	if ctx.TypeAnnotation() != nil {
-		typ = v.Visit(ctx.TypeAnnotation()).(llvm.Type)
-	} else {
-		typ = value.Type()
-	}
-
-	if isGlobal {
-		glb := llvm.AddGlobal(CompilationUnits.Peek().Module, typ, name)
-		if isInit {
-			glb.SetInitializer(value)
+	for _, name := range names {
+		var alreadyLocal bool
+		if len(CompilationUnits.Peek().Locals) < 1 {
+			alreadyLocal = false
+		} else if _, ok := CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name]; ok {
+			alreadyLocal = ok
 		}
 
-		if ctx.AttributeList() != nil {
-			attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
-			for _, a := range attrs {
-				switch a.Name {
-				case "link_type":
-					{
-						linkage := a.Params[0]
-						glb.SetLinkage(GetLinkageFromString(linkage))
+		if alreadyLocal {
+			LogError("variable %s has already been declared", name)
+		}
+
+		isGlobal := CompilationUnits.Peek().Builder.GetInsertBlock().IsNil()
+		isConstant := v.Visit(ctx.DeclarationType()).(bool) // true == const, false == var
+
+		var typ llvm.Type
+		var value llvm.Value
+		isInit := ctx.VariableValue() != nil
+		if isInit {
+			value = v.Visit(ctx.VariableValue()).(llvm.Value)
+			typ = value.Type()
+		}
+
+		if ctx.TypeAnnotation() != nil {
+			typ = v.Visit(ctx.TypeAnnotation()).(llvm.Type)
+		}
+
+		if isGlobal {
+			glb := llvm.AddGlobal(CompilationUnits.Peek().Module, typ, name)
+			if isInit {
+				glb.SetInitializer(value)
+			}
+
+			if ctx.AttributeList() != nil {
+				attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
+				for _, a := range attrs {
+					switch a.Name {
+					case "link_type":
+						{
+							linkage := a.Params[0]
+							glb.SetLinkage(GetLinkageFromString(linkage))
+						}
 					}
 				}
 			}
+
+			CompilationUnits.Peek().Globals[name] = glb
+
+		} else {
+			if ctx.AttributeList() != nil {
+				LogError("local variable %s cannot have an attribute list", name)
+			}
+
+			v := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
+			lv := LocalVariable{name, isConstant, v}
+			CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = lv
+			if isInit {
+				value = Cast(value, typ)
+				CompilationUnits.Peek().Builder.CreateStore(value, v)
+			}
 		}
 
-		CompilationUnits.Peek().Globals[name] = glb
-
-	} else {
-		if ctx.AttributeList() != nil {
-			LogError("local variable %s cannot have an attribute list", name)
-		}
-
-		v := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
-		lv := LocalVariable{name, isConstant, v}
-		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = lv
-		if isInit {
-			value = Cast(value, typ)
-			CompilationUnits.Peek().Builder.CreateStore(value, v)
-		}
 	}
 
 	return nil

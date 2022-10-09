@@ -23,7 +23,7 @@ arrayIndex:                     SymbolLsqbr expression SymbolRsqbr;
 array:                          SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
 
 assignment:                     Identifier variableValue;
-variableDeclare:                attributeList? declarationType Identifier typeAnnotation? variableValue?;
+variableDeclare:                attributeList? declarationType Identifier (SymbolComma Identifier)* typeAnnotation? variableValue?;
 declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
 expressionAssignment:           expression variableValue;
@@ -33,7 +33,7 @@ expressionAssignment:           expression variableValue;
 functionDefinition:             functionSignature codeBlock;
 functionSignature:              attributeList? KeywordFunction Identifier SymbolLparen functionParameterList? SymbolRparen (SymbolArrow typeName)?;
 functionParameterList:          functionParameter (SymbolComma functionParameter)*;
-functionReturn:                 KeywordReturn expression?;
+functionReturn:                 KeywordReturn (expression (SymbolComma expression)*)?;
 functionParameter:              (KeywordConst? Identifier typeAnnotation) | SymbolVariadicArgs;
 functionCall:                   Identifier SymbolLparen functionCallArgList? SymbolRparen;
 functionCallArgList:            expression (SymbolComma expression)*;
