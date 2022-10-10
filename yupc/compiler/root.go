@@ -3,19 +3,22 @@ package compiler
 import (
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/kamkow1/yup/yupc/parser"
+	"tinygo.org/x/go-llvm"
 )
 
 type any = interface{}
 
 type CompilerInfo struct {
-	File string
-	Line int
+	File         string
+	Line         int
+	TargetTriple string
 }
 
 func NewCompilerInfo() *CompilerInfo {
 	return &CompilerInfo{
-		File: "unknown file",
-		Line: 0,
+		File:         "unknown file",
+		Line:         0,
+		TargetTriple: llvm.DefaultTargetTriple(),
 	}
 }
 
