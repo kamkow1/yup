@@ -11,12 +11,14 @@ type any = interface{}
 type CompilerInfo struct {
 	Line         int
 	TargetTriple string
+	Verbose      bool
 }
 
 func NewCompilerInfo() *CompilerInfo {
 	return &CompilerInfo{
 		Line:         0,
 		TargetTriple: llvm.DefaultTargetTriple(),
+		Verbose:      false,
 	}
 }
 

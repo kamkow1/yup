@@ -17,6 +17,10 @@ var compileCmd = &cobra.Command{
 		llvm.InitializeAllAsmParsers()
 		llvm.InitializeAllAsmPrinters()
 
+		if verb, _ := cmd.Flags().GetBool("verbose"); verb {
+			compiler.GlobalCompilerInfo.Verbose = verb
+		}
+
 		for _, fp := range args {
 			compiler.ProcessPathRecursively(fp)
 			mod, p := compiler.GetBCWriteData()
@@ -34,5 +38,6 @@ var compileCmd = &cobra.Command{
 
 func init() {
 	compileCmd.PersistentFlags().String("execname", "yup.out", "outputs an executable")
+	compileCmd.PersistentFlags().Bool("verbose", false, "enables verbose output from external tools")
 	rootCmd.AddCommand(compileCmd)
 }
