@@ -23,11 +23,16 @@ var compileCmd = &cobra.Command{
 			compiler.WriteBCFile(mod, p)
 
 			modname := compiler.CompilationUnits.Peek().ModuleName
-			compiler.DumpObjectFile(modname)
+			objpath := compiler.DumpObjectFile(modname)
+
+			if execname, _ := cmd.Flags().GetString("execname"); execname != "" {
+				compiler.MakeExec(objpath, execname)
+			}
 		}
 	},
 }
 
 func init() {
+	compileCmd.PersistentFlags().String("execname", "yup.out", "outputs an executable")
 	rootCmd.AddCommand(compileCmd)
 }
