@@ -39,8 +39,6 @@ type CompilationUnit struct {
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
-	
-	GlobalCompilerInfo.File = sf
 	mod := llvm.NewModule(sf)
 	target, _ := llvm.GetTargetFromTriple(GlobalCompilerInfo.TargetTriple)
 

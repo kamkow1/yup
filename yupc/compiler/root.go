@@ -9,14 +9,12 @@ import (
 type any = interface{}
 
 type CompilerInfo struct {
-	File         string
 	Line         int
 	TargetTriple string
 }
 
 func NewCompilerInfo() *CompilerInfo {
 	return &CompilerInfo{
-		File:         "unknown file",
 		Line:         0,
 		TargetTriple: llvm.DefaultTargetTriple(),
 	}
