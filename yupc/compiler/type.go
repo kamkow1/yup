@@ -23,14 +23,6 @@ func InitTypeMap() map[string]llvm.Type {
 	}
 }
 
-func GetPointerType(typ llvm.Type) llvm.Type {
-	return llvm.PointerType(typ, 0)
-}
-
-func GetArrayType(typ llvm.Type, count int) llvm.Type {
-	return llvm.ArrayType(typ, count)
-}
-
 func GetTypeFromName(name string) llvm.Type {
 	typ, ok := CompilationUnits.Peek().Types[name]
 	if !ok {
@@ -61,23 +53,7 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 	var typ llvm.Type
 	if ctx.Identifier() != nil {
 		typ = GetTypeFromName(ctx.Identifier().GetText())
-		for _, ext := range reverseTypeExtList(ctx.AllTypeExtension()) {
-			extension := ext.(*parser.TypeExtensionContext)
-			if extension.SymbolAsterisk() != nil {
-				typ = GetPointerType(typ)
-			}
-
-			if extension.ArrayTypeExtension() != nil {
-				extCtx := extension.ArrayTypeExtension().(*parser.ArrayTypeExtensionContext)
-				size, err := strconv.Atoi(extCtx.ValueInteger().GetText())
-				if err != nil {
-					LogError("failed to parse array size: %d, %s", size, err.Error())
-				}
-
-				typ = GetArrayType(typ, size)
-			}
-		}
-	} else {
+	} else if ctx.StructType() != nil {
 		strtp := ctx.StructType().(*parser.StructTypeContext)
 		var types []llvm.Type
 		for _, tp := range strtp.AllTypeName() {
@@ -85,6 +61,46 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 		}
 
 		typ = llvm.StructType(types, false)
+	} else if ctx.FunctionType() != nil {
+		fntp := ctx.FunctionType().(*parser.FunctionTypeContext)
+
+		var retType llvm.Type
+		if fntp.SymbolArrow() != nil {
+			retType = v.Visit(fntp.TypeName()).(llvm.Type)
+		} else {
+			retType = llvm.VoidType()
+		}
+
+		params := make([]FuncParam, 0)
+		if fntp.FunctionParameterList() != nil {
+			params = v.Visit(fntp.FunctionParameterList()).([]FuncParam)
+		}
+
+		paramTypes := make([]llvm.Type, 0)
+		isva := false
+		for _, pt := range params {
+			if pt.IsVarArg {
+				isva = true
+				break
+			}
+
+			paramTypes = append(paramTypes, pt.Type)
+		}
+
+		typ = llvm.FunctionType(retType, paramTypes, isva)
+	}
+
+	for _, ext := range reverseTypeExtList(ctx.AllTypeExtension()) {
+		extension := ext.(*parser.TypeExtensionContext)
+		if extension.SymbolAsterisk() != nil {
+			typ = llvm.PointerType(typ, 0)
+		}
+
+		if extension.ArrayTypeExtension() != nil {
+			extctx := extension.ArrayTypeExtension().(*parser.ArrayTypeExtensionContext)
+			size, _ := strconv.Atoi(extctx.ValueInteger().GetText())
+			typ = llvm.ArrayType(typ, size)
+		}
 	}
 
 	return typ
@@ -161,7 +177,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 						paramTypes = append(paramTypes, p.Type)
 					}
 
-					rtType := GetPointerType(structType)
+					rtType := llvm.PointerType(structType, 0)
 					ft := llvm.FunctionType(rtType, paramTypes, false)
 					function := llvm.AddFunction(CompilationUnits.Peek().Module, fncname, ft)
 
@@ -202,7 +218,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 					fncname := "free_" + strings.ToLower(name)
 					var params []FuncParam
 					paramName := "_" + strings.ToLower(name)
-					paramType := GetPointerType(structType)
+					paramType := llvm.PointerType(structType, 0)
 					p := FuncParam{
 						Name:     paramName,
 						IsVarArg: false,

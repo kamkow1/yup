@@ -12,10 +12,11 @@ attributeList:                  SymbolHash SymbolLsqbr (attribute (SymbolComma a
 attribute:                      Identifier SymbolLparen (ValueString (SymbolComma ValueString)*)? SymbolRparen;
 
 typeAnnotation:                 SymbolColon typeName;
-typeName:                       (typeExtension* Identifier) | structType;
+typeName:                       (typeExtension* (Identifier |structType | functionType));
 typeExtension:                  arrayTypeExtension | SymbolAsterisk | SymbolQuestMark;
 arrayTypeExtension:             SymbolLsqbr ValueInteger SymbolRsqbr;
 structType:                     SymbolLbrace (typeName (SymbolComma typeName)*)? SymbolRbrace;
+functionType:                   SymbolLparen functionParameterList? SymbolRparen (SymbolArrow typeName)?;
 
 importDeclaration:              KeywordImport ValueString+;
 

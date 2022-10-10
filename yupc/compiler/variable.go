@@ -117,6 +117,11 @@ func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionC
 	}
 
 	var val llvm.Value
+	if !CompilationUnits.Peek().Module.NamedFunction(name).IsNil() {
+		val = CompilationUnits.Peek().Module.NamedFunction(name)
+		return CompilationUnits.Peek().Builder.CreateLoad(val, "")
+	}
+
 	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
 		val = CompilationUnits.Peek().Module.NamedGlobal(name)
 		return CompilationUnits.Peek().Builder.CreateLoad(val, "")

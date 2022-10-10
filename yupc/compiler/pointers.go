@@ -11,6 +11,10 @@ func (v *AstVisitor) VisitAddressOfExpression(ctx *parser.AddressOfExpressionCon
 
 func (v *AstVisitor) VisitAddressOf(ctx *parser.AddressOfContext) any {
 	name := ctx.Identifier().GetText()
+	if !CompilationUnits.Peek().Module.NamedFunction(name).IsNil() {
+		return CompilationUnits.Peek().Module.NamedFunction(name)
+	}
+
 	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
 		return CompilationUnits.Peek().Module.NamedGlobal(name)
 	}

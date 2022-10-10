@@ -257,6 +257,15 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 		return f1(args)
 	} else {
 		f := CompilationUnits.Peek().Module.NamedFunction(name)
+		if f.IsNil() {
+			glb := CompilationUnits.Peek().Module.NamedGlobal(name)
+			if !glb.IsNil() {
+				f = CompilationUnits.Peek().Builder.CreateLoad(glb, "")
+			} else {
+				loc := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
+				f = CompilationUnits.Peek().Builder.CreateLoad(loc, "")
+			}
+		}
 
 		if f.IsNil() {
 			LogError("tried to call an unknown function: %s", name)
