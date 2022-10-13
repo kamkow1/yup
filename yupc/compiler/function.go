@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"io/ioutil"
-	//	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -289,15 +288,27 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any {
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	function := CompilationUnits.Peek().Functions[functionName]
+	fncReturnType := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Type().ReturnType()
+	fncReturnType = fncReturnType.ElementType()
+
 	if ctx.AllExpression() != nil && len(ctx.AllExpression()) == 1 {
 		value := v.Visit(ctx.Expression(0)).(llvm.Value)
+		if value.Type() != fncReturnType {
+			value = Cast(value, fncReturnType)
+		}
+
 		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
 		CompilationUnits.Peek().Builder.CreateStore(value, returnValue.Value)
 		return CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 	} else if len(ctx.AllExpression()) > 1 {
 		var vals []llvm.Value
 		for _, expr := range ctx.AllExpression() {
-			vals = append(vals, v.Visit(expr).(llvm.Value))
+			val := v.Visit(expr).(llvm.Value)
+			if val.Type().TypeKind() != fncReturnType.TypeKind() {
+				val = Cast(val, fncReturnType)
+			}
+
+			vals = append(vals, val)
 		}
 
 		return CompilationUnits.Peek().Builder.CreateAggregateRet(vals)
