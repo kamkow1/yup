@@ -29,7 +29,7 @@ var compileCmd = &cobra.Command{
 			modname := compiler.CompilationUnits.Peek().ModuleName
 			objpath := compiler.DumpObjectFile(modname)
 
-			if execname, _ := cmd.Flags().GetString("execname"); execname != "" {
+			if execname, _ := cmd.Flags().GetString("output"); execname != "" {
 				compiler.MakeExec(objpath, execname)
 			}
 		}
@@ -37,7 +37,7 @@ var compileCmd = &cobra.Command{
 }
 
 func init() {
-	compileCmd.PersistentFlags().String("execname", "yup.out", "outputs an executable")
+	compileCmd.PersistentFlags().String("output", "yup.out", "outputs an executable")
 	compileCmd.PersistentFlags().Bool("verbose", false, "enables verbose output from external tools")
 	rootCmd.AddCommand(compileCmd)
 }

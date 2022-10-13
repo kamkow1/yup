@@ -131,7 +131,12 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 		name := "__return_value"
 		returnType := function.Value.Type().ReturnType().ElementType()
 		a := CompilationUnits.Peek().Builder.CreateAlloca(returnType, name)
-		loc := LocalVariable{name, true, a}
+		loc := LocalVariable{
+			Name:    name,
+			IsConst: true,
+			Value:   a,
+			IsUsed:  false,
+		}
 		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = loc
 	}
 
@@ -140,9 +145,10 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 			alloca := CreateAllocation(p.Type())
 			loclen := len(CompilationUnits.Peek().Locals) - 1
 			CompilationUnits.Peek().Locals[loclen][p.Name()] = LocalVariable{
-				p.Name(),
-				function.Params[i].IsConst,
-				alloca,
+				Name:    p.Name(),
+				IsConst: function.Params[i].IsConst,
+				Value:   alloca,
+				IsUsed:  false,
 			}
 			CompilationUnits.Peek().Builder.CreateStore(p, alloca)
 		}

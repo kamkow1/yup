@@ -39,27 +39,26 @@ type CompilationUnit struct {
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
-	mod := llvm.NewModule(sf)
-	target, _ := llvm.GetTargetFromTriple(GlobalCompilerInfo.TargetTriple)
+	/*target, _ := llvm.GetTargetFromTriple(GlobalCompilerInfo.TargetTriple)
 
 
 	machine := target.CreateTargetMachine(
 		GlobalCompilerInfo.TargetTriple, 
 		"generic", 
 		"",
-		llvm.CodeGenLevelAggressive,
+		llvm.CodeGenLevelNone,
 		llvm.RelocDefault,
 		llvm.CodeModelDefault,
 	)
 	
 	mod.SetDataLayout(machine.CreateTargetData().String())
-	mod.SetTarget(GlobalCompilerInfo.TargetTriple)
+	mod.SetTarget(GlobalCompilerInfo.TargetTriple)*/
 	
 	return &CompilationUnit{
 		SourceFile: sf,
 		ModuleName: bc,
 		Builder:    llvm.NewBuilder(),
-		Module: 	mod,
+		Module:		llvm.NewModule(sf),
 		Locals:     []map[string]LocalVariable{},
 		Globals:    map[string]llvm.Value{},
 		Functions:  map[string]Function{},

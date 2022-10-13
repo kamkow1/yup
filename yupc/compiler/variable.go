@@ -9,6 +9,7 @@ type LocalVariable struct {
 	Name    string
 	IsConst bool
 	Value   llvm.Value
+	IsUsed  bool
 }
 
 func FindLocalVariable(name string, i int) LocalVariable {
@@ -64,6 +65,10 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 
 		if ctx.TypeAnnotation() != nil {
 			typ = v.Visit(ctx.TypeAnnotation()).(llvm.Type)
+
+			if value.Type() != typ {
+				value = Cast(value, typ)
+			}
 		}
 
 		if isGlobal {
@@ -139,6 +144,7 @@ func (v *AstVisitor) VisitAssignment(ctx *parser.AssignmentContext) any {
 	}
 
 	value := v.Visit(ctx.VariableValue()).(llvm.Value)
+	vr.IsUsed = true
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, vr.Value)
 }

@@ -24,14 +24,22 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 	CreateBlock()
 
 	var hasTerminated bool
+	var hasReturned bool
 	for _, st := range ctx.AllStatement() {
-		hasReturned := st.(*parser.StatementContext).FunctionReturn() != nil
+		hasReturned = st.(*parser.StatementContext).FunctionReturn() != nil
 		hasBranched := st.(*parser.StatementContext).IfStatement() != nil
 		hasContinued := st.(*parser.StatementContext).ContinueStatement() != nil
 		hasBroken := st.(*parser.StatementContext).BreakStatement() != nil
 
 		hasTerminated = hasReturned || hasBranched || hasContinued || hasBroken
 		v.Visit(st)
+	}
+
+	for _, loc := range CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1] {
+		if loc.IsUsed {
+			fnname := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
+			LogError("unused variable in function `%s`: %s", fnname, loc.Name)
+		}
 	}
 
 	llvmLifeTimeEnd := CompilationUnits.Peek().Module.NamedFunction("llvm.lifetime.end")
@@ -41,11 +49,13 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 		llvmLifeTimeEnd = llvm.AddFunction(CompilationUnits.Peek().Module, "llvm.lifetime.end", ft)
 	}
 
-	for _, ta := range TrackedAllocations {
-		targetData := llvm.NewTargetData(CompilationUnits.Peek().Module.DataLayout())
-		size := llvm.ConstInt(llvm.Int64Type(), targetData.TypeAllocSize(ta.Type().ElementType()), false)
-		args := []llvm.Value{size, Cast(ta, llvm.PointerType(llvm.Int8Type(), 0))}
-		CompilationUnits.Peek().Builder.CreateCall(llvmLifeTimeEnd, args, "")
+	if !hasReturned {
+		for _, ta := range TrackedAllocations {
+			targetData := llvm.NewTargetData(CompilationUnits.Peek().Module.DataLayout())
+			size := llvm.ConstInt(llvm.Int64Type(), targetData.TypeAllocSize(ta.Type().ElementType()), false)
+			args := []llvm.Value{size, Cast(ta, llvm.PointerType(llvm.Int8Type(), 0))}
+			CompilationUnits.Peek().Builder.CreateCall(llvmLifeTimeEnd, args, "")
+		}
 	}
 
 	RemoveBlock()
