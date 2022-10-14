@@ -266,6 +266,9 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.ConstStructInitContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitConstStructInit(ctx)
+	case *parser.MethodCallExpressionContext:
+		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+		return v.VisitMethodCallExpression(ctx)
 
 	default:
 		LogError("stepped into an unimplemented context: %s\n", ctx.GetText())

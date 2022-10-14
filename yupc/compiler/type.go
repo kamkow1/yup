@@ -274,6 +274,17 @@ func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressio
 	return GetStructFieldPtr(strct, fieldName, false)
 }
 
+func (v *AstVisitor) VisitMethodCallExpression(ctx *parser.MethodCallExpressionContext) any {
+	strct := v.Visit(ctx.Expression()).(llvm.Value)
+	fncctx := ctx.FunctionCall().(*parser.FunctionCallContext)
+	name := fncctx.Identifier().GetText()
+
+	method := GetStructFieldPtr(strct, name, false)
+	method = CompilationUnits.Peek().Builder.CreateLoad(method, "")
+	args := v.Visit(fncctx.FunctionCallArgList()).([]llvm.Value)
+	return CompilationUnits.Peek().Builder.CreateCall(method, args, "")
+}
+
 func (v *AstVisitor) VisitStructInitExpression(ctx *parser.StructInitExpressionContext) any {
 	return v.Visit(ctx.StructInit())
 }

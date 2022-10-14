@@ -42,7 +42,7 @@ functionCallArgList:            expression (SymbolComma expression)*;
 
 binaryOperator:                 SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash;
 
-addressOf:                      SymbolAmpersand Identifier;
+addressOf:                      Identifier SymbolDot SymbolAmpersand;
 
 ifStatement:		            KeywordIf expression ifThenBlock ifElseBlock?;
 ifThenBlock:		            codeBlock;
@@ -89,6 +89,7 @@ expression:                     functionCall                                    
         |                       literalConstantString                               #literalConstantStringExpression
         |			            multilineString					                    #MultilineStringExpression
         |			            expression SymbolDot Identifier			            #FieldAccessExpression
+        |                       expression SymbolDot functionCall                   #MethodCallExpression
         |                       structInit                                          #StructInitExpression
         |                       constStructInit                                     #ConstStructInitExpression
         |                       SymbolApostrophe typeName                           #LiteralTypeExpression;
