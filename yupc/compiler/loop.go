@@ -49,6 +49,10 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 
 	if ctx.ConditionBasedLoop() != nil {
 		cond0 := v.Visit(ctx.ConditionBasedLoop()).(llvm.Value)
+		if cond0.Type() != llvm.Int1Type() {
+			cond0 = Cast(cond0, llvm.Int1Type())	
+		}
+		
 		condValue := CompilationUnits.Peek().Builder.CreateAlloca(cond0.Type(), "cond_value")
 		CompilationUnits.Peek().Builder.CreateStore(cond0, condValue)
 
@@ -59,9 +63,14 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 
 		CompilationUnits.Peek().Builder.SetInsertPoint(loopBlock, loopBlock.FirstInstruction())
 
-		hasTerminated := v.Visit(ctx.CodeBlock()).(bool)
+		exitStatus := v.Visit(ctx.CodeBlock()).(BlockExitStatus)
+		hasTerminated := exitStatus.HasReturned || exitStatus.HasContinued || exitStatus.HasBrokenOut || exitStatus.HasBranched
 		if !hasTerminated {
 			cond1 := v.Visit(ctx.ConditionBasedLoop()).(llvm.Value)
+			if cond1.Type() != llvm.Int1Type() {
+				cond1 = Cast(cond1, llvm.Int1Type())
+			}
+			
 			CompilationUnits.Peek().Builder.CreateStore(cond1, condValue)
 
 			load1 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
@@ -94,7 +103,8 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 		CompilationUnits.Peek().Builder.CreateCondBr(cmp, loopBlock, mergeBlock)
 		CompilationUnits.Peek().Builder.SetInsertPoint(loopBlock, loopBlock.FirstInstruction())
 
-		hasTerminated := v.Visit(ctx.CodeBlock()).(bool)
+		exitStatus := v.Visit(ctx.CodeBlock()).(BlockExitStatus)
+		hasTerminated := exitStatus.HasReturned || exitStatus.HasBranched || exitStatus.HasContinued || exitStatus.HasBrokenOut
 		if !hasTerminated {
 			v.Visit(LoopStack.Peek().FinalStatement)
 			cond1 := v.Visit(sblctx.Statement(1)).(llvm.Value)

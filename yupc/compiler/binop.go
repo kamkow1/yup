@@ -9,9 +9,8 @@ func (v *AstVisitor) VisitBinaryOperationExpression(ctx *parser.BinaryOperationE
 	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
-	if AssertType(v0.Type(), v1.Type()) {
-		LogError("cannot perform binary operation on different types: %s & %s",
-			v0.Type().String(), v1.Type().String())
+	if v0.Type() != v1.Type() {
+		v1 = Cast(v1, v0.Type())
 	}
 
 	binop := ctx.BinaryOperator().(*parser.BinaryOperatorContext)

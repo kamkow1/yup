@@ -82,6 +82,10 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 	CompilationUnits.Push(cu)
 
 	v.Visit(tree)
+
+	if GlobalCompilerInfo.PrintModule {
+		CompilationUnits.Peek().Module.Dump()
+	}
 	// llvm.VerifyModule(CompilationUnits.Peek().Module, llvm.PrintMessageAction)
 }
 

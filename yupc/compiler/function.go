@@ -140,6 +140,8 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	}
 
 	if signature.ParamsCount() > 0 {
+		TrackedAllocsStack.Push(NewStack[llvm.Value]())
+
 		for i, p := range signature.Params() {
 			alloca := CreateAllocation(p.Type())
 			loclen := len(CompilationUnits.Peek().Locals) - 1
@@ -153,7 +155,8 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 		}
 	}
 
-	hasTerminated := v.Visit(ctx.CodeBlock()).(bool)
+	exitStatus := v.Visit(ctx.CodeBlock()).(BlockExitStatus)
+	hasTerminated := exitStatus.HasBranched || exitStatus.HasBrokenOut || exitStatus.HasContinued || exitStatus.HasReturned
 
 	if isVoid {
 		if !hasTerminated {

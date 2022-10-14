@@ -5,7 +5,7 @@ import (
 )
 
 type Stack[T any] struct {
-	units []*T
+	Units []*T
 }
 
 func NewStack[T any]() *Stack[T] {
@@ -13,17 +13,17 @@ func NewStack[T any]() *Stack[T] {
 }
 
 func (s *Stack[T]) Push(item *T) {
-	s.units = append(s.units, item)
+	s.Units = append(s.Units, item)
 }
 
 func (s *Stack[T]) Pop() *T {
-	cu := s.units[len(s.units)-1]
-	s.units = s.units[0 : len(s.units)-1]
+	cu := s.Units[len(s.Units)-1]
+	s.Units = s.Units[0 : len(s.Units)-1]
 	return cu
 }
 
 func (s *Stack[T]) Peek() *T {
-	return s.units[len(s.units)-1]
+	return s.Units[len(s.Units)-1]
 }
 
 type CompilationUnit struct {

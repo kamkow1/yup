@@ -12,6 +12,7 @@ type CompilerInfo struct {
 	Line         int
 	TargetTriple string
 	Verbose      bool
+	PrintModule  bool
 }
 
 func NewCompilerInfo() *CompilerInfo {
@@ -19,6 +20,7 @@ func NewCompilerInfo() *CompilerInfo {
 		Line:         0,
 		TargetTriple: llvm.DefaultTargetTriple(),
 		Verbose:      false,
+		PrintModule:  false,
 	}
 }
 

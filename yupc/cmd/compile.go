@@ -21,6 +21,10 @@ var compileCmd = &cobra.Command{
 			compiler.GlobalCompilerInfo.Verbose = verb
 		}
 
+		if printmod, _ := cmd.Flags().GetBool("printmod"); printmod {
+			compiler.GlobalCompilerInfo.PrintModule = printmod
+		}
+
 		for _, fp := range args {
 			compiler.ProcessPathRecursively(fp)
 			mod, p := compiler.GetBCWriteData()
@@ -39,5 +43,6 @@ var compileCmd = &cobra.Command{
 func init() {
 	compileCmd.PersistentFlags().String("output", "yup.out", "outputs an executable")
 	compileCmd.PersistentFlags().Bool("verbose", false, "enables verbose output from external tools")
+	compileCmd.PersistentFlags().Bool("printmod", false, "prints module for debug purposes")
 	rootCmd.AddCommand(compileCmd)
 }

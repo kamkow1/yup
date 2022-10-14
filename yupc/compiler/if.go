@@ -15,6 +15,9 @@ func (v *AstVisitor) VisitIfElseBlock(ctx *parser.IfElseBlockContext) any {
 
 func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 	cond := v.Visit(ctx.Expression()).(llvm.Value)
+	if cond.Type() != llvm.Int1Type() {
+		cond = Cast(cond, llvm.Int1Type())
+	}
 
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	function := CompilationUnits.Peek().Functions[functionName]
@@ -34,11 +37,12 @@ func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 	}
 
 	CompilationUnits.Peek().Builder.SetInsertPoint(thenBlock, thenBlock.FirstInstruction())
-	hasThenTerminated := v.Visit(ctx.IfThenBlock()).(bool)
-	if !hasThenTerminated {
+	exitStatus := v.Visit(ctx.IfThenBlock()).(BlockExitStatus)
+	if !exitStatus.HasReturned {
 		CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
-		CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
 	}
+
+	CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
 
 	if ctx.IfElseBlock() != nil {
 		CompilationUnits.Peek().Builder.SetInsertPoint(elseBlock, elseBlock.FirstInstruction())
