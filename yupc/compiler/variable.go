@@ -78,17 +78,8 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 				glb.SetInitializer(value)
 			}
 
-			if ctx.AttributeList() != nil {
-				attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
-				for _, a := range attrs {
-					switch a.Name {
-					case "link_type":
-						{
-							linkage := a.Params[0]
-							glb.SetLinkage(GetLinkageFromString(linkage))
-						}
-					}
-				}
+			if ctx.KeywordPublic() == nil {
+				glb.SetLinkage(llvm.PrivateLinkage)
 			}
 
 			CompilationUnits.Peek().Globals[name] = glb
