@@ -1,6 +1,5 @@
 lexer grammar YupLexer;
 
-KeywordImpl					: 	'impl';
 KeywordType					:	'tp';
 KeywordFunction				:   'fnc';
 KeywordReturn               :   'return';
