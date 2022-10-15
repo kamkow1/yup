@@ -80,6 +80,8 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 
 			if ctx.KeywordPublic() == nil {
 				glb.SetLinkage(llvm.PrivateLinkage)
+			} else {
+				glb.SetLinkage(llvm.LinkOnceAnyLinkage)
 			}
 
 			CompilationUnits.Peek().Globals[name] = glb

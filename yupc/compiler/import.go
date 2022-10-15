@@ -70,7 +70,6 @@ func ImportModule(name string) {
 	for name, _ := range unit.Functions {
 		fnc := mod.NamedFunction(name)
 		fnc = llvm.AddFunction(CompilationUnits.Peek().Module, name, fnc.Type().ElementType())
-
 		CompilationUnits.Peek().Functions[name] = Function{
 			Name:      name,
 			Params:    make([]FuncParam, 0),
@@ -79,14 +78,10 @@ func ImportModule(name string) {
 		}
 	}
 
-	var addedGlobals []string
 	for name, _ := range unit.Globals {
 		glb := mod.NamedGlobal(name)
-		addedGlobals = append(addedGlobals, name)
-
-		if !GlobalExists(addedGlobals, name) {
-			llvm.AddGlobal(CompilationUnits.Peek().Module, glb.Type(), name)
-		}
+		glb = llvm.AddGlobal(CompilationUnits.Peek().Module, glb.Type(), name)
+		CompilationUnits.Peek().Globals[name] = glb
 	}
 
 	mod.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())

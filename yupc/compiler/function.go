@@ -92,6 +92,8 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 
 	if ctx.KeywordPublic() == nil {
 		function.SetLinkage(llvm.PrivateLinkage)
+	} else {
+		function.SetLinkage(llvm.LinkOnceAnyLinkage)
 	}
 
 	CompilationUnits.Peek().Functions[name] = Function{
