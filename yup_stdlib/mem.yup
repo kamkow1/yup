@@ -1,4 +1,4 @@
 
-fnc malloc(size: i64) -> *i8;
-fnc free(ptr: *i8);
-fnc memset(arr: *i8, count: i32, size: i64) -> *i8;
+pub fnc malloc(size: i64) -> *i8;
+pub fnc free(ptr: *i8);
+pub fnc memset(arr: *i8, count: i32, size: i64) -> *i8;
