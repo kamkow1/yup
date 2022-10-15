@@ -1,11 +1,11 @@
 pub const TRUE  = 1: i1;
 pub const FALSE = 0: i1;
 
-pub fnc bool_to_string(b: i32) -> *i8 {
+pub fnc bool_to_string(b: i1) -> *i8 {
 	if b == 1 {
-		return "True";
+		return "true";
 	} 
 	
-	return "False";
+	return "false";
 }
 
