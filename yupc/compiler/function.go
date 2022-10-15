@@ -150,7 +150,7 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	hasTerminated := exitStatus.HasBranched || exitStatus.HasBrokenOut || exitStatus.HasContinued || exitStatus.HasReturned
 
 	if isVoid {
-		if !hasTerminated {
+		if !hasTerminated || exitStatus.HasBranched {
 			CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 		}
 

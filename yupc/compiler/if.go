@@ -46,7 +46,8 @@ func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 
 	if ctx.IfElseBlock() != nil {
 		CompilationUnits.Peek().Builder.SetInsertPoint(elseBlock, elseBlock.FirstInstruction())
-		hasElseTerminated := v.Visit(ctx.IfElseBlock()).(bool)
+		exitStatus := v.Visit(ctx.IfElseBlock()).(BlockExitStatus)
+		hasElseTerminated := exitStatus.HasBranched || exitStatus.HasReturned || exitStatus.HasContinued || exitStatus.HasBrokenOut
 		if !hasElseTerminated {
 			CompilationUnits.Peek().Builder.CreateBr(mergeBlock)
 			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
