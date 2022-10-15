@@ -22,7 +22,13 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 			LogError("unable to parse int: %s", err)
 		}
 
-		value = llvm.ConstInt(llvm.Int32Type(), uint64(i), false)
+		var typ llvm.Type
+		if ctx.TypeAnnotation() != nil {
+			typ = v.Visit(ctx.TypeAnnotation()).(llvm.Type)
+		} else {
+			typ = llvm.Int32Type()
+		}
+		value = llvm.ConstInt(typ, uint64(i), false)
 	}
 
 	if ctx.ValueFloat() != nil {
