@@ -33,7 +33,7 @@ expressionAssignment:           expression variableValue;
 
 
 functionDefinition:             functionSignature codeBlock;
-functionSignature:              attributeList? KeywordFunction Identifier SymbolLparen functionParameterList? SymbolRparen (SymbolArrow typeName)?;
+functionSignature:              attributeList? KeywordPublic KeywordFunction Identifier SymbolLparen functionParameterList? SymbolRparen (SymbolArrow typeName)?;
 functionParameterList:          functionParameter (SymbolComma functionParameter)*;
 functionReturn:                 KeywordReturn (expression (SymbolComma expression)*)?;
 functionParameter:              (KeywordConst? Identifier typeAnnotation) | SymbolVariadicArgs;

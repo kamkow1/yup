@@ -85,24 +85,13 @@ func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext
 	function := llvm.AddFunction(CompilationUnits.Peek().Module, name, funcType)
 
 	for i, pt := range params {
-		if pt.IsVarArg {
-			continue
+		if !pt.IsVarArg {
+			function.Param(i).SetName(pt.Name)
 		}
-
-		function.Param(i).SetName(pt.Name)
 	}
 
-	if ctx.AttributeList() != nil {
-		attrs := v.Visit(ctx.AttributeList()).([]*Attribute)
-		for _, a := range attrs {
-			switch a.Name {
-			case "link_type":
-				{
-					linkage := a.Params[0]
-					function.SetLinkage(GetLinkageFromString(linkage))
-				}
-			}
-		}
+	if ctx.KeywordPublic() == nil {
+		function.SetLinkage(llvm.PrivateLinkage)
 	}
 
 	CompilationUnits.Peek().Functions[name] = Function{
