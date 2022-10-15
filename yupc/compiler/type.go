@@ -271,7 +271,7 @@ func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressio
 	strct := v.Visit(ctx.Expression()).(llvm.Value)
 	fieldName := ctx.Identifier().GetText()
 
-	return GetStructFieldPtr(strct, fieldName, false)
+	return GetStructFieldPtr(strct, fieldName)
 }
 
 func (v *AstVisitor) VisitMethodCallExpression(ctx *parser.MethodCallExpressionContext) any {
@@ -279,7 +279,7 @@ func (v *AstVisitor) VisitMethodCallExpression(ctx *parser.MethodCallExpressionC
 	fncctx := ctx.FunctionCall().(*parser.FunctionCallContext)
 	name := fncctx.Identifier().GetText()
 
-	method := GetStructFieldPtr(strct, name, false)
+	method := GetStructFieldPtr(strct, name)
 	method = CompilationUnits.Peek().Builder.CreateLoad(method, "")
 	args := v.Visit(fncctx.FunctionCallArgList()).([]llvm.Value)
 	return CompilationUnits.Peek().Builder.CreateCall(method, args, "")
@@ -303,7 +303,7 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 
 	for i := 0; i < len(ctx.AllFieldInit()); i++ {
 		fld := structBase.Fields[i]
-		fieldptr := GetStructFieldPtr(allocatedStruct, fld.Name, true)
+		fieldptr := GetStructFieldPtr(allocatedStruct, fld.Name)
 		init := v.Visit(ctx.FieldInit(i)).(llvm.Value)
 		CompilationUnits.Peek().Builder.CreateStore(init, fieldptr)
 	}

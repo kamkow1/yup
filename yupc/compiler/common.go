@@ -51,11 +51,8 @@ func CreateAllocation(typ llvm.Type) llvm.Value {
 	return alloca
 }
 
-func GetStructFieldPtr(strct llvm.Value, fieldname string, ismalloc bool) llvm.Value {
+func GetStructFieldPtr(strct llvm.Value, fieldname string) llvm.Value {
 	isptr := strct.Type().TypeKind() == llvm.PointerTypeKind
-	if isptr && !ismalloc {
-		strct = CompilationUnits.Peek().Builder.CreateLoad(strct, "")
-	}
 
 	var strctname string
 	if isptr {

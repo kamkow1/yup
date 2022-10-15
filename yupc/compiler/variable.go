@@ -63,12 +63,13 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 			typ = value.Type()
 		}
 
-		if ctx.TypeAnnotation() != nil {
+		hasAnnot := ctx.TypeAnnotation() != nil
+		if hasAnnot {
 			typ = v.Visit(ctx.TypeAnnotation()).(llvm.Type)
+		}
 
-			if value.Type() != typ {
-				value = Cast(value, typ)
-			}
+		if isInit && hasAnnot && value.Type() != typ {
+			value = Cast(value, typ)
 		}
 
 		if isGlobal {
