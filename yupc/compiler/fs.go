@@ -32,8 +32,8 @@ func GetCwd() string {
 }
 
 var DefaultImportPaths map[string]string = map[string]string{
-	"$std":  path.Join(GetHomeDir(), "yup_stdlib"),
-	"$root": GetCwd(),
+	"#std":     path.Join(GetHomeDir(), "yup_stdlib"),
+	"#project": GetCwd(),
 }
 
 func WriteBCFile(mod llvm.Module, p string) {
