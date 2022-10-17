@@ -109,6 +109,11 @@ func (v *AstVisitor) VisitTypeAnnotation(ctx *parser.TypeAnnotationContext) any 
 	return v.Visit(ctx.TypeName())
 }
 
+type GenericParam struct {
+	Name     string
+	InstType llvm.Type
+}
+
 type Field struct {
 	Name string
 	Type llvm.Type
@@ -128,30 +133,36 @@ func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
 
 func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext) any {
 	name := ctx.Identifier().GetText()
-	c := CompilationUnits.Peek().Module.Context()
-	structType := c.StructCreateNamed(name)
-	CompilationUnits.Peek().Types[name] = structType
 
-	var fields []Field
-	for _, fld := range ctx.AllStructField() {
-		fields = append(fields, v.Visit(fld).(Field))
+	if ctx.GenericParams() == nil {
+		c := CompilationUnits.Peek().Module.Context()
+		structType := c.StructCreateNamed(name)
+		CompilationUnits.Peek().Types[name] = structType
+
+		var fields []Field
+		for _, fld := range ctx.AllStructField() {
+			fields = append(fields, v.Visit(fld).(Field))
+		}
+
+		strct := Structure{
+			Name:   name,
+			Fields: fields,
+		}
+
+		CompilationUnits.Peek().Structs[name] = strct
+
+		var fieldTypes []llvm.Type
+		for _, fld := range fields {
+			fieldTypes = append(fieldTypes, fld.Type)
+		}
+
+		structType.StructSetBody(fieldTypes, false)
+
+		return structType
+	} else {
+		// TODO: implement generic struct types
+		return nil
 	}
-
-	strct := Structure{
-		Name:   name,
-		Fields: fields,
-	}
-
-	CompilationUnits.Peek().Structs[name] = strct
-
-	var fieldTypes []llvm.Type
-	for _, fld := range fields {
-		fieldTypes = append(fieldTypes, fld.Type)
-	}
-
-	structType.StructSetBody(fieldTypes, false)
-
-	return structType
 }
 
 func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationContext) any {

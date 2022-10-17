@@ -25,7 +25,8 @@ arrayIndex:                     SymbolLsqbr expression SymbolRsqbr;
 constArray:                     SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
 
 assignment:                     Identifier variableValue;
-variableDeclare:                attributeList? KeywordPublic? declarationType Identifier (SymbolComma Identifier)* typeAnnotation? variableValue?;
+variableDeclare:                attributeList? KeywordPublic? Identifier SymbolColon declarationType 
+                                (SymbolComma Identifier)* typeAnnotation? variableValue?;
 declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
 expressionAssignment:           expression variableValue;
@@ -33,7 +34,8 @@ expressionAssignment:           expression variableValue;
 
 
 functionDefinition:             functionSignature codeBlock;
-functionSignature:              attributeList? KeywordPublic? KeywordFunction Identifier SymbolLparen functionParameterList? SymbolRparen (SymbolArrow typeName)?;
+functionSignature:              attributeList? KeywordPublic? Identifier SymbolColon KeywordFunction genericParams? 
+                                SymbolLparen functionParameterList? SymbolRparen (SymbolArrow typeName)?;
 functionParameterList:          functionParameter (SymbolComma functionParameter)*;
 functionReturn:                 KeywordReturn (expression (SymbolComma expression)*)?;
 functionParameter:              (KeywordConst? Identifier typeAnnotation) | SymbolVariadicArgs;
@@ -63,13 +65,15 @@ finalStatement:			        statement;
 continueStatement:		        KeywordContinue;
 breakStatement:			        KeywordBreak;
 
-structDeclaration:		        attributeList? KeywordType Identifier KeywordStruct SymbolLbrace structField+ SymbolRbrace;
+structDeclaration:		        attributeList? Identifier SymbolColon KeywordType KeywordStruct genericParams? SymbolLbrace structField+ SymbolRbrace;
 structField:			        Identifier typeAnnotation SymbolTerminator;
 fieldAssignment:                expression SymbolDot Identifier variableValue;
-typeAliasDeclaration:		    KeywordType Identifier KeywordTypeAlias typeName;
+typeAliasDeclaration:		    Identifier SymbolColon KeywordType KeywordTypeAlias typeName;
 structInit:                     Identifier SymbolDot SymbolLbrace (fieldInit (SymbolComma fieldInit)*)? SymbolRbrace;
 fieldInit:                      SymbolDot Identifier variableValue;
 constStructInit:                SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
+
+genericParams:                  SymbolLessThan Identifier (SymbolComma Identifier)* SymbolMoreThan;
 
 expression:                     functionCall                                        #functionCallExpression
         |                       Identifier                                          #identifierExpression

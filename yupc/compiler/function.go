@@ -24,6 +24,7 @@ type Function struct {
 	Name      string
 	Value     *llvm.Value
 	Params    []FuncParam
+	Generics  []GenericParam
 	ExitBlock *llvm.BasicBlock
 }
 
@@ -56,54 +57,59 @@ func (v *AstVisitor) VisitFunctionParameterList(ctx *parser.FunctionParameterLis
 
 func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext) any {
 	name := ctx.Identifier().GetText()
-	var params []FuncParam
-	if ctx.FunctionParameterList() != nil {
-		params = v.Visit(ctx.FunctionParameterList()).([]FuncParam)
-	} else {
-		params = make([]FuncParam, 0)
-	}
-
-	var returnType llvm.Type
-	if ctx.TypeName() != nil {
-		returnType = v.Visit(ctx.TypeName()).(llvm.Type)
-	} else {
-		returnType = llvm.VoidType()
-	}
-
-	var types []llvm.Type
-	isVarArg := false
-	for _, fp := range params {
-		if fp.IsVarArg {
-			isVarArg = fp.IsVarArg
-			continue
+	if ctx.GenericParams() == nil {
+		var params []FuncParam
+		if ctx.FunctionParameterList() != nil {
+			params = v.Visit(ctx.FunctionParameterList()).([]FuncParam)
+		} else {
+			params = make([]FuncParam, 0)
 		}
 
-		types = append(types, fp.Type)
-	}
-
-	funcType := llvm.FunctionType(returnType, types, isVarArg)
-	function := llvm.AddFunction(CompilationUnits.Peek().Module, name, funcType)
-
-	for i, pt := range params {
-		if !pt.IsVarArg {
-			function.Param(i).SetName(pt.Name)
+		var returnType llvm.Type
+		if ctx.TypeName() != nil {
+			returnType = v.Visit(ctx.TypeName()).(llvm.Type)
+		} else {
+			returnType = llvm.VoidType()
 		}
-	}
 
-	if ctx.KeywordPublic() == nil {
-		function.SetLinkage(llvm.PrivateLinkage)
+		var types []llvm.Type
+		isVarArg := false
+		for _, fp := range params {
+			if fp.IsVarArg {
+				isVarArg = fp.IsVarArg
+				continue
+			}
+
+			types = append(types, fp.Type)
+		}
+
+		funcType := llvm.FunctionType(returnType, types, isVarArg)
+		function := llvm.AddFunction(CompilationUnits.Peek().Module, name, funcType)
+
+		for i, pt := range params {
+			if !pt.IsVarArg {
+				function.Param(i).SetName(pt.Name)
+			}
+		}
+
+		if ctx.KeywordPublic() == nil {
+			function.SetLinkage(llvm.PrivateLinkage)
+		} else {
+			function.SetLinkage(llvm.LinkOnceAnyLinkage)
+		}
+
+		CompilationUnits.Peek().Functions[name] = Function{
+			Name:      name,
+			Value:     &function,
+			Params:    params,
+			ExitBlock: &llvm.BasicBlock{},
+		}
+
+		return function
 	} else {
-		function.SetLinkage(llvm.LinkOnceAnyLinkage)
+		// TODO: implement generic functions
+		return nil
 	}
-
-	CompilationUnits.Peek().Functions[name] = Function{
-		name,
-		&function,
-		params,
-		&llvm.BasicBlock{},
-	}
-
-	return function
 }
 
 func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionContext) any {

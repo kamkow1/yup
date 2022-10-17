@@ -1,6 +1,6 @@
 lexer grammar YupLexer;
 
-KeywordType					:	'tp';
+KeywordType					:	'type';
 KeywordFunction				:   'fnc';
 KeywordReturn               :   'return';
 KeywordConst                :   'const';
