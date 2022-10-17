@@ -25,6 +25,12 @@ var compileCmd = &cobra.Command{
 			compiler.GlobalCompilerInfo.PrintModule = printmod
 		}
 
+		if libs, _ := cmd.Flags().GetStringArray("staticlibs"); len(libs) > 0 {
+			for lib, _ := range libs {
+				compiler.GlobalCompilerInfo.StaticLibs = append(compiler.GlobalCompilerInfo.StaticLibs, libs[lib])
+			}
+		}
+
 		for _, fp := range args {
 			compiler.ProcessPathRecursively(fp)
 			mod, p := compiler.GetBCWriteData()
@@ -44,5 +50,6 @@ func init() {
 	compileCmd.PersistentFlags().String("output", "yup.out", "outputs an executable")
 	compileCmd.PersistentFlags().Bool("verbose", false, "enables verbose output from external tools")
 	compileCmd.PersistentFlags().Bool("printmod", false, "prints module for debug purposes")
+	compileCmd.PersistentFlags().StringArray("staticlibs", make([]string, 0), "adds a static library to link against")
 	rootCmd.AddCommand(compileCmd)
 }

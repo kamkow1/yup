@@ -13,6 +13,7 @@ type CompilerInfo struct {
 	TargetTriple string
 	Verbose      bool
 	PrintModule  bool
+	StaticLibs   []string
 }
 
 func NewCompilerInfo() *CompilerInfo {

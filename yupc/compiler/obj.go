@@ -9,6 +9,10 @@ func DumpObjectFile(bcname string) string {
 	objname := FilenameWithoutExtension(bcname) + ".o"
 
 	cmdargs := []string{"-c", "-o", objname, bcname}
+	if len(GlobalCompilerInfo.StaticLibs) > 0 {
+		cmdargs = append(cmdargs, "-l")
+		cmdargs = append(cmdargs, GlobalCompilerInfo.StaticLibs...)
+	}
 	cmd := exec.Command("clang-14", cmdargs...)
 
 	if GlobalCompilerInfo.Verbose {
