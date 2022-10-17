@@ -111,23 +111,19 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionContext) any {
 	name := ctx.Identifier().GetText()
 
-	if tp, ok := CompilationUnits.Peek().Types[name]; ok {
-		return tp
-	}
-
 	var val llvm.Value
 	if !CompilationUnits.Peek().Module.NamedFunction(name).IsNil() {
 		val = CompilationUnits.Peek().Module.NamedFunction(name)
-		return CompilationUnits.Peek().Builder.CreateLoad(val, "")
+		return CompilationUnits.Peek().Builder.CreateLoad(val.Type().ElementType(), val, "")
 	}
 
 	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
 		val = CompilationUnits.Peek().Module.NamedGlobal(name)
-		return CompilationUnits.Peek().Builder.CreateLoad(val, "")
+		return CompilationUnits.Peek().Builder.CreateLoad(val.Type().ElementType(), val, "")
 	}
 
 	val = FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
-	return CompilationUnits.Peek().Builder.CreateLoad(val, "")
+	return CompilationUnits.Peek().Builder.CreateLoad(val.AllocatedType(), val, "")
 }
 
 func (v *AstVisitor) VisitAssignment(ctx *parser.AssignmentContext) any {

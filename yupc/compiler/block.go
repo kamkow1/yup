@@ -68,7 +68,7 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 			targetData := llvm.NewTargetData(CompilationUnits.Peek().Module.DataLayout())
 			size := llvm.ConstInt(llvm.Int64Type(), targetData.TypeAllocSize(ta.Type().ElementType()), false)
 			args := []llvm.Value{size, Cast(*ta, llvm.PointerType(llvm.Int8Type(), 0))}
-			CompilationUnits.Peek().Builder.CreateCall(llvmLifeTimeEnd, args, "")
+			CompilationUnits.Peek().Builder.CreateCall(llvm.VoidType(), llvmLifeTimeEnd, args, "")
 		}
 	}
 

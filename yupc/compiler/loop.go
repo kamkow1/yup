@@ -57,7 +57,7 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 		CompilationUnits.Peek().Builder.CreateStore(cond0, condValue)
 
 		boolFalse := llvm.ConstInt(llvm.Int1Type(), uint64(0), false)
-		load0 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
+		load0 := CompilationUnits.Peek().Builder.CreateLoad(condValue.AllocatedType(), condValue, "")
 		cmp := CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntNE), load0, boolFalse, "")
 		CompilationUnits.Peek().Builder.CreateCondBr(cmp, loopBlock, mergeBlock)
 
@@ -73,7 +73,7 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 			
 			CompilationUnits.Peek().Builder.CreateStore(cond1, condValue)
 
-			load1 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
+			load1 := CompilationUnits.Peek().Builder.CreateLoad(condValue.AllocatedType(), condValue, "")
 			CompilationUnits.Peek().Builder.CreateCondBr(load1, loopBlock, mergeBlock)
 			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
 		} else if LoopStack.Peek().SkipCurrentIter {
@@ -97,7 +97,7 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 		CompilationUnits.Peek().Builder.CreateStore(cond0, condValue)
 
 		boolFalse := llvm.ConstInt(llvm.Int1Type(), uint64(0), false)
-		load0 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
+		load0 := CompilationUnits.Peek().Builder.CreateLoad(condValue.AllocatedType(), condValue, "")
 		cmp := CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntNE), load0, boolFalse, "")
 
 		CompilationUnits.Peek().Builder.CreateCondBr(cmp, loopBlock, mergeBlock)
@@ -110,7 +110,7 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 			cond1 := v.Visit(sblctx.Statement(1)).(llvm.Value)
 			CompilationUnits.Peek().Builder.CreateStore(cond1, condValue)
 
-			load1 := CompilationUnits.Peek().Builder.CreateLoad(condValue, "")
+			load1 := CompilationUnits.Peek().Builder.CreateLoad(condValue.AllocatedType(), condValue, "")
 			CompilationUnits.Peek().Builder.CreateCondBr(load1, loopBlock, mergeBlock)
 			CompilationUnits.Peek().Builder.SetInsertPoint(mergeBlock, mergeBlock.FirstInstruction())
 		} else if LoopStack.Peek().SkipCurrentIter {

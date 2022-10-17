@@ -37,7 +37,7 @@ func (v *AstVisitor) VisitIndexedAccessExpression(ctx *parser.IndexedAccessExpre
 		}
 
 		indices = append(indices, val)
-		idx = CompilationUnits.Peek().Builder.CreateGEP(array, indices, "")
+		idx = CompilationUnits.Peek().Builder.CreateGEP(array.Type().ElementType(), array, indices, "")
 		//idx = CompilationUnits.Peek().Builder.CreateLoad(gep, "")
 	}
 

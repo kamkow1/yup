@@ -24,5 +24,5 @@ func (v *AstVisitor) VisitAddressOf(ctx *parser.AddressOfContext) any {
 
 func (v *AstVisitor) VisitPointerDereferenceExpression(ctx *parser.PointerDereferenceExpressionContext) any {
 	ptr := v.Visit(ctx.Expression()).(llvm.Value)
-	return CompilationUnits.Peek().Builder.CreateLoad(ptr, "")
+	return CompilationUnits.Peek().Builder.CreateLoad(ptr.Type().ElementType(), ptr, "")
 }

@@ -47,7 +47,7 @@ func CreateAllocation(typ llvm.Type) llvm.Value {
 		Cast(alloca, llvm.PointerType(llvm.Int8Type(), 0)),
 	}
 
-	CompilationUnits.Peek().Builder.CreateCall(lifetimeStart, args, "")
+	CompilationUnits.Peek().Builder.CreateCall(lifetimeStart.Type().ReturnType(), lifetimeStart, args, "")
 	return alloca
 }
 
@@ -66,7 +66,8 @@ func GetStructFieldPtr(strct llvm.Value, fieldname string) llvm.Value {
 	var field llvm.Value
 	for i, f := range baseStruct.Fields {
 		if fieldname == f.Name {
-			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct, i, "")
+			field = CompilationUnits.Peek().Builder.CreateStructGEP(
+				field.Type().ElementType(), strct, i, "")
 		}
 	}
 

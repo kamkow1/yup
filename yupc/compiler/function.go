@@ -159,7 +159,7 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	} else {
 		CompilationUnits.Peek().Builder.SetInsertPointAtEnd(*function.ExitBlock)
 		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
-		load := CompilationUnits.Peek().Builder.CreateLoad(returnValue.Value, "")
+		load := CompilationUnits.Peek().Builder.CreateLoad(returnValue.Value.AllocatedType(), returnValue.Value, "")
 		CompilationUnits.Peek().Builder.CreateRet(load)
 	}
 
@@ -259,10 +259,10 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 		if f.IsNil() {
 			glb := CompilationUnits.Peek().Module.NamedGlobal(name)
 			if !glb.IsNil() {
-				f = CompilationUnits.Peek().Builder.CreateLoad(glb, "")
+				f = CompilationUnits.Peek().Builder.CreateLoad(glb.Type().ElementType(), glb, "")
 			} else {
 				loc := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
-				f = CompilationUnits.Peek().Builder.CreateLoad(loc, "")
+				f = CompilationUnits.Peek().Builder.CreateLoad(loc.AllocatedType(), loc, "")
 			}
 		}
 
@@ -275,7 +275,7 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 			valueArgs = append(valueArgs, a.(llvm.Value))
 		}
 
-		return CompilationUnits.Peek().Builder.CreateCall(f, valueArgs, "")
+		return CompilationUnits.Peek().Builder.CreateCall(f.Type().ReturnType(), f, valueArgs, "")
 	}
 }
 
