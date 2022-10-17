@@ -58,7 +58,6 @@ ValueRawString		    	:	'`' ~'`'* '`';
 
 ValueInteger                :   '-'? '0'..'9'+;
 ValueFloat                  :   '-'? ('0'..'9')+ '.' ('0'..'9')*;
-ValueBool                   :   ('True' | 'False');
 ValueNull                   :   'Null';
 
 Identifier                  :   ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_')*;

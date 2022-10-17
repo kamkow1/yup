@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"encoding/ascii85"
 	"strconv"
 
 	"github.com/kamkow1/yup/yupc/parser"
@@ -38,34 +37,19 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 			LogError("unable to parse float: %s", err)
 		}
 
-		typ := llvm.FloatType()
-		value = llvm.ConstFloat(typ, f)
+		value = llvm.ConstFloat(llvm.FloatType(), f)
 	}
 
 	if ctx.ValueChar() != nil {
 		str := ctx.ValueChar().GetText()
-		c := str[:(len(str)+1)-(len(str)-1)]
+		c, _ := strconv.Unquote(str)
 
-		dst := make([]byte, 8)
-		typ := llvm.Int8Type()
-		enc := ascii85.Encode(dst, []byte(c))
-		value = llvm.ConstInt(typ, uint64(byte(enc)), false)
+		value = llvm.ConstInt(llvm.Int8Type(), uint64(c[0]), false)
 	}
 
 	if ctx.MultilineString() != nil {
 		raw := v.Visit(ctx.MultilineString()).(string)
 		value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(raw, "")
-	}
-
-	if ctx.ValueBool() != nil {
-		var b int
-		if ctx.ValueBool().GetText() == "True" {
-			b = 1
-		} else {
-			b = 0
-		}
-
-		value = llvm.ConstInt(llvm.Int1Type(), uint64(b), false)
 	}
 
 	if ctx.ValueNull() != nil {
