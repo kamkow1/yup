@@ -1,6 +1,12 @@
+import "#std/mem.yup";
 
-pub fnc string_len(s: *i8) -> i64 {
-	var c: i64 = 0;
+pub strcpy: fnc(dest: *i8, src: *i8) -> *i8;
+pub copy_cstring: fnc(dest: *i8, src: *i8) -> *i8 {
+	return strcpy(dest, src);
+}
+
+pub cstring_len: fnc(s: *i8) -> i64 {
+	c: var = 0:i64;
 	for s[c].* != 0 {
 		c = c + 1;
 	}
@@ -8,12 +14,12 @@ pub fnc string_len(s: *i8) -> i64 {
 	return c;
 }
 
-pub fnc compare_strings(s1: *i8, s2: *i8) -> i1 {
-	if string_len(s1) != string_len(s2) {
+pub compare_cstrings: fnc(s1: *i8, s2: *i8) -> i1 {
+	if cstring_len(s1) != cstring_len(s2) {
 		return 0;
 	}
 	
-	for var i = 0; i < string_len(s1); i = i + 1; {
+	for i: var = 0; i < cstring_len(s1); i = i + 1; {
 		if s1[i].* == s2[i].* {
 			return 0;
 		}
@@ -21,3 +27,4 @@ pub fnc compare_strings(s1: *i8, s2: *i8) -> i1 {
 	
 	return 1;
 }
+

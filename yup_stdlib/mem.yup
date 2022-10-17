@@ -1,4 +1,26 @@
 
-pub fnc malloc(size: i64) -> *i8;
-pub fnc free(ptr: *i8);
-pub fnc memset(arr: *i8, count: i32, size: i64) -> *i8;
+pub malloc: fnc(size: i64) -> *i8;
+pub free: fnc(ptr: *i8);
+pub memset: fnc(arr: *i8, count: i32, size: i64) -> *i8;
+pub memcpy: fnc(dest: *i8, src: *i8, n: i64) -> *i8;
+pub realloc: fnc(ptr: *i8, sz: i64) -> *i8;
+
+pub realloc_memory: fnc(ptr: *i8, sz: i64) -> *i8 {
+	return realloc(ptr, sz);
+}
+
+pub alloc_memory: fnc(sz: i64) -> *i8 {
+	return malloc(sz);
+}
+
+pub free_memory: fnc(ptr: *i8) {
+	free(ptr);
+}
+
+pub init_memory: fnc(arr: *i8, cnt: i32, sz: i64) -> *i8 {
+	return memset(arr, cnt, sz);
+}
+
+pub copy_memory: fnc(dest: *i8, src: *i8, n: i64) -> *i8 {
+	return memcpy(dest, src, n);
+}
