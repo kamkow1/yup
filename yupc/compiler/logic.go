@@ -140,12 +140,12 @@ func (v *AstVisitor) VisitLogicalAndExpression(ctx *parser.LogicalAndExpressionC
 	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
-	return CompilationUnits.Peek().Builder.CreateMul(v0, v1, "")
+	return CompilationUnits.Peek().Builder.CreateAnd(v0, v1, "")
 }
 
 func (v *AstVisitor) VisitLogicalOrExpression(ctx *parser.LogicalOrExpressionContext) any {
 	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
-	return CompilationUnits.Peek().Builder.CreateAdd(v0, v1, "")
+	return CompilationUnits.Peek().Builder.CreateOr(v0, v1, "")
 }
