@@ -6,7 +6,7 @@ pub copy_cstring: fnc(dest: *i8, src: *i8) -> *i8 {
 }
 
 pub cstring_len: fnc(s: *i8) -> i64 {
-	c: var = 0:i64;
+	var c = 0:i64;
 	for s[c].* != 0 {
 		c = c + 1;
 	}
@@ -19,7 +19,7 @@ pub compare_cstrings: fnc(s1: *i8, s2: *i8) -> i1 {
 		return 0;
 	}
 	
-	for i: var = 0; i < cstring_len(s1); i = i + 1; {
+	for var i = 0; i < cstring_len(s1); i = i + 1; {
 		if s1[i].* == s2[i].* {
 			return 0;
 		}

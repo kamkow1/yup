@@ -1,5 +1,5 @@
-pub TRUE: const = 1:i1;
-pub FALSE: const = 0:i1;
+pub const TRUE = 1:i1;
+pub const FALSE = 0:i1;
 
 pub bool_to_string: fnc(b: i1) -> *i8 {
 	if b == 1 {

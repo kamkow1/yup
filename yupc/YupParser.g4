@@ -25,7 +25,7 @@ arrayIndex:                     SymbolLsqbr expression SymbolRsqbr;
 constArray:                     SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
 
 assignment:                     Identifier variableValue;
-variableDeclare:                attributeList? KeywordPublic? Identifier SymbolColon declarationType 
+variableDeclare:                attributeList? KeywordPublic? declarationType Identifier 
                                 (SymbolComma Identifier)* typeAnnotation? variableValue?;
 declarationType:                (KeywordVar | KeywordConst);
 variableValue:                  SymbolAssign expression;
