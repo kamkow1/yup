@@ -4,26 +4,6 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func GetLinkageFromString(linkage string) llvm.Linkage {
-	switch linkage {
-	case "once":
-		return llvm.LinkOnceAnyLinkage
-	case "private":
-		return llvm.PrivateLinkage
-	case "common":
-		return llvm.CommonLinkage
-	case "internal":
-		return llvm.InternalLinkage
-	case "weak":
-		return llvm.WeakAnyLinkage
-	case "extern-elf":
-		return llvm.ExternalWeakLinkage
-	}
-
-	LogError("unknown linkage type in attribute: %s", linkage)
-	return 0
-}
-
 func CreateAllocation(typ llvm.Type) llvm.Value {
 	alloca := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
 	TrackAllocation(alloca)
@@ -52,22 +32,17 @@ func CreateAllocation(typ llvm.Type) llvm.Value {
 }
 
 func GetStructFieldPtr(strct llvm.Value, fieldname string) llvm.Value {
-	isptr := strct.Type().TypeKind() == llvm.PointerTypeKind
-
-	var strctname string
-	if isptr {
-		strctname = strct.Type().ElementType().StructName()
-	} else {
-		strctname = strct.Type().StructName()
+	if strct.Type().TypeKind() != llvm.PointerTypeKind {
+		LogError("cannot access struct fields on a non-pointer type: `%s`", strct.Type().String())
 	}
 
-	baseStruct, _ := CompilationUnits.Peek().Structs[strctname]
+	strctname := strct.Type().ElementType().StructName()
+	baseStruct := CompilationUnits.Peek().Structs[strctname]
 
 	var field llvm.Value
 	for i, f := range baseStruct.Fields {
 		if fieldname == f.Name {
-			field = CompilationUnits.Peek().Builder.CreateStructGEP(
-				field.Type().ElementType(), strct, i, "")
+			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct.Type().ElementType(), strct, i, "")
 		}
 	}
 

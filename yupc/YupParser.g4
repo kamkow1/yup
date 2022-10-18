@@ -69,8 +69,7 @@ structDeclaration:		        attributeList? Identifier SymbolColon KeywordType Ke
 structField:			        Identifier typeAnnotation SymbolTerminator;
 fieldAssignment:                expression SymbolDot Identifier variableValue;
 typeAliasDeclaration:		    Identifier SymbolColon KeywordType KeywordTypeAlias typeName;
-structInit:                     Identifier SymbolDot SymbolLbrace (fieldInit (SymbolComma fieldInit)*)? SymbolRbrace;
-fieldInit:                      SymbolDot Identifier variableValue;
+structInit:                     Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 constStructInit:                SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 
 genericParams:                  SymbolLessThan Identifier (SymbolComma Identifier)* SymbolMoreThan;

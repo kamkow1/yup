@@ -196,17 +196,13 @@ func (v *AstVisitor) VisitStructInitExpression(ctx *parser.StructInitExpressionC
 	return v.Visit(ctx.StructInit())
 }
 
-func (v *AstVisitor) VisitFieldInit(ctx *parser.FieldInitContext) any {
-	return v.Visit(ctx.VariableValue())
-}
-
 func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	name := ctx.Identifier().GetText()
 	strct := CompilationUnits.Peek().Types[name]
 
 	var vals []llvm.Value
-	for i := 0; i < len(ctx.AllFieldInit()); i++ {
-		vals = append(vals, v.Visit(ctx.FieldInit(i)).(llvm.Value))
+	for _, expr := range ctx.AllExpression() {
+		vals = append(vals, v.Visit(expr).(llvm.Value))
 	}
 
 	return llvm.ConstNamedStruct(strct, vals)

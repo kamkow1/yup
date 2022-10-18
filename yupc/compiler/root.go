@@ -258,9 +258,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.StructInitContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitStructInit(ctx)
-	case *parser.FieldInitContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitFieldInit(ctx)
 	case *parser.ConstStructInitExpressionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitConstStructInitExpression(ctx)
