@@ -136,6 +136,10 @@ func (v *AstVisitor) VisitAssign(ctx *parser.AssignContext) any {
 	value := v.Visit(ctx.VarValue()).(llvm.Value)
 	vr.IsUsed = true
 
+	if value.Type() != vr.Value.AllocatedType() {
+		LogError("cannot assign `%s` to `%s`", value.Type().String(), vr.Value.AllocatedType().String())
+	}
+
 	return CompilationUnits.Peek().Builder.CreateStore(value, vr.Value)
 }
 

@@ -31,10 +31,6 @@ func GetTypeFromName(name string) llvm.Type {
 	return typ
 }
 
-func AssertType(typ1 llvm.Type, typ2 llvm.Type) bool {
-	return typ1.TypeKind() != typ2.TypeKind()
-}
-
 func reverseTypeExtList(array []parser.ITypeExtContext) []parser.ITypeExtContext {
 	if len(array) == 0 {
 		return array
