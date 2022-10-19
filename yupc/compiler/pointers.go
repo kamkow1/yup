@@ -20,5 +20,9 @@ func (v *AstVisitor) VisitAddressOf(ctx *parser.AddressOfContext) any {
 
 func (v *AstVisitor) VisitPtrDerefExpr(ctx *parser.PtrDerefExprContext) any {
 	ptr := v.Visit(ctx.Expression()).(llvm.Value)
+	if ptr.Type().TypeKind() != llvm.PointerTypeKind {
+		LogError("cannot dereference a non-pointer type")
+	}
+
 	return CompilationUnits.Peek().Builder.CreateLoad(ptr.Type().ElementType(), ptr, "")
 }
