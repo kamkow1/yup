@@ -5,10 +5,6 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func (v *AstVisitor) VisitAddressOfExpression(ctx *parser.AddressOfExpressionContext) any {
-	return v.Visit(ctx.AddressOf())
-}
-
 func (v *AstVisitor) VisitAddressOf(ctx *parser.AddressOfContext) any {
 	name := ctx.Identifier().GetText()
 	if !CompilationUnits.Peek().Module.NamedFunction(name).IsNil() {
@@ -22,7 +18,7 @@ func (v *AstVisitor) VisitAddressOf(ctx *parser.AddressOfContext) any {
 	return FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
 }
 
-func (v *AstVisitor) VisitPointerDereferenceExpression(ctx *parser.PointerDereferenceExpressionContext) any {
+func (v *AstVisitor) VisitPtrDerefExpr(ctx *parser.PtrDerefExprContext) any {
 	ptr := v.Visit(ctx.Expression()).(llvm.Value)
 	return CompilationUnits.Peek().Builder.CreateLoad(ptr.Type().ElementType(), ptr, "")
 }

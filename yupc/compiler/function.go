@@ -24,19 +24,14 @@ type Function struct {
 	Name      string
 	Value     *llvm.Value
 	Params    []FuncParam
-	Generics  []GenericParam
 	ExitBlock *llvm.BasicBlock
 }
 
-func (v *AstVisitor) VisitFunctionParameter(ctx *parser.FunctionParameterContext) any {
-	return v.Visit(ctx.TypeAnnotation())
-}
-
-func (v *AstVisitor) VisitFunctionParameterList(ctx *parser.FunctionParameterListContext) any {
+func (v *AstVisitor) VisitFuncParamList(ctx *parser.FuncParamListContext) any {
 	var params []FuncParam
-	for _, p := range ctx.AllFunctionParameter() {
-		pp := p.(*parser.FunctionParameterContext)
-		if p.(*parser.FunctionParameterContext).SymbolVariadicArgs() != nil {
+	for _, p := range ctx.AllFuncParam() {
+		pp := p.(*parser.FuncParamContext)
+		if pp.SymbolVariadicArgs() != nil {
 			params = append(params, FuncParam{
 				IsVarArg: true,
 				Name:     "vargs",
@@ -55,65 +50,60 @@ func (v *AstVisitor) VisitFunctionParameterList(ctx *parser.FunctionParameterLis
 	return params
 }
 
-func (v *AstVisitor) VisitFunctionSignature(ctx *parser.FunctionSignatureContext) any {
+func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 	name := ctx.Identifier().GetText()
-	if ctx.GenericParams() == nil {
-		var params []FuncParam
-		if ctx.FunctionParameterList() != nil {
-			params = v.Visit(ctx.FunctionParameterList()).([]FuncParam)
-		} else {
-			params = make([]FuncParam, 0)
-		}
-
-		var returnType llvm.Type
-		if ctx.TypeName() != nil {
-			returnType = v.Visit(ctx.TypeName()).(llvm.Type)
-		} else {
-			returnType = llvm.VoidType()
-		}
-
-		var types []llvm.Type
-		isVarArg := false
-		for _, fp := range params {
-			if fp.IsVarArg {
-				isVarArg = fp.IsVarArg
-				continue
-			}
-
-			types = append(types, fp.Type)
-		}
-
-		funcType := llvm.FunctionType(returnType, types, isVarArg)
-		function := llvm.AddFunction(CompilationUnits.Peek().Module, name, funcType)
-
-		for i, pt := range params {
-			if !pt.IsVarArg {
-				function.Param(i).SetName(pt.Name)
-			}
-		}
-
-		if ctx.KeywordPublic() == nil {
-			function.SetLinkage(llvm.PrivateLinkage)
-		} else {
-			function.SetLinkage(llvm.LinkOnceAnyLinkage)
-		}
-
-		CompilationUnits.Peek().Functions[name] = Function{
-			Name:      name,
-			Value:     &function,
-			Params:    params,
-			ExitBlock: &llvm.BasicBlock{},
-		}
-
-		return function
+	var params []FuncParam
+	if ctx.FuncParamList() != nil {
+		params = v.Visit(ctx.FuncParamList()).([]FuncParam)
 	} else {
-		// TODO: implement generic functions
-		return nil
+		params = make([]FuncParam, 0)
 	}
+
+	var returnType llvm.Type
+	if ctx.TypeName() != nil {
+		returnType = v.Visit(ctx.TypeName()).(llvm.Type)
+	} else {
+		returnType = llvm.VoidType()
+	}
+
+	var types []llvm.Type
+	isVarArg := false
+	for _, fp := range params {
+		if fp.IsVarArg {
+			isVarArg = fp.IsVarArg
+			continue
+		}
+
+		types = append(types, fp.Type)
+	}
+
+	funcType := llvm.FunctionType(returnType, types, isVarArg)
+	function := llvm.AddFunction(CompilationUnits.Peek().Module, name, funcType)
+
+	for i, pt := range params {
+		if !pt.IsVarArg {
+			function.Param(i).SetName(pt.Name)
+		}
+	}
+
+	if ctx.KeywordPublic() == nil {
+		function.SetLinkage(llvm.PrivateLinkage)
+	} else {
+		function.SetLinkage(llvm.LinkOnceAnyLinkage)
+	}
+
+	CompilationUnits.Peek().Functions[name] = Function{
+		Name:      name,
+		Value:     &function,
+		Params:    params,
+		ExitBlock: &llvm.BasicBlock{},
+	}
+
+	return function
 }
 
-func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionContext) any {
-	signature := v.Visit(ctx.FunctionSignature()).(llvm.Value)
+func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
+	signature := v.Visit(ctx.FuncSig()).(llvm.Value)
 	isVoid := signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind
 	function := CompilationUnits.Peek().Functions[signature.Name()]
 
@@ -173,17 +163,13 @@ func (v *AstVisitor) VisitFunctionDefinition(ctx *parser.FunctionDefinitionConte
 	return nil
 }
 
-func (v *AstVisitor) VisitFunctionCallArgList(ctx *parser.FunctionCallArgListContext) any {
+func (v *AstVisitor) VisitFuncCallArgList(ctx *parser.FuncCallArgListContext) any {
 	var args []llvm.Value
 	for _, expr := range ctx.AllExpression() {
 		args = append(args, v.Visit(expr).(llvm.Value))
 	}
 
 	return args
-}
-
-func (v *AstVisitor) VisitFunctionCallExpression(ctx *parser.FunctionCallExpressionContext) any {
-	return v.Visit(ctx.FunctionCall())
 }
 
 type BuiltInValueFunction func([]any) llvm.Value
@@ -244,11 +230,11 @@ var BuiltInTypeFunctions map[string]BuiltInTypeFunction = map[string]BuiltInType
 	},
 }
 
-func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
+func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 	name := ctx.Identifier().GetText()
 	var args []any
-	if ctx.FunctionCallArgList() != nil {
-		arglist := ctx.FunctionCallArgList().(*parser.FunctionCallArgListContext)
+	if ctx.FuncCallArgList() != nil {
+		arglist := ctx.FuncCallArgList().(*parser.FuncCallArgListContext)
 		for _, a := range arglist.AllExpression() {
 			args = append(args, v.Visit(a))
 		}
@@ -285,7 +271,7 @@ func (v *AstVisitor) VisitFunctionCall(ctx *parser.FunctionCallContext) any {
 	}
 }
 
-func (v *AstVisitor) VisitFunctionReturn(ctx *parser.FunctionReturnContext) any {
+func (v *AstVisitor) VisitFuncReturn(ctx *parser.FuncReturnContext) any {
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	function := CompilationUnits.Peek().Functions[functionName]
 	fncReturnType := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Type().ReturnType()

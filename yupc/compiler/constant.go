@@ -22,8 +22,8 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 		}
 
 		var typ llvm.Type
-		if ctx.TypeAnnotation() != nil {
-			typ = v.Visit(ctx.TypeAnnotation()).(llvm.Type)
+		if ctx.TypeAnnot() != nil {
+			typ = v.Visit(ctx.TypeAnnot()).(llvm.Type)
 		} else {
 			typ = llvm.Int32Type()
 		}

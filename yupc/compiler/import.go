@@ -88,7 +88,7 @@ func ImportModule(name string) {
 	llvm.LinkModules(CompilationUnits.Peek().Module, mod)
 }
 
-func (v *AstVisitor) VisitImportDeclaration(ctx *parser.ImportDeclarationContext) any {
+func (v *AstVisitor) VisitImportDecl(ctx *parser.ImportDeclContext) any {
 	for _, im := range ctx.AllValueString() {
 		name, _ := strconv.Unquote(im.GetText())
 		ImportModule(name)

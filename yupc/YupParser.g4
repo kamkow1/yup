@@ -4,115 +4,107 @@ options {
     tokenVocab = 'lexer/YupLexer';
 }
 
-file:                           statement*;
+file: statement*;
 
-codeBlock:                      SymbolLbrace statement* SymbolRbrace;
+codeBlock: SymbolLbrace statement* SymbolRbrace;
 
-attributeList:                  SymbolHash SymbolLsqbr (attribute (SymbolComma attribute)*)? SymbolRsqbr;
-attribute:                      Identifier SymbolLparen (ValueString (SymbolComma ValueString)*)? SymbolRparen;
+attrList: SymbolHash SymbolLsqbr (attr (SymbolComma attr)*)? SymbolRsqbr;
+attr: Identifier SymbolLparen (ValueString (SymbolComma ValueString)*)? SymbolRparen;
 
-typeAnnotation:                 SymbolColon typeName;
-typeName:                       (typeExtension* (Identifier |structType | functionType));
-typeExtension:                  arrayTypeExtension | SymbolAsterisk | SymbolQuestMark;
-arrayTypeExtension:             SymbolLsqbr ValueInteger SymbolRsqbr;
-structType:                     SymbolLbrace (typeName (SymbolComma typeName)*)? SymbolRbrace;
-functionType:                   SymbolLparen functionParameterList? SymbolRparen (SymbolArrow typeName)?;
+typeAnnot: SymbolColon typeName;
+typeName: (typeExt* (Identifier | structType | funcType));
+typeExt: arrayTypeExt | SymbolAsterisk | SymbolQuestMark;
+arrayTypeExt: SymbolLsqbr ValueInteger SymbolRsqbr;
+structType: SymbolLbrace (typeName (SymbolComma typeName)*)? SymbolRbrace;
+funcType: SymbolLparen funcParamList? SymbolRparen (SymbolArrow typeName)?;
 
-importDeclaration:              KeywordImport ValueString+;
+importDecl: KeywordImport ValueString+;
 
-arrayElementAssignment:         Identifier arrayIndex* variableValue;
-arrayIndex:                     SymbolLsqbr expression SymbolRsqbr;
-constArray:                     SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
+arrayIndex: SymbolLsqbr expression SymbolRsqbr;
+constArray: SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
 
-assignment:                     Identifier variableValue;
-variableDeclare:                attributeList? KeywordPublic? declarationType Identifier 
-                                (SymbolComma Identifier)* typeAnnotation? variableValue?;
-declarationType:                (KeywordVar | KeywordConst);
-variableValue:                  SymbolAssign expression;
-expressionAssignment:           expression variableValue;
-// dereferenceAssignment:          SymbolAsterisk+ expression variableValue;
+assign: Identifier varValue;
+varDecl: attrList? KeywordPublic? declType Identifier (SymbolComma Identifier)* typeAnnot? varValue?;
+declType: (KeywordVar | KeywordConst);
+varValue: SymbolAssign expression;
+exprAssign: expression varValue;
 
+funcDef: funcSig codeBlock;
+funcSig: attrList? KeywordPublic? Identifier SymbolColon KeywordFunction
+        SymbolLparen funcParamList? SymbolRparen (SymbolArrow typeName)?;
+funcParamList: funcParam (SymbolComma funcParam)*;
+funcReturn: KeywordReturn (expression (SymbolComma expression)*)?;
+funcParam: (KeywordConst? Identifier typeAnnot) | SymbolVariadicArgs;
+funcCall: Identifier SymbolLparen funcCallArgList? SymbolRparen;
+funcCallArgList: expression (SymbolComma expression)*;
 
-functionDefinition:             functionSignature codeBlock;
-functionSignature:              attributeList? KeywordPublic? Identifier SymbolColon KeywordFunction genericParams? 
-                                SymbolLparen functionParameterList? SymbolRparen (SymbolArrow typeName)?;
-functionParameterList:          functionParameter (SymbolComma functionParameter)*;
-functionReturn:                 KeywordReturn (expression (SymbolComma expression)*)?;
-functionParameter:              (KeywordConst? Identifier typeAnnotation) | SymbolVariadicArgs;
-functionCall:                   Identifier SymbolLparen functionCallArgList? SymbolRparen;
-functionCallArgList:            expression (SymbolComma expression)*;
+binop: SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash;
 
-binaryOperator:                 SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash;
+addressOf: Identifier SymbolDot SymbolAmpersand;
 
-addressOf:                      Identifier SymbolDot SymbolAmpersand;
+ifStatement: KeywordIf expression ifThenBlock ifElseBlock?;
+ifThenBlock: codeBlock;
+ifElseBlock: KeywordElse codeBlock;
 
-ifStatement:		            KeywordIf expression ifThenBlock ifElseBlock?;
-ifThenBlock:		            codeBlock;
-ifElseBlock:		            KeywordElse codeBlock;
+constant: multilineString | (ValueInteger typeAnnot?) | ValueFloat | ValueChar | ValueNull;
+literalConstantInt: SymbolColon ValueInteger;
+literalConstantString: SymbolColon multilineString;
+multilineString: ValueString+;
 
-constant:                       multilineString| (ValueInteger typeAnnotation?) | ValueFloat | ValueChar | ValueNull;
-literalConstantInt:		        SymbolColon ValueInteger;
-literalConstantString:          SymbolColon multilineString;
-multilineString:		        ValueString+;
+compOper: SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
-comparisonOperator:             SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
+forLoopStatement: KeywordFor (arrayBasedLoop | conditionBasedLoop | statementBasedLoop) codeBlock;
+arrayBasedLoop:	varDecl KeywordIn expression;
+conditionBasedLoop: expression;
+statementBasedLoop: statement+;
+finalStatement:	statement;
+continueStatement: KeywordContinue;
+breakStatement: KeywordBreak;
 
-forLoopStatement:		        KeywordFor (arrayBasedLoop | conditionBasedLoop | statementBasedLoop) codeBlock;
-arrayBasedLoop:			        variableDeclare KeywordIn expression;
-conditionBasedLoop:		        expression;
-statementBasedLoop:		        statement+;
-finalStatement:			        statement;
-continueStatement:		        KeywordContinue;
-breakStatement:			        KeywordBreak;
+structDeclaration: attrList? Identifier SymbolColon KeywordType KeywordStruct SymbolLbrace structField+ SymbolRbrace;
+structField: Identifier typeAnnot SymbolTerminator;
+fieldAssignment: expression SymbolDot Identifier varValue;
+typeAliasDeclaration: Identifier SymbolColon KeywordType KeywordTypeAlias typeName;
+structInit: Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
+constStructInit: SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 
-structDeclaration:		        attributeList? Identifier SymbolColon KeywordType KeywordStruct genericParams? SymbolLbrace structField+ SymbolRbrace;
-structField:			        Identifier typeAnnotation SymbolTerminator;
-fieldAssignment:                expression SymbolDot Identifier variableValue;
-typeAliasDeclaration:		    Identifier SymbolColon KeywordType KeywordTypeAlias typeName;
-structInit:                     Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
-constStructInit:                SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
+expression: funcCall                                            #funcCallExpr
+        |   Identifier                                          #identifierExpr
+        |   constArray                                          #constArrayExpr
+        |   addressOf                                           #addressOfExpr
+        |   expression (SymbolLsqbr expression SymbolRsqbr)+    #indexedAccessExpr
+        |   expression binop expression                         #binopExpr
+        |   SymbolLparen expression SymbolRparen                #emphasizedExpr
+        |   expression SymbolDot SymbolAsterisk                 #ptrDerefExpr
+        |   SymbolLparen expression SymbolRparen expression     #typeCastExpression
+        |   expression compOper expression                      #CompExpr
+        |   (SymbolNot | SymbolExclMark) expression             #NegatedExpression
+        |   expression SymbolAnd expression                     #LogicalAndExpression
+        |   expression SymbolOr expression                      #LogicalOrExpression
+        |   constant                                            #constantExpression
+        |   literalConstantInt		 	  	                    #literalConstantIntExpression
+        |   literalConstantString                               #literalConstantStringExpression
+        |   multilineString					                    #MultilineStringExpression
+        |   expression SymbolDot Identifier			            #FieldAccessExpression
+        |   expression SymbolDot funcCall                       #MethodCallExpression
+        |   structInit                                          #StructInitExpression
+        |   constStructInit                                     #ConstStructInitExpression
+        |   typeName                                            #LitTypeExpr;
 
-genericParams:                  SymbolLessThan Identifier (SymbolComma Identifier)* SymbolMoreThan;
-
-expression:                     functionCall                                        #functionCallExpression
-        |                       Identifier                                          #identifierExpression
-        |                       constArray                                          #constArrayExpression
-        |                       addressOf                                           #addressOfExpression
-        |                       expression (SymbolLsqbr expression SymbolRsqbr)+    #indexedAccessExpression
-        |                       expression binaryOperator expression                #binaryOperationExpression
-        |                       SymbolLparen expression SymbolRparen                #emphasizedExpression
-        |                       expression SymbolDot SymbolAsterisk                 #pointerDereferenceExpression
-        |                       SymbolLparen expression SymbolRparen expression     #typeCastExpression
-        |                       expression comparisonOperator expression            #ComparisonExpression
-        |                       (SymbolNot | SymbolExclMark) expression             #NegatedExpression
-        |                       expression SymbolAnd expression                     #LogicalAndExpression
-        |                       expression SymbolOr expression                      #LogicalOrExpression
-        |			            constant                                            #constantExpression
-        |			            literalConstantInt		 	  	                    #literalConstantIntExpression
-        |                       literalConstantString                               #literalConstantStringExpression
-        |			            multilineString					                    #MultilineStringExpression
-        |			            expression SymbolDot Identifier			            #FieldAccessExpression
-        |                       expression SymbolDot functionCall                   #MethodCallExpression
-        |                       structInit                                          #StructInitExpression
-        |                       constStructInit                                     #ConstStructInitExpression
-        |                       SymbolApostrophe typeName                           #LiteralTypeExpression;
-
-statement:                      expression                                          SymbolTerminator
-        |                       assignment                                          SymbolTerminator
-        |                       expressionAssignment                                SymbolTerminator
-        // |                       dereferenceAssignment                               SymbolTerminator
-        |                       functionReturn                                      SymbolTerminator
-        |                       variableDeclare                                     SymbolTerminator
-        // |                       arrayElementAssignment                              SymbolTerminator
-        |                       functionSignature                                   SymbolTerminator
-        |                       importDeclaration                                   SymbolTerminator
-        |			            continueStatement				                    SymbolTerminator
-        |			            breakStatement					                    SymbolTerminator
-        |			            typeAliasDeclaration				                SymbolTerminator
-        |                       fieldAssignment                                     SymbolTerminator
-        |			            forLoopStatement
-        |			            ifStatement
-        |                       functionDefinition
-        |                       codeBlock
-        |                       SymbolTerminator
-        |			            structDeclaration;
+statement: expression SymbolTerminator
+        |  assign SymbolTerminator
+        |  exprAssign SymbolTerminator
+        |  funcReturn SymbolTerminator
+        |  varDecl SymbolTerminator
+        |  funcSig SymbolTerminator
+        |  importDecl SymbolTerminator
+        |  continueStatement SymbolTerminator
+        |  breakStatement SymbolTerminator
+        |  typeAliasDeclaration SymbolTerminator
+        |  fieldAssignment SymbolTerminator
+        |  forLoopStatement
+        |  ifStatement
+        |  funcDef
+        |  codeBlock
+        |  SymbolTerminator
+        |  structDeclaration;

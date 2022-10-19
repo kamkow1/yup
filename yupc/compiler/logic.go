@@ -66,7 +66,7 @@ func CompareNonInts(v0 llvm.Value, v1 llvm.Value, compType int) llvm.Value {
 	return result
 }
 
-func (v *AstVisitor) VisitComparisonExpression(ctx *parser.ComparisonExpressionContext) any {
+func (v *AstVisitor) VisitCompExpr(ctx *parser.CompExprContext) any {
 	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
@@ -78,7 +78,7 @@ func (v *AstVisitor) VisitComparisonExpression(ctx *parser.ComparisonExpressionC
 	v0tk := v0.Type().TypeKind()
 
 	var value llvm.Value
-	op := ctx.ComparisonOperator().(*parser.ComparisonOperatorContext)
+	op := ctx.CompOper().(*parser.CompOperContext)
 	if op.SymbolEqual() != nil {
 		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
 			value = CompareInts(v0, v1, EqualComp)

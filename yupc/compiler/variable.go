@@ -26,15 +26,15 @@ func FindLocalVariable(name string, i int) LocalVariable {
 	return local
 }
 
-func (v *AstVisitor) VisitVariableValue(ctx *parser.VariableValueContext) any {
+func (v *AstVisitor) VisitVarValue(ctx *parser.VarValueContext) any {
 	return v.Visit(ctx.Expression())
 }
 
-func (v *AstVisitor) VisitDeclarationType(ctx *parser.DeclarationTypeContext) any {
+func (v *AstVisitor) VisitDeclType(ctx *parser.DeclTypeContext) any {
 	return ctx.KeywordConst() != nil
 }
 
-func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) any {
+func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 	var names []string
 	for _, id := range ctx.AllIdentifier() {
 		names = append(names, id.GetText())
@@ -53,19 +53,19 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 		}
 
 		isGlobal := CompilationUnits.Peek().Builder.GetInsertBlock().IsNil()
-		isConstant := v.Visit(ctx.DeclarationType()).(bool) // true == const, false == var
+		isConstant := v.Visit(ctx.DeclType()).(bool) // true == const, false == var
 
 		var typ llvm.Type
 		var value llvm.Value
-		isInit := ctx.VariableValue() != nil
+		isInit := ctx.VarValue() != nil
 		if isInit {
-			value = v.Visit(ctx.VariableValue()).(llvm.Value)
+			value = v.Visit(ctx.VarValue()).(llvm.Value)
 			typ = value.Type()
 		}
 
-		hasAnnot := ctx.TypeAnnotation() != nil
+		hasAnnot := ctx.TypeAnnot() != nil
 		if hasAnnot {
-			typ = v.Visit(ctx.TypeAnnotation()).(llvm.Type)
+			typ = v.Visit(ctx.TypeAnnot()).(llvm.Type)
 		}
 
 		if isInit && hasAnnot && value.Type() != typ {
@@ -87,7 +87,7 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 			CompilationUnits.Peek().Globals[name] = glb
 
 		} else {
-			if ctx.AttributeList() != nil {
+			if ctx.AttrList() != nil {
 				LogError("local variable %s cannot have an attribute list", name)
 			}
 
@@ -108,7 +108,7 @@ func (v *AstVisitor) VisitVariableDeclare(ctx *parser.VariableDeclareContext) an
 	return nil
 }
 
-func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionContext) any {
+func (v *AstVisitor) VisitIdentifierExpr(ctx *parser.IdentifierExprContext) any {
 	name := ctx.Identifier().GetText()
 
 	var val llvm.Value
@@ -126,22 +126,22 @@ func (v *AstVisitor) VisitIdentifierExpression(ctx *parser.IdentifierExpressionC
 	return CompilationUnits.Peek().Builder.CreateLoad(val.AllocatedType(), val, "")
 }
 
-func (v *AstVisitor) VisitAssignment(ctx *parser.AssignmentContext) any {
+func (v *AstVisitor) VisitAssign(ctx *parser.AssignContext) any {
 	name := ctx.Identifier().GetText()
 	vr := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1)
 	if vr.IsConst {
 		LogError("cannot reassign a constant: %s", vr.Name)
 	}
 
-	value := v.Visit(ctx.VariableValue()).(llvm.Value)
+	value := v.Visit(ctx.VarValue()).(llvm.Value)
 	vr.IsUsed = true
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, vr.Value)
 }
 
-func (v *AstVisitor) VisitExpressionAssignment(ctx *parser.ExpressionAssignmentContext) any {
+func (v *AstVisitor) VisitExprAssign(ctx *parser.ExprAssignContext) any {
 	expr := v.Visit(ctx.Expression()).(llvm.Value)
-	value := v.Visit(ctx.VariableValue()).(llvm.Value)
+	value := v.Visit(ctx.VarValue()).(llvm.Value)
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, expr)
 }

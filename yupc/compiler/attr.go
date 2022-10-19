@@ -10,17 +10,17 @@ type Attribute struct {
 	Params []string
 }
 
-func (v *AstVisitor) VisitAttributeList(ctx *parser.AttributeListContext) any {
+func (v *AstVisitor) VisitAttributeList(ctx *parser.AttrListContext) any {
 	var attrs []*Attribute
 
-	for _, a := range ctx.AllAttribute() {
+	for _, a := range ctx.AllAttr() {
 		attrs = append(attrs, v.Visit(a).(*Attribute))
 	}
 
 	return attrs
 }
 
-func (v *AstVisitor) VisitAttribute(ctx *parser.AttributeContext) any {
+func (v *AstVisitor) VisitAttribute(ctx *parser.AttrContext) any {
 	name := ctx.Identifier().GetText()
 	var params []string
 	for _, p := range ctx.AllValueString() {

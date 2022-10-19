@@ -33,7 +33,7 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 
 	var blockExitStatus BlockExitStatus
 	for _, st := range ctx.AllStatement() {
-		hasReturned := st.(*parser.StatementContext).FunctionReturn() != nil
+		hasReturned := st.(*parser.StatementContext).FuncReturn() != nil
 		hasBranched := st.(*parser.StatementContext).IfStatement() != nil
 		hasContinued := st.(*parser.StatementContext).ContinueStatement() != nil
 		hasBroken := st.(*parser.StatementContext).BreakStatement() != nil

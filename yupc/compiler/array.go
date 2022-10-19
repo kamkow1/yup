@@ -5,10 +5,6 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func (v *AstVisitor) VisitConstArrayExpression(ctx *parser.ConstArrayExpressionContext) any {
-	return v.Visit(ctx.ConstArray())
-}
-
 func (v *AstVisitor) VisitConstArray(ctx *parser.ConstArrayContext) any {
 	var vals []llvm.Value
 	for _, expr := range ctx.AllExpression() {
@@ -25,7 +21,7 @@ func (v *AstVisitor) VisitConstArray(ctx *parser.ConstArrayContext) any {
 	return llvm.ConstArray(arrtyp, vals)
 }
 
-func (v *AstVisitor) VisitIndexedAccessExpression(ctx *parser.IndexedAccessExpressionContext) any {
+func (v *AstVisitor) VisitIndexedAccessExpr(ctx *parser.IndexedAccessExprContext) any {
 	var idx llvm.Value
 	for i := 1; i < len(ctx.AllExpression()); i++ {
 		array := v.Visit(ctx.Expression(i - 1)).(llvm.Value)

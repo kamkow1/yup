@@ -35,16 +35,12 @@ func AssertType(typ1 llvm.Type, typ2 llvm.Type) bool {
 	return typ1.TypeKind() != typ2.TypeKind()
 }
 
-func reverseTypeExtList(array []parser.ITypeExtensionContext) []parser.ITypeExtensionContext {
+func reverseTypeExtList(array []parser.ITypeExtContext) []parser.ITypeExtContext {
 	if len(array) == 0 {
 		return array
 	}
 
 	return append(reverseTypeExtList(array[1:]), array[0])
-}
-
-func (v *AstVisitor) VisitLiteralTypeExpression(ctx *parser.LiteralTypeExpressionContext) any {
-	return v.Visit(ctx.TypeName())
 }
 
 func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
@@ -60,8 +56,8 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 		}
 
 		typ = llvm.StructType(types, false)
-	} else if ctx.FunctionType() != nil {
-		fntp := ctx.FunctionType().(*parser.FunctionTypeContext)
+	} else if ctx.FuncType() != nil {
+		fntp := ctx.FuncType().(*parser.FuncTypeContext)
 
 		var retType llvm.Type
 		if fntp.SymbolArrow() != nil {
@@ -71,8 +67,8 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 		}
 
 		params := make([]FuncParam, 0)
-		if fntp.FunctionParameterList() != nil {
-			params = v.Visit(fntp.FunctionParameterList()).([]FuncParam)
+		if fntp.FuncParamList() != nil {
+			params = v.Visit(fntp.FuncParamList()).([]FuncParam)
 		}
 
 		paramTypes := make([]llvm.Type, 0)
@@ -89,29 +85,20 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 		typ = llvm.FunctionType(retType, paramTypes, isva)
 	}
 
-	for _, ext := range reverseTypeExtList(ctx.AllTypeExtension()) {
-		extension := ext.(*parser.TypeExtensionContext)
+	for _, ext := range reverseTypeExtList(ctx.AllTypeExt()) {
+		extension := ext.(*parser.TypeExtContext)
 		if extension.SymbolAsterisk() != nil {
 			typ = llvm.PointerType(typ, 0)
 		}
 
-		if extension.ArrayTypeExtension() != nil {
-			extctx := extension.ArrayTypeExtension().(*parser.ArrayTypeExtensionContext)
+		if extension.ArrayTypeExt() != nil {
+			extctx := extension.ArrayTypeExt().(*parser.ArrayTypeExtContext)
 			size, _ := strconv.Atoi(extctx.ValueInteger().GetText())
 			typ = llvm.ArrayType(typ, size)
 		}
 	}
 
 	return typ
-}
-
-func (v *AstVisitor) VisitTypeAnnotation(ctx *parser.TypeAnnotationContext) any {
-	return v.Visit(ctx.TypeName())
-}
-
-type GenericParam struct {
-	Name     string
-	InstType llvm.Type
 }
 
 type Field struct {
@@ -127,42 +114,36 @@ type Structure struct {
 func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
 	return Field{
 		Name: ctx.Identifier().GetText(),
-		Type: v.Visit(ctx.TypeAnnotation()).(llvm.Type),
+		Type: v.Visit(ctx.TypeAnnot()).(llvm.Type),
 	}
 }
 
 func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext) any {
 	name := ctx.Identifier().GetText()
+	c := CompilationUnits.Peek().Module.Context()
+	structType := c.StructCreateNamed(name)
+	CompilationUnits.Peek().Types[name] = structType
 
-	if ctx.GenericParams() == nil {
-		c := CompilationUnits.Peek().Module.Context()
-		structType := c.StructCreateNamed(name)
-		CompilationUnits.Peek().Types[name] = structType
-
-		var fields []Field
-		for _, fld := range ctx.AllStructField() {
-			fields = append(fields, v.Visit(fld).(Field))
-		}
-
-		strct := Structure{
-			Name:   name,
-			Fields: fields,
-		}
-
-		CompilationUnits.Peek().Structs[name] = strct
-
-		var fieldTypes []llvm.Type
-		for _, fld := range fields {
-			fieldTypes = append(fieldTypes, fld.Type)
-		}
-
-		structType.StructSetBody(fieldTypes, false)
-
-		return structType
-	} else {
-		// TODO: implement generic struct types
-		return nil
+	var fields []Field
+	for _, fld := range ctx.AllStructField() {
+		fields = append(fields, v.Visit(fld).(Field))
 	}
+
+	strct := Structure{
+		Name:   name,
+		Fields: fields,
+	}
+
+	CompilationUnits.Peek().Structs[name] = strct
+
+	var fieldTypes []llvm.Type
+	for _, fld := range fields {
+		fieldTypes = append(fieldTypes, fld.Type)
+	}
+
+	structType.StructSetBody(fieldTypes, false)
+
+	return structType
 }
 
 func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationContext) any {
@@ -183,12 +164,12 @@ func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressio
 
 func (v *AstVisitor) VisitMethodCallExpression(ctx *parser.MethodCallExpressionContext) any {
 	strct := v.Visit(ctx.Expression()).(llvm.Value)
-	fncctx := ctx.FunctionCall().(*parser.FunctionCallContext)
+	fncctx := ctx.FuncCall().(*parser.FuncCallContext)
 	name := fncctx.Identifier().GetText()
 
 	method := GetStructFieldPtr(strct, name)
 	method = CompilationUnits.Peek().Builder.CreateLoad(method.Type().ElementType(), method, "")
-	args := v.Visit(fncctx.FunctionCallArgList()).([]llvm.Value)
+	args := v.Visit(fncctx.FuncCallArgList()).([]llvm.Value)
 	return CompilationUnits.Peek().Builder.CreateCall(method.Type().ReturnType(), method, args, "")
 }
 

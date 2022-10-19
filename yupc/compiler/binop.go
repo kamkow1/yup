@@ -5,7 +5,7 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func (v *AstVisitor) VisitBinaryOperationExpression(ctx *parser.BinaryOperationExpressionContext) any {
+func (v *AstVisitor) VisitBinopExpr(ctx *parser.BinopExprContext) any {
 	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
@@ -13,7 +13,7 @@ func (v *AstVisitor) VisitBinaryOperationExpression(ctx *parser.BinaryOperationE
 		v1 = Cast(v1, v0.Type())
 	}
 
-	binop := ctx.BinaryOperator().(*parser.BinaryOperatorContext)
+	binop := ctx.Binop().(*parser.BinopContext)
 
 	if binop.SymbolPlus() != nil {
 		return CompilationUnits.Peek().Builder.CreateAdd(v0, v1, "")

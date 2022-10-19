@@ -43,29 +43,29 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.CodeBlockContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitCodeBlock(ctx)
-	case *parser.EmphasizedExpressionContext:
+	case *parser.EmphasizedExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitEmphasizedExpression(ctx)
+		return v.Visit(ctx.Expression())
 	case *parser.StatementContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitStatement(ctx)
 
 	// Type
-	case *parser.TypeAnnotationContext:
+	case *parser.TypeAnnotContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitTypeAnnotation(ctx)
+		return v.VisitTypeName(ctx.TypeName().(*parser.TypeNameContext))
 	case *parser.TypeNameContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitTypeName(ctx)
-	case *parser.TypeExtensionContext:
+	case *parser.TypeExtContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitTypeExtension(ctx)
-	case *parser.ArrayTypeExtensionContext:
+		return v.VisitTypeExt(ctx)
+	case *parser.ArrayTypeExtContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitArrayTypeExtension(ctx)
-	case *parser.LiteralTypeExpressionContext:
+		return v.VisitArrayTypeExt(ctx)
+	case *parser.LitTypeExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitLiteralTypeExpression(ctx)
+		return v.VisitTypeName(ctx.TypeName().(*parser.TypeNameContext))
 
 	// Array
 	//case *parser.ArrayElementAssignmentContext:
@@ -77,72 +77,74 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.ConstArrayContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitConstArray(ctx)
-	case *parser.ConstArrayExpressionContext:
+	case *parser.ConstArrayExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitConstArrayExpression(ctx)
-	case *parser.IndexedAccessExpressionContext:
+		return v.VisitConstArray(ctx.ConstArray().(*parser.ConstArrayContext))
+	case *parser.IndexedAccessExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitIndexedAccessExpression(ctx)
+		return v.VisitIndexedAccessExpr(ctx)
 
 	// Variable
-	case *parser.AssignmentContext:
+	case *parser.AssignContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitAssignment(ctx)
-	case *parser.VariableDeclareContext:
+		return v.VisitAssign(ctx)
+	case *parser.VarDeclContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitVariableDeclare(ctx)
-	case *parser.DeclarationTypeContext:
+		return v.VisitVarDecl(ctx)
+	case *parser.DeclTypeContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitDeclarationType(ctx)
-	case *parser.VariableValueContext:
+		return v.VisitDeclType(ctx)
+	case *parser.VarValueContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitVariableValue(ctx)
-	case *parser.IdentifierExpressionContext:
+		return v.VisitVarValue(ctx)
+	case *parser.IdentifierExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitIdentifierExpression(ctx)
+		return v.VisitIdentifierExpr(ctx)
 
 	// Function
-	case *parser.FunctionDefinitionContext:
+	case *parser.FuncDefContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitFunctionDefinition(ctx)
-	case *parser.FunctionSignatureContext:
+		return v.VisitFuncDef(ctx)
+	case *parser.FuncSigContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitFunctionSignature(ctx)
-	case *parser.FunctionParameterListContext:
+		return v.VisitFuncSig(ctx)
+	case *parser.FuncParamListContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitFunctionParameterList(ctx)
-	case *parser.FunctionParameterContext:
+		return v.VisitFuncParamList(ctx)
+	case *parser.FuncParamContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitFunctionParameter(ctx)
-	case *parser.FunctionReturnContext:
+		annot := ctx.TypeAnnot().(*parser.TypeAnnotContext)
+		name := annot.TypeName().(*parser.TypeNameContext)
+		return v.VisitTypeName(name)
+	case *parser.FuncReturnContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitFunctionReturn(ctx)
-	case *parser.FunctionCallContext:
+		return v.VisitFuncReturn(ctx)
+	case *parser.FuncCallContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitFunctionCall(ctx)
-	case *parser.FunctionCallArgListContext:
+		return v.VisitFuncCall(ctx)
+	case *parser.FuncCallArgListContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitFunctionCallArgList(ctx)
-	case *parser.FunctionCallExpressionContext:
+		return v.VisitFuncCallArgList(ctx)
+	case *parser.FuncCallExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitFunctionCallExpression(ctx)
+		return v.VisitFuncCall(ctx.FuncCall().(*parser.FuncCallContext))
 
 	// Memory
 	case *parser.AddressOfContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitAddressOf(ctx)
-	case *parser.AddressOfExpressionContext:
+	case *parser.AddressOfExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitAddressOfExpression(ctx)
-	case *parser.PointerDereferenceExpressionContext:
+		return v.VisitAddressOf(ctx.AddressOf().(*parser.AddressOfContext))
+	case *parser.PtrDerefExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitPointerDereferenceExpression(ctx)
+		return v.VisitPtrDerefExpr(ctx)
 	// case *parser.DereferenceAssignmentContext:
 	// GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 	// return v.VisitDereferenceAssignment(ctx)
-	case *parser.ExpressionAssignmentContext:
+	case *parser.ExprAssignContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitExpressionAssignment(ctx)
+		return v.VisitExprAssign(ctx)
 
 	// Constant
 	case *parser.ConstantContext:
@@ -171,20 +173,20 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitMultilineString(ctx)
 
 	// Binary Operator
-	case *parser.BinaryOperatorContext:
+	case *parser.BinopContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitBinaryOperator(ctx)
-	case *parser.BinaryOperationExpressionContext:
+		return v.VisitBinop(ctx)
+	case *parser.BinopExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitBinaryOperationExpression(ctx)
+		return v.VisitBinopExpr(ctx)
 
 	// Logic
-	case *parser.ComparisonOperatorContext:
+	case *parser.CompOperContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitComparisonOperator(ctx)
-	case *parser.ComparisonExpressionContext:
+		return v.VisitCompOper(ctx)
+	case *parser.CompExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitComparisonExpression(ctx)
+		return v.VisitCompExpr(ctx)
 	case *parser.NegatedExpressionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitNegatedExpression(ctx)
@@ -207,17 +209,17 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitIfElseBlock(ctx)
 
 	// Import
-	case *parser.ImportDeclarationContext:
+	case *parser.ImportDeclContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitImportDeclaration(ctx)
+		return v.VisitImportDecl(ctx)
 
 	// Attribute
-	case *parser.AttributeListContext:
+	case *parser.AttrListContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitAttributeList(ctx)
-	case *parser.AttributeContext:
+		return v.VisitAttrList(ctx)
+	case *parser.AttrContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitAttribute(ctx)
+		return v.VisitAttr(ctx)
 
 	// Loop
 	case *parser.ForLoopStatementContext:
@@ -285,8 +287,4 @@ func (v *AstVisitor) VisitFile(ctx *parser.FileContext) any {
 
 func (v *AstVisitor) VisitStatement(ctx *parser.StatementContext) any {
 	return v.Visit(ctx.GetChild(0).(antlr.ParseTree))
-}
-
-func (v *AstVisitor) VisitEmphasizedExpression(ctx *parser.EmphasizedExpressionContext) any {
-	return v.Visit(ctx.Expression())
 }
