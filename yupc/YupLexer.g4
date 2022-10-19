@@ -16,7 +16,9 @@ KeywordBreak		    	:	'break';
 KeywordStruct		    	:   'struct';
 KeywordTypeAlias	    	:   'alias';
 KeywordPublic				:	'pub';
+KeywordValueString			:	'v';
 
+SymbolBackSlash				:	'\\';
 SymbolArrow					:   '->';
 SymbolApostrophe            :   '\'';
 SymbolTerminator            :   ';';
@@ -49,18 +51,17 @@ SymbolHash                  :   '#';
 SymbolAnd                   :   'and';
 SymbolOr                    :   'or';
 SymbolNot                   :   'not';
+SymbolMLString				:	'!#';
 
 ValueChar                   :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 fragment EscapedValue	    :   '\\' [abfnrtv\\'"];
-ValueString		    		:   '"' (~["\\] | EscapedValue)* '"';
-ValueRawString		    	:	'`' ~'`'* '`'; 
-
+ValueString					: 	'"' (~["\\] | EscapedValue)* '"';
 
 ValueInteger                :   '-'? '0'..'9'+;
 ValueFloat                  :   '-'? ('0'..'9')+ '.' ('0'..'9')*;
 ValueNull                   :   'Null';
 
 Identifier                  :   ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_')*;
-Whitespace                  :   [ \r\n\t]+    -> skip;
 Comment                     :   '/*' .*? '*/' -> channel(HIDDEN);
 MultilineComment            :   '//' ~[\r\n]*  -> channel(HIDDEN);
+Whitespace                  :   [ \r\n\t]+    -> channel(HIDDEN);

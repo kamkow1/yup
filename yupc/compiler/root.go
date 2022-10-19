@@ -153,24 +153,15 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.ConstantExpressionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitConstantExpression(ctx)
-	case *parser.LiteralConstantIntExpressionContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitLiteralConstantIntExpression(ctx)
-	case *parser.LiteralConstantIntContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitLiteralConstantInt(ctx)
-	case *parser.LiteralConstantStringExpressionContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitLiteralConstantStringExpression(ctx)
-	case *parser.LiteralConstantStringContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitLiteralConstantString(ctx)
 	case *parser.MultilineStringExpressionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitMultilineStringExpression(ctx)
 	case *parser.MultilineStringContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitMultilineString(ctx)
+	case *parser.StringExprContext:
+		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+		return v.VisitStringExpr(ctx)
 
 	// Binary Operator
 	case *parser.BinopContext:

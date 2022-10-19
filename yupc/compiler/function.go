@@ -207,6 +207,7 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 	},
 	"inline_c": func(args []any) llvm.Value {
 		cc := args[0].(string)
+
 		sf := CompilationUnits.Peek().SourceFile
 		name := filepath.Base(FilenameWithoutExtension(sf)) + "_c" + ".c"
 

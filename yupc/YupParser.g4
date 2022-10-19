@@ -46,10 +46,9 @@ ifStatement: KeywordIf expression ifThenBlock ifElseBlock?;
 ifThenBlock: codeBlock;
 ifElseBlock: KeywordElse codeBlock;
 
-constant: multilineString | (ValueInteger typeAnnot?) | ValueFloat | ValueChar | ValueNull;
-literalConstantInt: SymbolColon ValueInteger;
-literalConstantString: SymbolColon multilineString;
+constant: stringExpr | (ValueInteger typeAnnot?) | ValueFloat | ValueChar | ValueNull;
 multilineString: ValueString+;
+stringExpr: (KeywordValueString? ValueString) | multilineString;
 
 compOper: SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
@@ -82,8 +81,6 @@ expression: funcCall                                            #funcCallExpr
         |   expression SymbolAnd expression                     #LogicalAndExpression
         |   expression SymbolOr expression                      #LogicalOrExpression
         |   constant                                            #constantExpression
-        |   literalConstantInt		 	  	                    #literalConstantIntExpression
-        |   literalConstantString                               #literalConstantStringExpression
         |   multilineString					                    #MultilineStringExpression
         |   expression SymbolDot Identifier			            #FieldAccessExpression
         |   expression SymbolDot funcCall                       #MethodCallExpression
@@ -108,3 +105,4 @@ statement: expression SymbolTerminator
         |  codeBlock
         |  SymbolTerminator
         |  structDeclaration;
+
