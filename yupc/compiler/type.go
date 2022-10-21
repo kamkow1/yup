@@ -60,14 +60,9 @@ func InitTypeMap() map[string]*TypeInfo {
 			Type:     llvm.X86FP80Type(),
 			IsPublic: true,
 		},
-		"voidbyte": &TypeInfo{
-			Name:     "voidbyte",
-			Type:     llvm.Int8Type(),
-			IsPublic: true,
-		},
 		"void": &TypeInfo{
 			Name:     "void",
-			Type:     llvm.VoidType(),
+			Type:     llvm.Int8Type(),
 			IsPublic: true,
 		},
 	}
@@ -264,7 +259,7 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 		if isParamVoidPtr && !isArgVoidPtr {
 			arg = Cast(arg, &TypeInfo{
 				Type: voidptr,
-    			})
+			})
 		}
 
 		vals = append(vals, arg)
