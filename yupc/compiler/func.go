@@ -170,8 +170,19 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 
 func (v *AstVisitor) VisitFuncCallArgList(ctx *parser.FuncCallArgListContext) any {
 	var args []any
-	for _, expr := range ctx.AllExpression() {
-		args = append(args, v.Visit(expr))
+	for i, expr := range ctx.AllExpression() {
+		arg := v.Visit(expr)
+		switch arg.(type) {
+		case llvm.Type:
+		case llvm.Value:
+			fn := CompilationUnits.Peek().Functions[*FuncCallNameStack.Peek()]
+			paramType := fn.Params[i].Type.Type
+			if paramType == llvm.PointerType(llvm.Int8Type(), 0) {
+				arg = Cast(arg.(llvm.Value), fn.Params[i].Type.Type)
+			}
+		}
+
+		args = append(args, arg)
 	}
 
 	return args
@@ -236,8 +247,11 @@ var BuiltInTypeFunctions map[string]BuiltInTypeFunction = map[string]BuiltInType
 	},
 }
 
+var FuncCallNameStack = NewStack[string]()
+
 func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 	name := ctx.Identifier().GetText()
+	FuncCallNameStack.Push(&name)
 	var args []any
 	if ctx.FuncCallArgList() != nil {
 		args = v.Visit(ctx.FuncCallArgList()).([]any)
@@ -269,6 +283,8 @@ func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 		for _, a := range args {
 			valueArgs = append(valueArgs, a.(llvm.Value))
 		}
+
+		FuncCallNameStack.Pop()
 
 		return CompilationUnits.Peek().Builder.CreateCall(f.Type().ReturnType(), f, valueArgs, "")
 	}

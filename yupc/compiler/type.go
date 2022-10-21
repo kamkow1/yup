@@ -254,8 +254,17 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	}
 
 	var vals []llvm.Value
-	for _, expr := range ctx.AllExpression() {
-		vals = append(vals, v.Visit(expr).(llvm.Value))
+	for i, expr := range ctx.AllExpression() {
+		arg := v.Visit(expr).(llvm.Value)
+		voidptr := llvm.PointerType(llvm.Int8Type(), 0)
+		isParamVoidPtr := strct.Fields[i].Type.Type == voidptr
+		isArgVoidPtr := arg.Type() == voidptr
+
+		if isParamVoidPtr && !isArgVoidPtr {
+			arg = Cast(arg, voidptr)
+		}
+
+		vals = append(vals, arg)
 	}
 
 	return llvm.ConstNamedStruct(strct.Type, vals)
