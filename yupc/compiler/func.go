@@ -180,7 +180,7 @@ func (v *AstVisitor) VisitFuncCallArgList(ctx *parser.FuncCallArgListContext) an
 			if ok { // only if it's a user-defined function
 				if len(fn.Params) > 0 {
 					paramType := fn.Params[i].Type.Type
-					if paramType == llvm.PointerType(llvm.Int8Type(), 0) {
+					for paramType != arg.(llvm.Value).Type() {
 						arg = Cast(arg.(llvm.Value), fn.Params[i].Type)
 					}
 				}
