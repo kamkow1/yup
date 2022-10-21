@@ -47,11 +47,15 @@ func ImportModule(name string) {
 	mod := unit.Module
 
 	for name, typ := range unit.Types {
-		CompilationUnits.Peek().Types[name] = typ
+		if typ.IsPublic {
+			CompilationUnits.Peek().Types[name] = typ
+		}
 	}
 
 	for name, strct := range unit.Structs {
-		CompilationUnits.Peek().Structs[name] = strct
+		if strct.IsPublic {
+			CompilationUnits.Peek().Structs[name] = strct
+		}
 	}
 
 	for name, _ := range unit.Functions {

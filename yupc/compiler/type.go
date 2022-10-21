@@ -8,51 +8,67 @@ import (
 )
 
 type TypeInfo struct {
-	Name string
-	Type llvm.Type
+	Name     string
+	Type     llvm.Type
+	IsPublic bool
 }
 
 func InitTypeMap() map[string]*TypeInfo {
 	return map[string]*TypeInfo{
 		"i1": &TypeInfo{
-			Name: "i1",
-			Type: llvm.Int1Type(),
+			Name:     "i1",
+			Type:     llvm.Int1Type(),
+			IsPublic: true,
 		},
 		"i8": &TypeInfo{
-			Name: "i8",
-			Type: llvm.Int8Type(),
+			Name:     "i8",
+			Type:     llvm.Int8Type(),
+			IsPublic: true,
 		},
 		"i16": &TypeInfo{
-			Name: "i16",
-			Type: llvm.Int16Type(),
+			Name:     "i16",
+			Type:     llvm.Int16Type(),
+			IsPublic: true,
 		},
 		"i32": &TypeInfo{
-			Name: "i32",
-			Type: llvm.Int32Type(),
+			Name:     "i32",
+			Type:     llvm.Int32Type(),
+			IsPublic: true,
 		},
 		"i64": &TypeInfo{
-			Name: "i64",
-			Type: llvm.Int64Type(),
+			Name:     "i64",
+			Type:     llvm.Int64Type(),
+			IsPublic: true,
 		},
 		"f32": &TypeInfo{
-			Name: "f32",
-			Type: llvm.FloatType(),
+			Name:     "f32",
+			Type:     llvm.FloatType(),
+			IsPublic: true,
 		},
 		"f64": &TypeInfo{
-			Name: "f64",
-			Type: llvm.DoubleType(),
+			Name:     "f64",
+			Type:     llvm.DoubleType(),
+			IsPublic: true,
 		},
 		"f128": &TypeInfo{
-			Name: "f128",
-			Type: llvm.FP128Type(),
+			Name:     "f128",
+			Type:     llvm.FP128Type(),
+			IsPublic: true,
 		},
 		"x64fp80": &TypeInfo{
-			Name: "x64fp80",
-			Type: llvm.X86FP80Type(),
+			Name:     "x64fp80",
+			Type:     llvm.X86FP80Type(),
+			IsPublic: true,
 		},
 		"voidbyte": &TypeInfo{
-			Name: "voidbyte",
-			Type: llvm.Int8Type(),
+			Name:     "voidbyte",
+			Type:     llvm.Int8Type(),
+			IsPublic: true,
+		},
+		"void": &TypeInfo{
+			Name:     "void",
+			Type:     llvm.VoidType(),
+			IsPublic: true,
 		},
 	}
 }
@@ -146,9 +162,10 @@ type Field struct {
 }
 
 type Structure struct {
-	Name   string
-	Fields []*Field
-	Type   *TypeInfo
+	Name     string
+	Fields   []*Field
+	Type     *TypeInfo
+	IsPublic bool
 }
 
 func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
@@ -160,11 +177,13 @@ func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
 
 func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext) any {
 	name := ctx.Identifier().GetText()
+	ispub := ctx.KeywordPublic() != nil
 	c := CompilationUnits.Peek().Module.Context()
 	structType := c.StructCreateNamed(name)
 	CompilationUnits.Peek().Types[name] = &TypeInfo{
-		Name: name,
-		Type: structType,
+		Name:     name,
+		Type:     structType,
+		IsPublic: ispub,
 	}
 
 	var fields []*Field
@@ -180,8 +199,9 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	structType.StructSetBody(fieldTypes, false)
 
 	strct := Structure{
-		Name:   name,
-		Fields: fields,
+		Name:     name,
+		Fields:   fields,
+		IsPublic: ispub,
 		Type: &TypeInfo{
 			Name: name,
 			Type: structType,
@@ -228,7 +248,10 @@ func (v *AstVisitor) VisitStructInitExpression(ctx *parser.StructInitExpressionC
 
 func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	name := ctx.Identifier().GetText()
-	strct := CompilationUnits.Peek().Types[name]
+	strct, ok := CompilationUnits.Peek().Types[name]
+	if !ok {
+		LogError("tried to initialize an unknown struct type: `%s`", name)
+	}
 
 	var vals []llvm.Value
 	for _, expr := range ctx.AllExpression() {
