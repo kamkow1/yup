@@ -46,19 +46,12 @@ func ImportModule(name string) {
 	unit := CompilationUnits.Pop()
 	mod := unit.Module
 
-	/*for name, typ := range unit.Types {
+	for name, typ := range unit.Types {
 		CompilationUnits.Peek().Types[name] = typ
-	}*/
+	}
 
 	for name, strct := range unit.Structs {
 		CompilationUnits.Peek().Structs[name] = strct
-		CompilationUnits.Peek().Types[name] = strct.Type
-	}
-
-	for name, typ := range unit.Types {
-		if _, ok := CompilationUnits.Peek().Types[name]; !ok {
-			CompilationUnits.Peek().Types[name] = typ
-		}
 	}
 
 	for name, _ := range unit.Functions {

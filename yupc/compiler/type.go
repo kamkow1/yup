@@ -7,22 +7,57 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func InitTypeMap() map[string]llvm.Type {
-	return map[string]llvm.Type{
-		"i1":      llvm.Int1Type(),
-		"i8":      llvm.Int8Type(),
-		"i16":     llvm.Int16Type(),
-		"i32":     llvm.Int32Type(),
-		"i64":     llvm.Int64Type(),
-		"f32":     llvm.FloatType(),
-		"f64":     llvm.DoubleType(),
-		"f128":    llvm.FP128Type(),
-		"x64fp80": llvm.X86FP80Type(),
-		"void":    llvm.VoidType(),
+type TypeInfo struct {
+	Name string
+	Type llvm.Type
+}
+
+func InitTypeMap() map[string]*TypeInfo {
+	return map[string]*TypeInfo{
+		"i1": &TypeInfo{
+			Name: "i1",
+			Type: llvm.Int1Type(),
+		},
+		"i8": &TypeInfo{
+			Name: "i8",
+			Type: llvm.Int8Type(),
+		},
+		"i16": &TypeInfo{
+			Name: "i16",
+			Type: llvm.Int16Type(),
+		},
+		"i32": &TypeInfo{
+			Name: "i32",
+			Type: llvm.Int32Type(),
+		},
+		"i64": &TypeInfo{
+			Name: "i64",
+			Type: llvm.Int64Type(),
+		},
+		"f32": &TypeInfo{
+			Name: "f32",
+			Type: llvm.FloatType(),
+		},
+		"f64": &TypeInfo{
+			Name: "f64",
+			Type: llvm.DoubleType(),
+		},
+		"f128": &TypeInfo{
+			Name: "f128",
+			Type: llvm.FP128Type(),
+		},
+		"x64fp80": &TypeInfo{
+			Name: "x64fp80",
+			Type: llvm.X86FP80Type(),
+		},
+		"void": &TypeInfo{
+			Name: "void",
+			Type: llvm.PointerType(llvm.Int8Type(), 0),
+		},
 	}
 }
 
-func GetTypeFromName(name string) llvm.Type {
+func GetTypeFromName(name string) *TypeInfo {
 	typ, ok := CompilationUnits.Peek().Types[name]
 	if !ok {
 		LogError("unknown type: %s", name)
@@ -41,17 +76,19 @@ func reverseTypeExtList(array []parser.ITypeExtContext) []parser.ITypeExtContext
 
 func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 
-	var typ llvm.Type
+	var typ *TypeInfo
 	if ctx.Identifier() != nil {
 		typ = GetTypeFromName(ctx.Identifier().GetText())
 	} else if ctx.StructType() != nil {
 		strtp := ctx.StructType().(*parser.StructTypeContext)
 		var types []llvm.Type
 		for _, tp := range strtp.AllTypeName() {
-			types = append(types, v.Visit(tp).(llvm.Type))
+			types = append(types, v.Visit(tp).(*TypeInfo).Type)
 		}
 
-		typ = llvm.StructType(types, false)
+		typ = &TypeInfo{
+			Type: llvm.StructType(types, false),
+		}
 	} else if ctx.FuncType() != nil {
 		fntp := ctx.FuncType().(*parser.FuncTypeContext)
 
@@ -75,22 +112,28 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 				break
 			}
 
-			paramTypes = append(paramTypes, pt.Type)
+			paramTypes = append(paramTypes, pt.Type.Type)
 		}
 
-		typ = llvm.FunctionType(retType, paramTypes, isva)
+		typ = &TypeInfo{
+			Type: llvm.FunctionType(retType, paramTypes, isva),
+		}
 	}
 
 	for _, ext := range reverseTypeExtList(ctx.AllTypeExt()) {
 		extension := ext.(*parser.TypeExtContext)
 		if extension.SymbolAsterisk() != nil {
-			typ = llvm.PointerType(typ, 0)
+			typ = &TypeInfo{
+				Type: llvm.PointerType(typ.Type, 0),
+			}
 		}
 
 		if extension.ArrayTypeExt() != nil {
 			extctx := extension.ArrayTypeExt().(*parser.ArrayTypeExtContext)
 			size, _ := strconv.Atoi(extctx.ValueInteger().GetText())
-			typ = llvm.ArrayType(typ, size)
+			typ = &TypeInfo{
+				Type: llvm.ArrayType(typ.Type, size),
+			}
 		}
 	}
 
@@ -99,19 +142,19 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 
 type Field struct {
 	Name string
-	Type llvm.Type
+	Type *TypeInfo
 }
 
 type Structure struct {
 	Name   string
-	Fields []Field
-	Type   llvm.Type
+	Fields []*Field
+	Type   *TypeInfo
 }
 
 func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
-	return Field{
+	return &Field{
 		Name: ctx.Identifier().GetText(),
-		Type: v.Visit(ctx.TypeAnnot()).(llvm.Type),
+		Type: v.Visit(ctx.TypeAnnot()).(*TypeInfo),
 	}
 }
 
@@ -119,16 +162,19 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	name := ctx.Identifier().GetText()
 	c := CompilationUnits.Peek().Module.Context()
 	structType := c.StructCreateNamed(name)
-	CompilationUnits.Peek().Types[name] = structType
+	CompilationUnits.Peek().Types[name] = &TypeInfo{
+		Name: name,
+		Type: structType,
+	}
 
-	var fields []Field
+	var fields []*Field
 	for _, fld := range ctx.AllStructField() {
-		fields = append(fields, v.Visit(fld).(Field))
+		fields = append(fields, v.Visit(fld).(*Field))
 	}
 
 	var fieldTypes []llvm.Type
 	for _, fld := range fields {
-		fieldTypes = append(fieldTypes, fld.Type)
+		fieldTypes = append(fieldTypes, fld.Type.Type)
 	}
 
 	structType.StructSetBody(fieldTypes, false)
@@ -136,7 +182,10 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	strct := Structure{
 		Name:   name,
 		Fields: fields,
-		Type:   structType,
+		Type: &TypeInfo{
+			Name: name,
+			Type: structType,
+		},
 	}
 
 	CompilationUnits.Peek().Structs[name] = strct
@@ -144,10 +193,13 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 }
 
 func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationContext) any {
-	ogType := v.Visit(ctx.TypeName()).(llvm.Type)
+	original := v.Visit(ctx.TypeName()).(llvm.Type)
 	name := ctx.Identifier().GetText()
 
-	CompilationUnits.Peek().Types[name] = ogType
+	CompilationUnits.Peek().Types[name] = &TypeInfo{
+		Name: name,
+		Type: original,
+	}
 
 	return nil
 }
@@ -183,7 +235,7 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 		vals = append(vals, v.Visit(expr).(llvm.Value))
 	}
 
-	return llvm.ConstNamedStruct(strct, vals)
+	return llvm.ConstNamedStruct(strct.Type, vals)
 }
 
 func (v *AstVisitor) VisitConstStructInitExpression(ctx *parser.ConstStructInitExpressionContext) any {

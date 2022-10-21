@@ -20,7 +20,7 @@ type FuncParam struct {
 	Name     string
 	IsVarArg bool
 	IsConst  bool
-	Type     llvm.Type
+	Type     *TypeInfo
 }
 
 type Function struct {
@@ -38,14 +38,14 @@ func (v *AstVisitor) VisitFuncParamList(ctx *parser.FuncParamListContext) any {
 			params = append(params, FuncParam{
 				IsVarArg: true,
 				Name:     "vargs",
-				Type:     llvm.Type{},
+				Type:     nil,
 			})
 		} else {
 			params = append(params, FuncParam{
 				IsConst:  pp.KeywordConst() != nil,
 				IsVarArg: false,
 				Name:     pp.Identifier().GetText(),
-				Type:     v.Visit(p).(llvm.Type),
+				Type:     v.Visit(p).(*TypeInfo),
 			})
 		}
 	}
@@ -62,11 +62,13 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 		params = make([]FuncParam, 0)
 	}
 
-	var returnType llvm.Type
+	var returnType *TypeInfo
 	if ctx.TypeName() != nil {
-		returnType = v.Visit(ctx.TypeName()).(llvm.Type)
+		returnType = v.Visit(ctx.TypeName()).(*TypeInfo)
 	} else {
-		returnType = llvm.VoidType()
+		returnType = &TypeInfo{
+			Type: llvm.VoidType(),
+		}
 	}
 
 	var types []llvm.Type
@@ -77,10 +79,10 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 			continue
 		}
 
-		types = append(types, fp.Type)
+		types = append(types, fp.Type.Type)
 	}
 
-	funcType := llvm.FunctionType(returnType, types, isVarArg)
+	funcType := llvm.FunctionType(returnType.Type, types, isVarArg)
 	function := llvm.AddFunction(CompilationUnits.Peek().Module, name, funcType)
 
 	for i, pt := range params {
