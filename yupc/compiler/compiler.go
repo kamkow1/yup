@@ -17,6 +17,7 @@ type CompilerInfo struct {
 	Verbose      bool
 	PrintModule  bool
 	StaticLibs   []string
+	OutName 	 string
 }
 
 func NewCompilerInfo() *CompilerInfo {

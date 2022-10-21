@@ -10,26 +10,11 @@ var compileCmd = &cobra.Command{
 	Use:   "compile",
 	Short: "compiles a single source file and it's dependencies",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		llvm.InitializeAllTargetInfos()
 		llvm.InitializeAllTargets()
 		llvm.InitializeAllTargetMCs()
 		llvm.InitializeAllAsmParsers()
 		llvm.InitializeAllAsmPrinters()
-
-		if verb, _ := cmd.Flags().GetBool("verbose"); verb {
-			compiler.GlobalCompilerInfo.Verbose = verb
-		}
-
-		if printmod, _ := cmd.Flags().GetBool("printmod"); printmod {
-			compiler.GlobalCompilerInfo.PrintModule = printmod
-		}
-
-		if libs, _ := cmd.Flags().GetStringArray("staticlibs"); len(libs) > 0 {
-			for lib, _ := range libs {
-				compiler.GlobalCompilerInfo.StaticLibs = append(compiler.GlobalCompilerInfo.StaticLibs, libs[lib])
-			}
-		}
 
 		for _, fp := range args {
 			compiler.ProcessPathRecursively(fp)
@@ -38,17 +23,19 @@ var compileCmd = &cobra.Command{
 			modname := compiler.CompilationUnits.Peek().ModuleName
 			objpath := compiler.DumpObjectFile(modname)
 
-			if execname, _ := cmd.Flags().GetString("output"); execname != "" {
-				compiler.MakeExec(objpath, execname)
-			}
+			compiler.MakeExec(objpath, compiler.GlobalCompilerInfo.OutName)
 		}
 	},
 }
 
 func init() {
-	compileCmd.PersistentFlags().String("output", "yup.out", "outputs an executable")
-	compileCmd.PersistentFlags().Bool("verbose", false, "enables verbose output from external tools")
-	compileCmd.PersistentFlags().Bool("printmod", false, "prints module for debug purposes")
-	compileCmd.PersistentFlags().StringArray("staticlibs", make([]string, 0), "adds a static library to link against")
+	compileCmd.Flags().StringVarP(&compiler.GlobalCompilerInfo.OutName,
+		"output", "o", "yup_program", "outputs an executable")
+	compileCmd.Flags().BoolVarP(&compiler.GlobalCompilerInfo.Verbose,
+		"verbose", "v", false, "enables verbose output from external tools")
+	compileCmd.Flags().BoolVarP(&compiler.GlobalCompilerInfo.PrintModule,
+		"print-module", "p", false, "prints module for debug purposes")
+	compileCmd.Flags().StringArrayVarP(&compiler.GlobalCompilerInfo.StaticLibs,
+		"static-libs", "l", make([]string, 0), "adds a static library to link against")
 	rootCmd.AddCommand(compileCmd)
 }
