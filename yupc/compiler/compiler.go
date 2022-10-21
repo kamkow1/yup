@@ -11,6 +11,22 @@ import (
 
 type any = interface{}
 
+func RunCompileJob(args []string) {
+	llvm.InitializeAllTargetInfos()
+	llvm.InitializeAllTargets()
+	llvm.InitializeAllTargetMCs()
+	llvm.InitializeAllAsmParsers()
+	llvm.InitializeAllAsmPrinters()
+
+	for _, fp := range args {
+		ProcessPathRecursively(fp)
+		WriteBCFile(GetBCWriteData())
+		modname := CompilationUnits.Peek().ModuleName
+		objpath := DumpObjectFile(modname)
+		MakeExec(objpath, GlobalCompilerInfo.OutName)
+	}	
+}
+
 type CompilerInfo struct {
 	Line         int
 	TargetTriple string
