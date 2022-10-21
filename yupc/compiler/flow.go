@@ -49,8 +49,11 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 
 	if ctx.ConditionBasedLoop() != nil {
 		cond0 := v.Visit(ctx.ConditionBasedLoop()).(llvm.Value)
-		if cond0.Type() != llvm.Int1Type() {
-			cond0 = Cast(cond0, llvm.Int1Type())	
+		i1typeinfo := &TypeInfo{
+			Type: llvm.Int1Type(),	
+		}
+		if cond0.Type() != llvm.Int1Type() {	
+			cond0 = Cast(cond0, i1typeinfo)
 		}
 		
 		condValue := CompilationUnits.Peek().Builder.CreateAlloca(cond0.Type(), "cond_value")
@@ -68,7 +71,7 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 		if !hasTerminated {
 			cond1 := v.Visit(ctx.ConditionBasedLoop()).(llvm.Value)
 			if cond1.Type() != llvm.Int1Type() {
-				cond1 = Cast(cond1, llvm.Int1Type())
+				cond1 = Cast(cond1, i1typeinfo)
 			}
 			
 			CompilationUnits.Peek().Builder.CreateStore(cond1, condValue)
@@ -158,7 +161,11 @@ func (v *AstVisitor) VisitIfElseBlock(ctx *parser.IfElseBlockContext) any {
 func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 	cond := v.Visit(ctx.Expression()).(llvm.Value)
 	if cond.Type() != llvm.Int1Type() {
-		cond = Cast(cond, llvm.Int1Type())
+		i1typeinfo := &TypeInfo{
+			Type: llvm.Int1Type(),
+		}
+		
+		cond = Cast(cond, i1typeinfo)
 	}
 
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()

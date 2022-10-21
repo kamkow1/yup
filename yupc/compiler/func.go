@@ -12,10 +12,6 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-// ----------------------
-// User-defined functions
-// ----------------------
-
 type FuncParam struct {
 	Name     string
 	IsVarArg bool
@@ -55,6 +51,11 @@ func (v *AstVisitor) VisitFuncParamList(ctx *parser.FuncParamListContext) any {
 
 func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 	name := ctx.Identifier().GetText()
+	_, ok := CompilationUnits.Peek().Functions[name]
+	if ok {
+		LogError("function `%s` already exists in this module", name)
+	}
+
 	var params []FuncParam
 	if ctx.FuncParamList() != nil {
 		params = v.Visit(ctx.FuncParamList()).([]FuncParam)
@@ -175,10 +176,14 @@ func (v *AstVisitor) VisitFuncCallArgList(ctx *parser.FuncCallArgListContext) an
 		switch arg.(type) {
 		case llvm.Type:
 		case llvm.Value:
-			fn := CompilationUnits.Peek().Functions[*FuncCallNameStack.Peek()]
-			paramType := fn.Params[i].Type.Type
-			if paramType == llvm.PointerType(llvm.Int8Type(), 0) {
-				arg = Cast(arg.(llvm.Value), fn.Params[i].Type.Type)
+			fn, ok := CompilationUnits.Peek().Functions[*FuncCallNameStack.Peek()]
+			if ok { // only if it's a user-defined function
+				if len(fn.Params) > 0 {
+					paramType := fn.Params[i].Type.Type
+					if paramType == llvm.PointerType(llvm.Int8Type(), 0) {
+						arg = Cast(arg.(llvm.Value), fn.Params[i].Type)
+					}
+				}
 			}
 		}
 
@@ -192,13 +197,13 @@ type BuiltInValueFunction func([]any) llvm.Value
 
 var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInValueFunction{
 	"cast": func(args []any) llvm.Value {
-		return Cast(args[0].(llvm.Value), args[1].(llvm.Type))
+		return Cast(args[0].(llvm.Value), args[1].(*TypeInfo))
 	},
-	"size_of": func(args []any) llvm.Value {
+	"sizeof": func(args []any) llvm.Value {
 		var result llvm.Value
 		switch t := args[0].(type) {
-		case llvm.Type:
-			result = llvm.SizeOf(t)
+		case *TypeInfo:
+			result = llvm.SizeOf(t.Type)
 		case llvm.Value:
 			result = llvm.SizeOf(t.Type())
 		}
@@ -235,14 +240,14 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 		cmd := exec.Command("clang", cmdargs...)
 
 		err := cmd.Run()
-		return llvm.ConstInt(llvm.Int1Type(), BoolToInt(err != nil), false)
+		return llvm.ConstInt(llvm.Int1Type(), boolToInt(err != nil), false)
 	},
 }
 
 type BuiltInTypeFunction func([]any) llvm.Type
 
 var BuiltInTypeFunctions map[string]BuiltInTypeFunction = map[string]BuiltInTypeFunction{
-	"type_of": func(args []any) llvm.Type {
+	"typeof": func(args []any) llvm.Type {
 		return args[0].(llvm.Value).Type()
 	},
 }
@@ -299,7 +304,9 @@ func (v *AstVisitor) VisitFuncReturn(ctx *parser.FuncReturnContext) any {
 	if ctx.AllExpression() != nil && len(ctx.AllExpression()) == 1 {
 		value := v.Visit(ctx.Expression(0)).(llvm.Value)
 		if value.Type() != fncReturnType {
-			value = Cast(value, fncReturnType)
+			value = Cast(value, &TypeInfo{
+    				Type: fncReturnType,
+    			})
 		}
 
 		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
@@ -310,7 +317,9 @@ func (v *AstVisitor) VisitFuncReturn(ctx *parser.FuncReturnContext) any {
 		for _, expr := range ctx.AllExpression() {
 			val := v.Visit(expr).(llvm.Value)
 			if val.Type().TypeKind() != fncReturnType.TypeKind() {
-				val = Cast(val, fncReturnType)
+				val = Cast(val, &TypeInfo{
+					Type: fncReturnType,
+    				})
 			}
 
 			vals = append(vals, val)
@@ -322,20 +331,6 @@ func (v *AstVisitor) VisitFuncReturn(ctx *parser.FuncReturnContext) any {
 	return CompilationUnits.Peek().Builder.CreateBr(*function.ExitBlock)
 }
 
-func Cast(value llvm.Value, typ llvm.Type) llvm.Value {
-	if value.Type().TypeKind() == llvm.IntegerTypeKind && typ.TypeKind() == llvm.IntegerTypeKind {
-		return CompilationUnits.Peek().Builder.CreateIntCast(value, typ, "")
-	} else if value.Type().TypeKind() == llvm.IntegerTypeKind && typ.TypeKind() == llvm.PointerTypeKind {
-		return CompilationUnits.Peek().Builder.CreateIntToPtr(value, typ, "")
-	} else if value.Type().TypeKind() == llvm.PointerTypeKind && typ.TypeKind() == llvm.IntegerTypeKind {
-		return CompilationUnits.Peek().Builder.CreatePtrToInt(value, typ, "")
-	} else if value.Type().TypeKind() == llvm.PointerTypeKind && typ.TypeKind() == llvm.PointerTypeKind {
-		return CompilationUnits.Peek().Builder.CreatePointerCast(value, typ, "")
-	} else {
-		return CompilationUnits.Peek().Builder.CreateBitCast(value, typ, "")
-	}
-}
-
-func BoolToInt(a bool) uint64 {
+func boolToInt(a bool) uint64 {
 	return *(*uint64)(unsafe.Pointer(&a)) & 1
 }

@@ -67,7 +67,12 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 		for _, ta := range TrackedAllocsStack.Peek().Units {
 			targetData := llvm.NewTargetData(CompilationUnits.Peek().Module.DataLayout())
 			size := llvm.ConstInt(llvm.Int64Type(), targetData.TypeAllocSize(ta.Type().ElementType()), false)
-			args := []llvm.Value{size, Cast(*ta, llvm.PointerType(llvm.Int8Type(), 0))}
+
+			typeinfo := &TypeInfo{
+				Type: llvm.PointerType(llvm.Int8Type(), 0),
+			}
+			args := []llvm.Value{size, Cast(*ta, typeinfo)}
+
 			CompilationUnits.Peek().Builder.CreateCall(llvm.VoidType(), llvmLifeTimeEnd, args, "")
 		}
 	}

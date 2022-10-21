@@ -10,7 +10,9 @@ func (v *AstVisitor) VisitBinopExpr(ctx *parser.BinopExprContext) any {
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
 	if v0.Type() != v1.Type() {
-		v1 = Cast(v1, v0.Type())
+		v1 = Cast(v1, &TypeInfo{
+			Type: v0.Type(),
+    		})
 	}
 
 	binop := ctx.Binop().(*parser.BinopContext)
@@ -92,7 +94,9 @@ func (v *AstVisitor) VisitCompExpr(ctx *parser.CompExprContext) any {
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
 	if v0.Type() != v1.Type() {
-		v1 = Cast(v1, v0.Type())
+		v1 = Cast(v1, &TypeInfo{
+    			Type: v0.Type(),
+    		})
 	}
 
 	v1tk := v1.Type().TypeKind()

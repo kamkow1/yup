@@ -32,7 +32,9 @@ func CreateAllocation(typ llvm.Type) llvm.Value {
 	size := llvm.ConstInt(llvm.Int64Type(), targetData.TypeAllocSize(typ), false)
 	args := []llvm.Value{
 		size,
-		Cast(alloca, llvm.PointerType(llvm.Int8Type(), 0)),
+		Cast(alloca, &TypeInfo{
+    		     Type: llvm.PointerType(llvm.Int8Type(), 0),
+    		}),
 	}
 
 	CompilationUnits.Peek().Builder.CreateCall(lifetimeStart.Type().ReturnType(), lifetimeStart, args, "")
@@ -96,7 +98,9 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 		}
 
 		if isInit && hasAnnot && value.Type() != typ {
-			value = Cast(value, typ)
+			value = Cast(value, &TypeInfo{
+				Type: typ,
+    			})
 		}
 
 		if isGlobal {
@@ -138,6 +142,10 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 func (v *AstVisitor) VisitIdentifierExpr(ctx *parser.IdentifierExprContext) any {
 	name := ctx.Identifier().GetText()
 
+	if typ, ok := CompilationUnits.Peek().Types[name]; ok {
+		return typ
+	}
+
 	var val llvm.Value
 	if !CompilationUnits.Peek().Module.NamedFunction(name).IsNil() {
 		val = CompilationUnits.Peek().Module.NamedFunction(name)
@@ -163,8 +171,8 @@ func (v *AstVisitor) VisitAssign(ctx *parser.AssignContext) any {
 	value := v.Visit(ctx.VarValue()).(llvm.Value)
 	vr.IsUsed = true
 
-	if value.Type() != vr.Value.AllocatedType() {
-		LogError("cannot assign `%s` to `%s`", value.Type().String(), vr.Value.AllocatedType().String())
+	if value.Type() == vr.Value.Type() {
+		LogError("cannot assign type `%s` to `%s`", value.Type().String(), vr.Value.AllocatedType().String())
 	}
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, vr.Value)
@@ -173,6 +181,10 @@ func (v *AstVisitor) VisitAssign(ctx *parser.AssignContext) any {
 func (v *AstVisitor) VisitExprAssign(ctx *parser.ExprAssignContext) any {
 	expr := v.Visit(ctx.Expression()).(llvm.Value)
 	value := v.Visit(ctx.VarValue()).(llvm.Value)
+
+	if expr.Type().ElementType() != value.Type() {
+    		LogError("cannot assign type `%s` to `%s`", expr.Type().String(), value.Type().String())
+	}
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, expr)
 }

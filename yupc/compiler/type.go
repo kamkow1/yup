@@ -257,11 +257,14 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	for i, expr := range ctx.AllExpression() {
 		arg := v.Visit(expr).(llvm.Value)
 		voidptr := llvm.PointerType(llvm.Int8Type(), 0)
-		isParamVoidPtr := strct.Fields[i].Type.Type == voidptr
+		base := CompilationUnits.Peek().Structs[name]
+		isParamVoidPtr := base.Fields[i].Type.Type == voidptr
 		isArgVoidPtr := arg.Type() == voidptr
 
 		if isParamVoidPtr && !isArgVoidPtr {
-			arg = Cast(arg, voidptr)
+			arg = Cast(arg, &TypeInfo{
+				Type: voidptr,
+    			})
 		}
 
 		vals = append(vals, arg)
@@ -299,4 +302,29 @@ func GetStructFieldPtr(strct llvm.Value, fieldname string) llvm.Value {
 	}
 
 	return field
+}
+
+func Cast(value llvm.Value, typ *TypeInfo) llvm.Value {
+	valtk := value.Type().TypeKind()
+	typtk := typ.Type.TypeKind()
+	inttk := llvm.IntegerTypeKind
+	ptrtk := llvm.PointerTypeKind
+
+	if valtk == inttk && typtk == inttk {
+		return CompilationUnits.Peek().Builder.CreateIntCast(value, typ.Type, "")
+	}
+
+	if valtk == inttk && typtk == ptrtk {
+		return CompilationUnits.Peek().Builder.CreateIntToPtr(value, typ.Type, "")
+	}
+
+	if valtk == ptrtk && typtk == inttk {
+		return CompilationUnits.Peek().Builder.CreatePtrToInt(value, typ.Type, "")
+	}
+
+	if valtk == ptrtk && typtk == ptrtk {
+		return CompilationUnits.Peek().Builder.CreatePointerCast(value, typ.Type, "")
+	}
+
+	return CompilationUnits.Peek().Builder.CreateBitCast(value, typ.Type, "")
 }
