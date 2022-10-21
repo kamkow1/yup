@@ -5,6 +5,27 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
+func (v *AstVisitor) VisitBinopExpr(ctx *parser.BinopExprContext) any {
+	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
+	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
+
+	if v0.Type() != v1.Type() {
+		v1 = Cast(v1, v0.Type())
+	}
+
+	binop := ctx.Binop().(*parser.BinopContext)
+
+	if binop.SymbolPlus() != nil {
+		return CompilationUnits.Peek().Builder.CreateAdd(v0, v1, "")
+	} else if binop.SymbolMinus() != nil {
+		return CompilationUnits.Peek().Builder.CreateSub(v0, v1, "")
+	} else if binop.SymbolAsterisk() != nil {
+		return CompilationUnits.Peek().Builder.CreateMul(v0, v1, "")
+	} else {
+		return CompilationUnits.Peek().Builder.CreateFDiv(v0, v1, "")
+	}
+}
+
 func CastIntToFloatIfNeeded(v0 llvm.Value, v1 llvm.Value) (llvm.Value, llvm.Value) {
 	if v0.Type().TypeKind() == llvm.IntegerTypeKind {
 		v0 = CompilationUnits.Peek().Builder.CreateSIToFP(v0, llvm.FloatType(), "")

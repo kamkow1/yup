@@ -12,6 +12,33 @@ type LocalVariable struct {
 	IsUsed  bool
 }
 
+func CreateAllocation(typ llvm.Type) llvm.Value {
+	alloca := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
+	TrackAllocation(alloca)
+
+	ltsname := "llvm.lifetime.start"
+	lifetimeStart := CompilationUnits.Peek().Module.NamedFunction(ltsname)
+	if lifetimeStart.IsNil() {
+		pts := []llvm.Type{
+			llvm.Int64Type(),
+			llvm.PointerType(llvm.Int8Type(), 0),
+		}
+
+		ft := llvm.FunctionType(llvm.VoidType(), pts, false)
+		lifetimeStart = llvm.AddFunction(CompilationUnits.Peek().Module, ltsname, ft)
+	}
+
+	targetData := llvm.NewTargetData(CompilationUnits.Peek().Module.DataLayout())
+	size := llvm.ConstInt(llvm.Int64Type(), targetData.TypeAllocSize(typ), false)
+	args := []llvm.Value{
+		size,
+		Cast(alloca, llvm.PointerType(llvm.Int8Type(), 0)),
+	}
+
+	CompilationUnits.Peek().Builder.CreateCall(lifetimeStart.Type().ReturnType(), lifetimeStart, args, "")
+	return alloca
+}
+
 func FindLocalVariable(name string, i int) LocalVariable {
 
 	var local LocalVariable
@@ -148,4 +175,26 @@ func (v *AstVisitor) VisitExprAssign(ctx *parser.ExprAssignContext) any {
 	value := v.Visit(ctx.VarValue()).(llvm.Value)
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, expr)
+}
+
+func (v *AstVisitor) VisitAddressOf(ctx *parser.AddressOfContext) any {
+	name := ctx.Identifier().GetText()
+	if !CompilationUnits.Peek().Module.NamedFunction(name).IsNil() {
+		return CompilationUnits.Peek().Module.NamedFunction(name)
+	}
+
+	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
+		return CompilationUnits.Peek().Module.NamedGlobal(name)
+	}
+
+	return FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
+}
+
+func (v *AstVisitor) VisitPtrDerefExpr(ctx *parser.PtrDerefExprContext) any {
+	ptr := v.Visit(ctx.Expression()).(llvm.Value)
+	if ptr.Type().TypeKind() != llvm.PointerTypeKind {
+		LogError("cannot dereference a non-pointer type")
+	}
+
+	return CompilationUnits.Peek().Builder.CreateLoad(ptr.Type().ElementType(), ptr, "")
 }

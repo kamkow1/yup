@@ -105,6 +105,7 @@ type Field struct {
 type Structure struct {
 	Name   string
 	Fields []Field
+	Type   llvm.Type
 }
 
 func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
@@ -125,13 +126,6 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 		fields = append(fields, v.Visit(fld).(Field))
 	}
 
-	strct := Structure{
-		Name:   name,
-		Fields: fields,
-	}
-
-	CompilationUnits.Peek().Structs[name] = strct
-
 	var fieldTypes []llvm.Type
 	for _, fld := range fields {
 		fieldTypes = append(fieldTypes, fld.Type)
@@ -139,6 +133,13 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 	structType.StructSetBody(fieldTypes, false)
 
+	strct := Structure{
+		Name:   name,
+		Fields: fields,
+		Type:   structType,
+	}
+
+	CompilationUnits.Peek().Structs[name] = strct
 	return structType
 }
 
@@ -196,4 +197,22 @@ func (v *AstVisitor) VisitConstStructInit(ctx *parser.ConstStructInitContext) an
 	}
 
 	return llvm.ConstStruct(values, false)
+}
+
+func GetStructFieldPtr(strct llvm.Value, fieldname string) llvm.Value {
+	if strct.Type().TypeKind() != llvm.PointerTypeKind {
+		LogError("cannot access struct fields on a non-pointer type: `%s`", strct.Type().String())
+	}
+
+	strctname := strct.Type().ElementType().StructName()
+	baseStruct := CompilationUnits.Peek().Structs[strctname]
+
+	var field llvm.Value
+	for i, f := range baseStruct.Fields {
+		if fieldname == f.Name {
+			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct.Type().ElementType(), strct, i, "")
+		}
+	}
+
+	return field
 }

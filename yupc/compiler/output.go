@@ -3,10 +3,12 @@ package compiler
 import (
 	"os"
 	"os/exec"
+	"path"
+	"strings"
 )
 
 func DumpObjectFile(bcname string) string {
-	objname := FilenameWithoutExtension(bcname) + ".o"
+	objname := strings.TrimSuffix(bcname, path.Ext(bcname)) + ".o"
 
 	cmdargs := []string{"-c", "-o", objname, bcname}
 	if len(GlobalCompilerInfo.StaticLibs) > 0 {

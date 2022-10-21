@@ -33,8 +33,7 @@ var compileCmd = &cobra.Command{
 
 		for _, fp := range args {
 			compiler.ProcessPathRecursively(fp)
-			mod, p := compiler.GetBCWriteData()
-			compiler.WriteBCFile(mod, p)
+			compiler.WriteBCFile(compiler.GetBCWriteData())
 
 			modname := compiler.CompilationUnits.Peek().ModuleName
 			objpath := compiler.DumpObjectFile(modname)

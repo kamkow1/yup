@@ -3,7 +3,10 @@ package compiler
 import (
 	"io/ioutil"
 	"os/exec"
+	"path"
 	"path/filepath"
+	"strings"
+	"unsafe"
 
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
@@ -164,9 +167,9 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 }
 
 func (v *AstVisitor) VisitFuncCallArgList(ctx *parser.FuncCallArgListContext) any {
-	var args []llvm.Value
+	var args []any
 	for _, expr := range ctx.AllExpression() {
-		args = append(args, v.Visit(expr).(llvm.Value))
+		args = append(args, v.Visit(expr))
 	}
 
 	return args
@@ -209,12 +212,12 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 		cc := args[0].(string)
 
 		sf := CompilationUnits.Peek().SourceFile
-		name := filepath.Base(FilenameWithoutExtension(sf)) + "_c" + ".c"
+		name := filepath.Base(strings.TrimSuffix(sf, path.Ext(sf))) + "_c" + ".c"
 
 		ioutil.WriteFile(name, []byte(cc), 0644)
 
 		fpath := filepath.Join(GetCwd(), name)
-		bcname := FilenameWithoutExtension(name) + ".bc"
+		bcname := strings.TrimSuffix(name, path.Ext(name)) + ".bc"
 		cmdargs := []string{"-c", "-emit-llvm", "-o", bcname, "-v", fpath}
 		cmd := exec.Command("clang", cmdargs...)
 
@@ -235,10 +238,7 @@ func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 	name := ctx.Identifier().GetText()
 	var args []any
 	if ctx.FuncCallArgList() != nil {
-		arglist := ctx.FuncCallArgList().(*parser.FuncCallArgListContext)
-		for _, a := range arglist.AllExpression() {
-			args = append(args, v.Visit(a))
-		}
+		args = v.Visit(ctx.FuncCallArgList()).([]any)
 	} else {
 		args = make([]any, 0)
 	}
@@ -316,4 +316,8 @@ func Cast(value llvm.Value, typ llvm.Type) llvm.Value {
 	} else {
 		return CompilationUnits.Peek().Builder.CreateBitCast(value, typ, "")
 	}
+}
+
+func BoolToInt(a bool) uint64 {
+	return *(*uint64)(unsafe.Pointer(&a)) & 1
 }

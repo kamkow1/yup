@@ -85,3 +85,37 @@ func (v *AstVisitor) VisitMultilineString(ctx *parser.MultilineStringContext) an
 
 	return buf
 }
+
+func (v *AstVisitor) VisitConstArray(ctx *parser.ConstArrayContext) any {
+	var vals []llvm.Value
+	for _, expr := range ctx.AllExpression() {
+		val := v.Visit(expr).(llvm.Value)
+		if !val.IsConstant() {
+			LogError("expression `%s` is not a constant", expr.GetText())
+		}
+
+		vals = append(vals, val)
+	}
+
+	typ := vals[0].Type()
+	arrtyp := llvm.ArrayType(typ, len(vals))
+	return llvm.ConstArray(arrtyp, vals)
+}
+
+func (v *AstVisitor) VisitIndexedAccessExpr(ctx *parser.IndexedAccessExprContext) any {
+	var idx llvm.Value
+	for i := 1; i < len(ctx.AllExpression()); i++ {
+		array := v.Visit(ctx.Expression(i - 1)).(llvm.Value)
+		val := v.Visit(ctx.Expression(i)).(llvm.Value)
+
+		var indices []llvm.Value
+		if array.Type().ElementType().TypeKind() == llvm.ArrayTypeKind {
+			indices = append(indices, llvm.ConstInt(llvm.Int64Type(), 0, false))
+		}
+
+		indices = append(indices, val)
+		idx = CompilationUnits.Peek().Builder.CreateGEP(array.Type().ElementType(), array, indices, "")
+	}
+
+	return idx
+}

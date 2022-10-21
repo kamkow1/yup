@@ -1,6 +1,9 @@
 package compiler
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
@@ -278,4 +281,17 @@ func (v *AstVisitor) VisitFile(ctx *parser.FileContext) any {
 
 func (v *AstVisitor) VisitStatement(ctx *parser.StatementContext) any {
 	return v.Visit(ctx.GetChild(0).(antlr.ParseTree))
+}
+
+func LogError(f string, vars ...any) {
+	base := fmt.Sprintf(
+		"%s:%d",
+		CompilationUnits.Peek().SourceFile,
+		GlobalCompilerInfo.Line,
+	)
+
+	msg := fmt.Sprintf(f, vars...)
+
+	fmt.Println(fmt.Sprintf("%s %s", base, msg))
+	os.Exit(1)
 }

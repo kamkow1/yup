@@ -9,16 +9,6 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func GlobalExists(gs []string, g string) bool {
-	for _, gg := range gs {
-		if gg == g {
-			return true
-		}
-	}
-
-	return false
-}
-
 func ImportModule(name string) {
 	elems := strings.Split(name, "/")
 	if p, ok := DefaultImportPaths[elems[0]]; ok {
@@ -56,15 +46,19 @@ func ImportModule(name string) {
 	unit := CompilationUnits.Pop()
 	mod := unit.Module
 
-	for name, typ := range unit.Types {
-		_, ok := CompilationUnits.Peek().Types[name]
-		if !ok {
-			CompilationUnits.Peek().Types[name] = typ
-		}
-	}
+	/*for name, typ := range unit.Types {
+		CompilationUnits.Peek().Types[name] = typ
+	}*/
 
 	for name, strct := range unit.Structs {
 		CompilationUnits.Peek().Structs[name] = strct
+		CompilationUnits.Peek().Types[name] = strct.Type
+	}
+
+	for name, typ := range unit.Types {
+		if _, ok := CompilationUnits.Peek().Types[name]; !ok {
+			CompilationUnits.Peek().Types[name] = typ
+		}
 	}
 
 	for name, _ := range unit.Functions {
