@@ -40,7 +40,7 @@ funcCallArgList: expression (SymbolComma expression)*;
 
 binop: SymbolPlus | SymbolMinus | SymbolAsterisk | SymbolSlash;
 
-addressOf: Identifier SymbolDot SymbolAmpersand;
+addressOf: SymbolAmpersand Identifier;
 
 ifStatement: KeywordIf expression ifThenBlock ifElseBlock?;
 ifThenBlock: codeBlock;
@@ -60,10 +60,10 @@ finalStatement:	statement;
 continueStatement: KeywordContinue;
 breakStatement: KeywordBreak;
 
-structDeclaration: attrList? Identifier SymbolColon KeywordType KeywordStruct SymbolLbrace structField+ SymbolRbrace;
+structDeclaration: attrList? Identifier SymbolColon KeywordStruct SymbolLbrace structField+ SymbolRbrace;
 structField: Identifier typeAnnot SymbolTerminator;
 fieldAssignment: expression SymbolDot Identifier varValue;
-typeAliasDeclaration: Identifier SymbolColon KeywordType KeywordTypeAlias typeName;
+typeAliasDeclaration: Identifier SymbolColon KeywordTypeAlias typeName;
 structInit: Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 constStructInit: SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 

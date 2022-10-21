@@ -50,9 +50,9 @@ func InitTypeMap() map[string]*TypeInfo {
 			Name: "x64fp80",
 			Type: llvm.X86FP80Type(),
 		},
-		"void": &TypeInfo{
-			Name: "void",
-			Type: llvm.PointerType(llvm.Int8Type(), 0),
+		"voidbyte": &TypeInfo{
+			Name: "voidbyte",
+			Type: llvm.Int8Type(),
 		},
 	}
 }
