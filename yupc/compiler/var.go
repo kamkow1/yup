@@ -178,7 +178,9 @@ func (v *AstVisitor) VisitAssign(ctx *parser.AssignContext) any {
 	vr.IsUsed = true
 
 	if value.Type() == vr.Value.Type() {
-		LogError("cannot assign type `%s` to `%s`", value.Type().String(), vr.Value.AllocatedType().String())
+		value = Cast(value, &TypeInfo{
+    			Type: vr.Value.Type(),
+		})
 	}
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, vr.Value)
@@ -189,7 +191,9 @@ func (v *AstVisitor) VisitExprAssign(ctx *parser.ExprAssignContext) any {
 	value := v.Visit(ctx.VarValue()).(llvm.Value)
 
 	if expr.Type().ElementType() != value.Type() {
-    		LogError("cannot assign type `%s` to `%s`", expr.Type().String(), value.Type().String())
+    		value = Cast(value, &TypeInfo{
+        		Type: expr.Type().ElementType(),
+    		})
 	}
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, expr)
