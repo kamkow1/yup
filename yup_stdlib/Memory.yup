@@ -27,7 +27,7 @@ pub realloc_memory: fnc(const ptr: *void, const original_size: i64, const new_si
 		return Null;
 	}
 
-	if 0:i1 {
+	if not ptr {
 		return alloc_memory(new_size);
 	}
 

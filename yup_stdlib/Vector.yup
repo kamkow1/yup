@@ -1,1 +1,36 @@
+import "#std/Memory.yup";
 
+pub Vector: struct {
+	items: **void;
+	cap: i64;
+	size: i64;
+}
+
+pub vec_items: fnc(vec: *Vector) -> **void {
+	return vec.items.*;
+}
+
+pub vec_init: fnc(vec: *Vector) {
+	vec.cap = 4:i64;
+	vec.size = 0:i64;
+	const new_items = alloc_memory(sizeof(*void) * (vec.cap.*));
+	vec.items = new_items;
+}
+
+vec_grow: fnc(vec: *Vector, new_cap: i64) {
+	const new_size = sizeof(*void) * new_cap;
+	const new_items: **void = realloc_memory(cast(vec.items, *void), sizeof(vec.items.*), new_size);
+	if new_items {
+		vec.items = new_items;
+		vec.cap = new_cap;
+	}
+}
+
+pub vec_append: fnc(vec: *Vector, new_item: *void) {
+	if 1:i1 {
+		vec_grow(vec, vec.cap.* * 2);
+	}
+
+	vec.size = vec.size.* + 1;
+	vec.items.*[vec.size.*] = new_item;
+}
