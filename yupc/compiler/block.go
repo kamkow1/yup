@@ -71,6 +71,7 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 			typeinfo := &TypeInfo{
 				Type: llvm.PointerType(llvm.Int8Type(), 0),
 			}
+
 			args := []llvm.Value{size, Cast(*ta, typeinfo)}
 
 			CompilationUnits.Peek().Builder.CreateCall(llvm.VoidType(), llvmLifeTimeEnd, args, "")

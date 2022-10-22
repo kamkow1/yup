@@ -14,7 +14,11 @@ type LocalVariable struct {
 
 func CreateAllocation(typ llvm.Type) llvm.Value {
 	alloca := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
-	TrackAllocation(alloca)
+	if len(CompilationUnits.Peek().Locals) - 1 > 3 {
+		TrackAllocation(alloca)
+
+	}
+
 
 	ltsname := "llvm.lifetime.start"
 	lifetimeStart := CompilationUnits.Peek().Module.NamedFunction(ltsname)
@@ -84,27 +88,29 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 		isGlobal := CompilationUnits.Peek().Builder.GetInsertBlock().IsNil()
 		isConstant := v.Visit(ctx.DeclType()).(bool) // true == const, false == var
 
-		var typ llvm.Type
+		var typ *TypeInfo
 		var value llvm.Value
 		isInit := ctx.VarValue() != nil
 		if isInit {
 			value = v.Visit(ctx.VarValue()).(llvm.Value)
-			typ = value.Type()
+			typ = &TypeInfo{
+    				Type: value.Type(),
+			}
 		}
 
 		hasAnnot := ctx.TypeAnnot() != nil
 		if hasAnnot {
-			typ = v.Visit(ctx.TypeAnnot()).(llvm.Type)
+			typ = v.Visit(ctx.TypeAnnot()).(*TypeInfo)
 		}
 
-		if isInit && hasAnnot && value.Type() != typ {
+		if isInit && hasAnnot && value.Type() != typ.Type {
 			value = Cast(value, &TypeInfo{
-				Type: typ,
+				Type: typ.Type,
     			})
 		}
 
 		if isGlobal {
-			glb := llvm.AddGlobal(CompilationUnits.Peek().Module, typ, name)
+			glb := llvm.AddGlobal(CompilationUnits.Peek().Module, typ.Type, name)
 			if isInit {
 				glb.SetInitializer(value)
 			}
@@ -122,7 +128,7 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 				LogError("local variable %s cannot have an attribute list", name)
 			}
 
-			alloca := CreateAllocation(typ)
+			alloca := CreateAllocation(typ.Type)
 			loclen := len(CompilationUnits.Peek().Locals) - 1
 			CompilationUnits.Peek().Locals[loclen][name] = LocalVariable{
 				Name:    name,
