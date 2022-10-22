@@ -27,7 +27,7 @@ vec_grow: fnc(vec: *Vector, new_cap: i64) {
 }
 
 pub vec_append: fnc(vec: *Vector, new_item: *void) {
-	if 1:i1 {
+	if (vec.cap.*) == (vec.size.*) {
 		vec_grow(vec, vec.cap.* * 2);
 	}
 
