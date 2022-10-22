@@ -153,6 +153,12 @@ func (v *AstVisitor) VisitCompExpr(ctx *parser.CompExprContext) any {
 
 func (v *AstVisitor) VisitNegatedExpression(ctx *parser.NegatedExpressionContext) any {
 	expr := v.Visit(ctx.Expression()).(llvm.Value)
+	if expr.Type() != llvm.Int1Type() {
+		expr = Cast(expr, &TypeInfo{
+    			Type: llvm.Int1Type(),
+		})
+	}
+	
 	ne := CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntNE),
 		expr, llvm.ConstInt(expr.Type(), 0, false), "")
 	xor := CompilationUnits.Peek().Builder.CreateXor(ne,
@@ -165,12 +171,24 @@ func (v *AstVisitor) VisitLogicalAndExpression(ctx *parser.LogicalAndExpressionC
 	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
+	if v0.Type() != v1.Type() {
+		v1 = Cast(v1, &TypeInfo{
+    			Type: v0.Type(),
+		})
+	}
+
 	return CompilationUnits.Peek().Builder.CreateAnd(v0, v1, "")
 }
 
 func (v *AstVisitor) VisitLogicalOrExpression(ctx *parser.LogicalOrExpressionContext) any {
 	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
+
+	if v0.Type() != v1.Type() {
+    		v1 = Cast(v1, &TypeInfo{
+        		  Type: v0.Type(),
+    		})
+	}
 
 	return CompilationUnits.Peek().Builder.CreateOr(v0, v1, "")
 }
