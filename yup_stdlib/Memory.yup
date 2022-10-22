@@ -1,26 +1,41 @@
 
-pub malloc: fnc(size: i64) -> *i8;
-pub free: fnc(ptr: *i8);
-pub memset: fnc(arr: *i8, count: i32, size: i64) -> *i8;
-pub memcpy: fnc(dest: *i8, src: *i8, n: i64) -> *i8;
-pub realloc: fnc(ptr: *i8, sz: i64) -> *i8;
+pub malloc: fnc(size: i64) -> *void;
+pub free: fnc(ptr: *void);
+pub memset: fnc(arr: *void, count: i32, size: i64) -> *void;
+pub memcpy: fnc(dest: *void, src: *i8, n: i64) -> *void;
+pub realloc: fnc(ptr: *void, sz: i64) -> *void;
 
-pub realloc_memory: fnc(ptr: *i8, sz: i64) -> *i8 {
-	return realloc(ptr, sz);
-}
-
-pub alloc_memory: fnc(sz: i64) -> *i8 {
+pub alloc_memory: fnc(const sz: i64) -> *void {
 	return malloc(sz);
 }
 
-pub free_memory: fnc(ptr: *i8) {
+pub free_memory: fnc(const ptr: *void) {
 	free(ptr);
 }
 
-pub init_memory: fnc(arr: *i8, cnt: i32, sz: i64) -> *i8 {
+pub init_memory: fnc(const arr: *void, const cnt: i32, const sz: i64) -> *void {
 	return memset(arr, cnt, sz);
 }
 
-pub copy_memory: fnc(dest: *i8, src: *i8, n: i64) -> *i8 {
+pub copy_memory: fnc(const dest: *void, const src: *i8, const n: i64) -> *void {
 	return memcpy(dest, src, n);
+}
+
+pub realloc_memory: fnc(const ptr: *void, const original_size: i64, const new_size: i64) -> *void {
+	if new_size == 0 {
+		free_memory(ptr);
+		return Null;
+	}
+
+	if 0:i1 {
+		return alloc_memory(new_size);
+	}
+
+	const new_ptr = alloc_memory(new_size);
+	if new_ptr {
+		copy_memory(new_ptr, ptr, original_size);
+		free_memory(ptr);
+	}
+
+	return new_ptr;
 }
