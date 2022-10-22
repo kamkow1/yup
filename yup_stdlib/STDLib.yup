@@ -1,0 +1,4 @@
+import "#std/IO.yup";
+import "#std/Memory.yup";
+import "#std/String.yup";
+import "#std/Boolean.yup";

@@ -1,4 +1,4 @@
-import "#std/mem.yup";
+import "#std/Memory.yup";
 
 pub strcpy: fnc(dest: *i8, src: *i8) -> *i8;
 pub copy_cstring: fnc(dest: *i8, src: *i8) -> *i8 {
