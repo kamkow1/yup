@@ -16,17 +16,8 @@ Small example of the language:
 import "#std/IO.yup";
 
 calc_fib: fnc(n: i64) -> i64 {
-	if n < 0 {
-		printf("cannot calculate a fibonnaci number for N < 0\n");
-		return -1;
-	}
-	
-	if n == 0 {
+	if n <= 1 {
 		return n;
-	}
-	
-	if n == 1 or n == 2 {
-		return 1;
 	}
 	
 	return calc_fib(n - 1) + calc_fib(c - 2);
