@@ -13,7 +13,7 @@ Small example of the language:
 ```c
 // calculate a fibonacci number for N:
 
-import #std/IO.yup";
+import "#std/IO.yup";
 
 calc_fib: fnc(n: i64) -> i64 {
 	if n < 0 {
