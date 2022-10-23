@@ -125,6 +125,9 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.StatementContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitStatement(ctx)
+	case *parser.IncremDecremExprContext:
+    		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+    		return v.VisitIncremDecremExpr(ctx);
 
 	// Type
 	case *parser.TypeAnnotContext:

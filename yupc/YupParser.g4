@@ -81,12 +81,13 @@ expression: funcCall                                            #funcCallExpr
         |   expression SymbolAnd expression                     #LogicalAndExpression
         |   expression SymbolOr expression                      #LogicalOrExpression
         |   constant                                            #constantExpression
-        |   multilineString					                    #MultilineStringExpression
-        |   expression SymbolDot Identifier			            #FieldAccessExpression
+        |   multilineString					#MultilineStringExpression
+        |   expression SymbolDot Identifier			#FieldAccessExpression
         |   expression SymbolDot funcCall                       #MethodCallExpression
         |   structInit                                          #StructInitExpression
         |   constStructInit                                     #ConstStructInitExpression
-        |   typeName                                            #LitTypeExpr;
+        |   typeName                                            #LitTypeExpr
+        |   expression (SymbolIncrement | SymbolDecrement)	#IncremDecremExpr;
 
 statement: expression SymbolTerminator
         |  assign SymbolTerminator

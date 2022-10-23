@@ -28,25 +28,21 @@ func (v *AstVisitor) VisitBinopExpr(ctx *parser.BinopExprContext) any {
 	}
 }
 
-func CastIntToFloatIfNeeded(v0 llvm.Value, v1 llvm.Value) (llvm.Value, llvm.Value) {
+func CastIntToFloatIfNeeded(v0 llvm.Value) llvm.Value {
 	if v0.Type().TypeKind() == llvm.IntegerTypeKind {
 		v0 = CompilationUnits.Peek().Builder.CreateSIToFP(v0, llvm.FloatType(), "")
 	}
 
-	if v1.Type().TypeKind() == llvm.IntegerTypeKind {
-		v1 = CompilationUnits.Peek().Builder.CreateSIToFP(v1, llvm.FloatType(), "")
-	}
-
-	return v0, v1
+	return v0
 }
 
 const (
-	EqualComp       int = 0
-	NotEqualComp    int = 1
-	LessThanComp    int = 2
-	MoreThanComp    int = 3
-	LessOrEqualComp int = 4
-	MoreOrEqualComp int = 5
+	EqualComp    int = iota
+	NotEqualComp     = iota
+	LessThanComp     = iota
+	MoreThanComp     = iota
+	LessOrEqualComp  = iota
+	MoreOrEqualComp  = iota
 )
 
 func CompareInts(v0 llvm.Value, v1 llvm.Value, compType int) llvm.Value {
@@ -108,42 +104,48 @@ func (v *AstVisitor) VisitCompExpr(ctx *parser.CompExprContext) any {
 		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
 			value = CompareInts(v0, v1, EqualComp)
 		} else {
-			v0, v1 = CastIntToFloatIfNeeded(v0, v1)
+			v0 = CastIntToFloatIfNeeded(v0)
+			v1 = CastIntToFloatIfNeeded(v1)
 			value = CompareNonInts(v0, v1, EqualComp)
 		}
 	} else if op.SymbolNotEqual() != nil {
 		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
 			value = CompareInts(v0, v1, NotEqualComp)
 		} else {
-			v0, v1 = CastIntToFloatIfNeeded(v0, v1)
+			v0 = CastIntToFloatIfNeeded(v0)
+			v1 = CastIntToFloatIfNeeded(v1)
 			value = CompareNonInts(v0, v1, NotEqualComp)
 		}
 	} else if op.SymbolMoreThan() != nil {
 		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
 			value = CompareInts(v0, v1, MoreThanComp)
 		} else {
-			v0, v1 = CastIntToFloatIfNeeded(v0, v1)
+			v0 = CastIntToFloatIfNeeded(v0)
+			v1 = CastIntToFloatIfNeeded(v1)
 			value = CompareInts(v0, v1, MoreThanComp)
 		}
 	} else if op.SymbolLessThan() != nil {
 		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
 			value = CompareInts(v0, v1, LessThanComp)
 		} else {
-			v0, v1 = CastIntToFloatIfNeeded(v0, v1)
+			v0 = CastIntToFloatIfNeeded(v0)
+			v1 = CastIntToFloatIfNeeded(v1)
 			value = CompareNonInts(v0, v1, LessThanComp)
 		}
 	} else if op.SymbolLessOrEqual() != nil {
 		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
 			value = CompareInts(v0, v1, LessOrEqualComp)
 		} else {
-			v0, v1 = CastIntToFloatIfNeeded(v0, v1)
+			v0 = CastIntToFloatIfNeeded(v0)
+			v1 = CastIntToFloatIfNeeded(v1)
 			value = CompareNonInts(v0, v1, LessOrEqualComp)
 		}
 	} else if op.SymbolMoreOrEqual() != nil {
 		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
 			value = CompareNonInts(v0, v1, MoreOrEqualComp)
 		} else {
-			v0, v1 = CastIntToFloatIfNeeded(v0, v1)
+			v0 = CastIntToFloatIfNeeded(v0)
+			v1 = CastIntToFloatIfNeeded(v1)
 			value = CompareNonInts(v0, v1, MoreOrEqualComp)
 		}
 	}
@@ -191,4 +193,33 @@ func (v *AstVisitor) VisitLogicalOrExpression(ctx *parser.LogicalOrExpressionCon
 	}
 
 	return CompilationUnits.Peek().Builder.CreateOr(v0, v1, "")
+}
+
+func (v *AstVisitor) VisitIncremDecremExpr(ctx *parser.IncremDecremExprContext) any {
+    	value := v.Visit(ctx.Expression()).(llvm.Value)
+	ptr := value
+
+	if value.Type().TypeKind() == llvm.PointerTypeKind {
+		value = CompilationUnits.Peek().Builder.CreateLoad(value.Type().ElementType(), value, "")
+	} else {
+    		LogError("cannot increment/decrement non-pointer variables")
+	}
+	
+	if value.Type().TypeKind() != llvm.IntegerTypeKind {
+    		value = Cast(value, &TypeInfo{
+        		Type: llvm.Int64Type(),
+    		})
+	}
+
+	var newValue llvm.Value
+	if ctx.SymbolIncrement() != nil {
+		one := llvm.ConstInt(value.Type(), uint64(1), true)
+		newValue = CompilationUnits.Peek().Builder.CreateAdd(value, one, "")
+	} else if ctx.SymbolDecrement() != nil {
+		negone := llvm.ConstIntFromString(value.Type(), "-1", -1)
+		newValue = CompilationUnits.Peek().Builder.CreateSub(value, negone, "")
+	}
+
+    	CompilationUnits.Peek().Builder.CreateStore(newValue, ptr)
+	return value
 }
