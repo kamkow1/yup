@@ -10,26 +10,41 @@ It's compiler is implemented using LLVM.
 
 Small example of the language:
 
-```text
-import "$std/io.bc";
+```c
+// calculate a fibonacci number for N:
 
-fac(n: i32) i32 {
+import #std/IO.yup";
+
+calc_fib: fnc(n: i64) -> i64 {
+	if n < 0 {
+		printf("cannot calculate a fibonnaci number for N < 0\n");
+		return -1;
+	}
+	
 	if n == 0 {
+		return n;
+	}
+	
+	if n == 1 or n == 2 {
 		return 1;
 	}
-
-	return n * fac(n - 1);
+	
+	return calc_fib(n - 1) + calc_fib(c - 2);
 }
 
-main() i32 {
-
-	var n: i32;
-	scan_input("give me a number: %i", &n);
-	fmt_print("%i! = %i", n, fac(n));
-
+pub main: fnc() -> i32 {
+	printf("give me a number N: ");
+	var count: i64;
+	scanf("%d", &count);
+	
+	printf("your number is: %d\n", calc_fib(number));
+	
 	return 0;
 }
 ```
+
+if you'd like to see a more complex usage of the language, see yup_stdlib/Vector.yup
+or yup_stdlib/Core/SharedPointer.yup. these are some of the more advanced usages of Yup.
 
 # installing the standard library
 
@@ -57,33 +72,3 @@ sudo ./llvm.sh 14 # installes LLVM 14.0.6 which is required to build the compile
 ./build.sh # outputs the yupc binary into bin/
 ```
 
-### development roadmap
-* basics [&check;]
-    - [&check;] variable assignment
-    - [&check;] overriding variables
-    - [&check;] function declarations
-    - [&check;] function calls
-    - [&check;] basic data types
-        * [&check;] char type
-        * [&check;] 32 bit int type
-        * [&check;] 64 bit int type
-        * [&check;] boolean type
-        * [&check;] float type
-        * [&check;] null
-        * [&check;] array type
-        * [&check;] string type
-    - [&check;] global variables
-    - [&#10799;] for loop
-    - [&#10799;] while loop
-    - [&#10799;] conditional statements ( if + elif + else )
-    - [&check;] basic module system
-        * [&check;] exports
-        * [&check;] imports
-* OOP [&#10799;]
-    - [&#10799;] structs
-    - [&#10799;] access modifiers
-* meta programming [&#10799;]
-    - [&#10799;] interpreted blocks
-    - [&#10799;] generics
-    - [&#10799;] reflection
-    - [&#10799;] built in yup interpreter
