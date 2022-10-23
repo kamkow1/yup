@@ -1,0 +1,8 @@
+import "#std/Memory.yup";
+
+pub SharedPointer: struct {
+	ref_counter: i64;
+	raw_pointer: *void;
+	delete_handler: *(_: *SharedPointer);
+}
+
