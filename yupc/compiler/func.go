@@ -269,20 +269,31 @@ func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 	} else if f1, ok1 := BuiltInTypeFunctions[name]; ok1 {
 		return f1(args)
 	} else {
-		f := CompilationUnits.Peek().Module.NamedFunction(name)
-		if f.IsNil() {
-			glb := CompilationUnits.Peek().Module.NamedGlobal(name)
-			if !glb.IsNil() {
-				f = CompilationUnits.Peek().Builder.CreateLoad(glb.Type().ElementType(), glb, "")
-			} else {
-				loc := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
-				f = CompilationUnits.Peek().Builder.CreateLoad(loc.AllocatedType(), loc, "")
-			}
+		var funcToCall llvm.Value
+		_, ok := CompilationUnits.Peek().Functions[name]
+		global, ok2 := CompilationUnits.Peek().Globals[name]
+
+		if ok {
+			funcToCall = CompilationUnits.Peek().Module.NamedFunction(name)
+		} else if ok2 {
+			funcToCall = CompilationUnits.Peek().Builder.CreateLoad(global.Type().ElementType(), global, "")
+		} else {
+			funcToCall = FindLocalVariable(name, len(CompilationUnits.Peek().Locals) - 1).Value
+			funcToCall = CompilationUnits.Peek().Builder.CreateLoad(funcToCall.Type().ElementType(), funcToCall, "")
 		}
 
-		if f.IsNil() {
-			LogError("tried to call an unknown function: %s", name)
+		var paramTypes []llvm.Type
+		for _, arg := range args {
+    			switch arg.(type) {
+        		case llvm.Value:
+				paramTypes = append(paramTypes, arg.(llvm.Value).Type())
+			case llvm.Type:
+    				paramTypes = append(paramTypes, arg.(llvm.Type))
+    			}
 		}
+
+		// TODO: inform the user if they've passed a wrong number or arguments
+		// currently this will result in a panic (not ideal)
 
 		var valueArgs []llvm.Value
 		for _, a := range args {
@@ -290,8 +301,7 @@ func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 		}
 
 		FuncCallNameStack.Pop()
-
-		return CompilationUnits.Peek().Builder.CreateCall(f.Type().ReturnType(), f, valueArgs, "")
+		return CompilationUnits.Peek().Builder.CreateCall(funcToCall.Type().ReturnType(), funcToCall, valueArgs, "")
 	}
 }
 

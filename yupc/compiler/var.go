@@ -152,18 +152,15 @@ func (v *AstVisitor) VisitIdentifierExpr(ctx *parser.IdentifierExprContext) any 
 		return typ
 	}
 
-	var val llvm.Value
-	if !CompilationUnits.Peek().Module.NamedFunction(name).IsNil() {
-		val = CompilationUnits.Peek().Module.NamedFunction(name)
-		return CompilationUnits.Peek().Builder.CreateLoad(val.Type().ElementType(), val, "")
+	if fnc, ok := CompilationUnits.Peek().Functions[name]; ok {
+		return CompilationUnits.Peek().Builder.CreateLoad(fnc.Value.Type().ElementType(), *fnc.Value, "")
 	}
 
-	if !CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
-		val = CompilationUnits.Peek().Module.NamedGlobal(name)
-		return CompilationUnits.Peek().Builder.CreateLoad(val.Type().ElementType(), val, "")
+	if global, ok := CompilationUnits.Peek().Globals[name]; ok {
+		return CompilationUnits.Peek().Builder.CreateLoad(global.Type().ElementType(), global, "")
 	}
 
-	val = FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
+	val := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
 	return CompilationUnits.Peek().Builder.CreateLoad(val.AllocatedType(), val, "")
 }
 

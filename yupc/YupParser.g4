@@ -60,7 +60,7 @@ finalStatement:	statement;
 continueStatement: KeywordContinue;
 breakStatement: KeywordBreak;
 
-structDeclaration: attrList? KeywordPublic? Identifier SymbolColon KeywordStruct SymbolLbrace structField+ SymbolRbrace;
+structDeclaration: attrList? KeywordPublic? Identifier SymbolColon KeywordStruct ((SymbolLbrace structField+ SymbolRbrace) | SymbolTerminator);
 structField: Identifier typeAnnot SymbolTerminator;
 fieldAssignment: expression SymbolDot Identifier varValue;
 typeAliasDeclaration: Identifier SymbolColon KeywordTypeAlias typeName;

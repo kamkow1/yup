@@ -181,17 +181,20 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 		IsPublic: ispub,
 	}
 
-	var fields []*Field
-	for _, fld := range ctx.AllStructField() {
-		fields = append(fields, v.Visit(fld).(*Field))
-	}
 
-	var fieldTypes []llvm.Type
-	for _, fld := range fields {
-		fieldTypes = append(fieldTypes, fld.Type.Type)
-	}
+	fields := make([]*Field, 0)
+	if ctx.SymbolLbrace() != nil {
+		for _, fld := range ctx.AllStructField() {
+			fields = append(fields, v.Visit(fld).(*Field))
+		}
 
-	structType.StructSetBody(fieldTypes, false)
+		var fieldTypes []llvm.Type
+		for _, fld := range fields {
+			fieldTypes = append(fieldTypes, fld.Type.Type)
+		}
+
+		structType.StructSetBody(fieldTypes, false)
+	}
 
 	strct := Structure{
 		Name:     name,
@@ -208,12 +211,12 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 }
 
 func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationContext) any {
-	original := v.Visit(ctx.TypeName()).(llvm.Type)
+	original := v.Visit(ctx.TypeName()).(*TypeInfo)
 	name := ctx.Identifier().GetText()
 
 	CompilationUnits.Peek().Types[name] = &TypeInfo{
 		Name: name,
-		Type: original,
+		Type: original.Type,
 	}
 
 	return nil
