@@ -6,3 +6,13 @@ pub SharedPointer: struct {
 	delete_handler: *(_: *SharedPointer);
 }
 
+pub SharedPointer_init: fnc(sp: *SharedPointer) {
+    	sp.raw_pointer = Null;
+   	sp.ref_counter = 0;
+   	sp.delete_handler = Null;
+}
+
+pub SharedPointer_init_with_ptr: fnc(sp: *SharedPointer, ptr: *void) {
+    	SharedPointer_init(sp);
+    	sp.raw_pointer = ptr;
+}
