@@ -3,16 +3,57 @@ import "#std/Memory.yup";
 pub SharedPointer: struct {
 	ref_counter: i64;
 	raw_pointer: *void;
-	delete_handler: *(_: *SharedPointer);
 }
 
-pub SharedPointer_init: fnc(sp: *SharedPointer) {
-    	sp.raw_pointer = Null;
+pub SharedPointer_init: fnc(sp: *SharedPointer, raw_ptr: *void) {
+    	sp.raw_pointer = raw_ptr;
    	sp.ref_counter = 0;
-   	sp.delete_handler = Null;
 }
 
-pub SharedPointer_init_with_ptr: fnc(sp: *SharedPointer, ptr: *void) {
-    	SharedPointer_init(sp);
-    	sp.raw_pointer = ptr;
+pub SharedPointer_free_shared: fnc(sp: *SharedPointer) {
+	free_memory(sp.raw_pointer.*);
+	free_memory(cast(sp, *void));
 }
+
+pub SharedPointer_swap: fnc(sp0: *SharedPointer, sp1: *SharedPointer) {
+    	const ptr = sp0.raw_pointer.*;
+    	sp0.raw_pointer = sp1.raw_pointer.*;
+    	sp1.raw_pointer = ptr;
+}
+
+pub SharedPointer_ref: fnc(sp: *SharedPointer) {
+    	sp.ref_counter++;
+}
+
+pub SharedPointer_unref: fnc(sp: *SharedPointer) {
+    	sp.ref_counter--;
+    	if sp.ref_counter.* <= 0 {
+		SharedPointer_free_shared(sp);
+    	}
+}
+
+pub SharedPointer_get: fnc(sp: *SharedPointer) -> *void {
+    	return sp.raw_pointer.*;
+}
+
+pub SharedPointer_ref_counter: fnc(sp: *SharedPointer) -> i64 {
+    	return sp.ref_counter.*;
+}
+
+pub make_null_shared: fnc() -> *SharedPointer {
+	const sp = alloc_memory(sizeof(SharedPointer));
+	SharedPointer_init(sp, Null);
+	return sp;
+}
+
+pub make_ptr_shared: fnc(ptr: *void) -> *SharedPointer {
+	const sp = alloc_memory(sizeof(SharedPointer));
+	SharedPointer_init(sp, ptr);
+	return sp;
+}
+
+pub alloc_shared: fnc(size: i64) -> *SharedPointer {
+    const memory = alloc_memory(size);
+    return make_ptr_shared(memory);
+}
+
