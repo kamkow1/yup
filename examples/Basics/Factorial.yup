@@ -1,0 +1,17 @@
+import "#std/IO.yup";
+
+fac: fnc(n: i64) -> i64 {
+	if n <= 1 {
+		return 1;
+	}
+
+	return n * fac(n - 1);
+}
+
+pub main: fnc() {
+    	printf("give me a number and I will calculate the factorial of it: ");
+    	var number: i64;
+	scanf("%d", &number);
+
+	printf("%d! = %d\n", number, fac(number));
+}
