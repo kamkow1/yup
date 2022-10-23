@@ -1,4 +1,5 @@
 import "#std/Memory.yup";
+import "#std/IO.yup";
 
 pub Vector: struct {
 	items: **void;
@@ -10,27 +11,60 @@ pub vec_items: fnc(vec: *Vector) -> **void {
 	return vec.items.*;
 }
 
+pub vec_size: fnc(vec: *Vector) -> i64 {
+	return vec.size.*;
+}
+
+pub vec_get: fnc(vec: *Vector, index: i64) -> *void {
+	return vec.items.*[index];
+}
+
+pub vec_set: fnc(vec: *Vector, index: i64, new_item: *void) {
+	if vec.items.*[index] == Null {
+    		return;
+	}
+
+	vec.items.*[index] = new_item;
+}
+
 pub vec_init: fnc(vec: *Vector) {
 	vec.cap = 4:i64;
 	vec.size = 0:i64;
-	const new_items = alloc_memory(sizeof(*void) * (vec.cap.*));
-	vec.items = new_items;
+	vec.items = alloc_memory(sizeof(*void) * (vec.cap.*));
+}
+
+pub vec_free: fnc(vec: *Vector) {
+	free_memory(cast(vec.items.*, *void));
+	vec.items = Null;
 }
 
 vec_grow: fnc(vec: *Vector, new_cap: i64) {
 	const new_size = sizeof(*void) * new_cap;
-	const new_items: **void = realloc_memory(cast(vec.items, *void), sizeof(vec.items.*), new_size);
-	if new_items {
-		vec.items = new_items;
-		vec.cap = new_cap;
-	}
+	vec.items = realloc_memory(cast(vec.items.*, *void), sizeof(vec.items.*), new_size);
+	vec.cap = new_cap;
 }
 
 pub vec_append: fnc(vec: *Vector, new_item: *void) {
 	if (vec.cap.*) == (vec.size.*) {
-		vec_grow(vec, vec.cap.* * 2);
+    		const new_size = vec.size.* * 2;
+    		vec.items = realloc_memory(cast(vec.items.*, *void), vec.size.*, new_size);
+    		vec.size = new_size;
 	}
 
 	vec.size = vec.size.* + 1;
 	vec.items.*[vec.size.*] = new_item;
+}
+
+
+pub vec_print: fnc(vec: *Vector) {
+	printf("Vector[");
+	for var i = 0:i64; i < vec_size(vec); i = i + 1; {
+    		if i != 0 {
+			printf(", ");
+    		}
+    		
+		printf("%p", vec_items(vec)[i].*);
+	}
+
+	printf("]\n");
 }
