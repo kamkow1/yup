@@ -1,0 +1,29 @@
+import "#std/IO.yup";
+
+calc_fib: fnc(n: i64) -> i64 {
+	if n < 0 {
+		return -1;
+	}
+
+	if n == 0 {
+		return n;
+	}
+
+	if n == 1 or n == 2 {
+		return 1;
+	}
+
+	return calc_fib(n - 1) + calc_fib(n - 2);
+}
+
+
+pub main: fnc() -> i32 {
+
+	printf("give me the nth number for the Fibonacci sequence: ");
+	var count: i64;
+	scanf("%d", &count);
+
+	printf("your number is: %d\n", calc_fib(count));
+
+	return 0;
+}
