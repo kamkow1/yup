@@ -34,7 +34,7 @@ funcSig: attrList? KeywordPublic? Identifier SymbolColon KeywordFunction
         SymbolLparen funcParamList? SymbolRparen (SymbolArrow typeName)?;
 funcParamList: funcParam (SymbolComma funcParam)*;
 funcReturn: KeywordReturn (expression (SymbolComma expression)*)?;
-funcParam: (KeywordConst? Identifier typeAnnot) | SymbolVariadicArgs;
+funcParam: (KeywordConst? Identifier typeAnnot) | SymbolVariadicArgs | KeywordSelf;
 funcCall: Identifier SymbolLparen funcCallArgList? SymbolRparen;
 funcCallArgList: expression (SymbolComma expression)*;
 
@@ -60,7 +60,8 @@ finalStatement:	statement;
 continueStatement: KeywordContinue;
 breakStatement: KeywordBreak;
 
-structDeclaration: attrList? KeywordPublic? Identifier SymbolColon KeywordStruct ((SymbolLbrace structField+ SymbolRbrace) | SymbolTerminator);
+structDeclaration: attrList? KeywordPublic? Identifier SymbolColon KeywordStruct
+		((SymbolLbrace structField* funcDef* SymbolRbrace) | SymbolTerminator);
 structField: Identifier typeAnnot SymbolTerminator;
 fieldAssignment: expression SymbolDot Identifier varValue;
 typeAliasDeclaration: Identifier SymbolColon KeywordTypeAlias typeName;
@@ -68,7 +69,7 @@ structInit: Identifier SymbolDot SymbolLbrace (expression (SymbolComma expressio
 constStructInit: SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 
 expression: funcCall                                            #funcCallExpr
-        |   Identifier                                          #identifierExpr
+        |   (Identifier | KeywordSelf)                          #identifierExpr
         |   constArray                                          #constArrayExpr
         |   addressOf                                           #addressOfExpr
         |   expression (SymbolLsqbr expression SymbolRsqbr)+    #indexedAccessExpr
@@ -81,9 +82,10 @@ expression: funcCall                                            #funcCallExpr
         |   expression SymbolAnd expression                     #LogicalAndExpression
         |   expression SymbolOr expression                      #LogicalOrExpression
         |   constant                                            #constantExpression
-        |   multilineString					#MultilineStringExpression
-        |   expression SymbolDot Identifier			#FieldAccessExpression
-        |   expression SymbolDot funcCall                       #MethodCallExpression
+        |   multilineString										#MultilineStringExpression
+        |   expression SymbolDot Identifier						#FieldAccessExpression
+        |   expression SymbolDot funcCall						#MethodCallExpr
+        |	Identifier SymbolColon SymbolColon funcCall			#StaticMethodCallExpr
         |   structInit                                          #StructInitExpression
         |   constStructInit                                     #ConstStructInitExpression
         |   typeName                                            #LitTypeExpr

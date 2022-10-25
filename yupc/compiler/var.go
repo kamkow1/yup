@@ -146,7 +146,12 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 }
 
 func (v *AstVisitor) VisitIdentifierExpr(ctx *parser.IdentifierExprContext) any {
-	name := ctx.Identifier().GetText()
+    var name string
+	if ctx.KeywordSelf() != nil {
+		name = "self"
+	} else {
+    	name = ctx.Identifier().GetText()
+	}
 
 	if typ, ok := CompilationUnits.Peek().Types[name]; ok {
 		return typ

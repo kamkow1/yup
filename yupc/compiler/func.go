@@ -16,14 +16,18 @@ type FuncParam struct {
 	Name     string
 	IsVarArg bool
 	IsConst  bool
+	IsSelf   bool
 	Type     *TypeInfo
 }
 
 type Function struct {
-	Name      string
-	Value     *llvm.Value
-	Params    []FuncParam
-	ExitBlock *llvm.BasicBlock
+	Name           string
+	Value          *llvm.Value
+	Params         []FuncParam
+	ExitBlock      *llvm.BasicBlock
+	MethodName     string
+	IsPublicMethod bool
+	HasSelf		   bool
 }
 
 func (v *AstVisitor) VisitFuncParamList(ctx *parser.FuncParamListContext) any {
@@ -35,11 +39,30 @@ func (v *AstVisitor) VisitFuncParamList(ctx *parser.FuncParamListContext) any {
 				IsVarArg: true,
 				Name:     "vargs",
 				Type:     nil,
+				IsSelf:	  false,
 			})
-		} else {
+		} else if pp.KeywordSelf() != nil {
+			if len(StructNameStack.Units) <= 0 {
+				LogError("cannot use self in a non-method function")
+			}
+    		
+			structName := StructNameStack.Peek()
+			structType := CompilationUnits.Peek().Types[*structName]
+    		
+			params = append(params, FuncParam{
+    			IsVarArg: false,
+    			IsConst:  pp.KeywordConst() != nil,
+    			Name: 	  "self",
+    			IsSelf:   true,
+    			Type: 	  &TypeInfo{
+        			Type: llvm.PointerType(structType.Type, 0),
+    			},
+    		})
+    	} else {
 			params = append(params, FuncParam{
 				IsConst:  pp.KeywordConst() != nil,
 				IsVarArg: false,
+				IsSelf:   false,
 				Name:     pp.Identifier().GetText(),
 				Type:     v.Visit(p).(*TypeInfo),
 			})
@@ -56,7 +79,7 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 		LogError("function `%s` already exists in this module", name)
 	}
 
-	var params []FuncParam
+	var params []FuncParam 	
 	if ctx.FuncParamList() != nil {
 		params = v.Visit(ctx.FuncParamList()).([]FuncParam)
 	} else {
@@ -73,11 +96,16 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 	}
 
 	var types []llvm.Type
+	hasSelf := false
 	isVarArg := false
 	for _, fp := range params {
 		if fp.IsVarArg {
 			isVarArg = fp.IsVarArg
 			continue
+		}
+
+		if fp.IsSelf {
+			hasSelf = fp.IsSelf
 		}
 
 		types = append(types, fp.Type.Type)
@@ -92,17 +120,21 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 		}
 	}
 
-	if ctx.KeywordPublic() == nil {
-		function.SetLinkage(llvm.PrivateLinkage)
-	} else {
+	isPublic := ctx.KeywordPublic() != nil
+	if isPublic {
 		function.SetLinkage(llvm.LinkOnceAnyLinkage)
+	} else {
+		function.SetLinkage(llvm.PrivateLinkage)
 	}
 
 	CompilationUnits.Peek().Functions[name] = Function{
-		Name:      name,
-		Value:     &function,
-		Params:    params,
-		ExitBlock: &llvm.BasicBlock{},
+		Name:       	name,
+		Value:      	&function,
+		Params:     	params,
+		ExitBlock:      &llvm.BasicBlock{},
+		MethodName:     name,
+		IsPublicMethod: isPublic,
+		HasSelf: 		hasSelf,
 	}
 
 	return function
@@ -166,7 +198,7 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 	}
 
 	//return llvm.VerifyFunction(*function.Value, llvm.PrintMessageAction)
-	return nil
+	return function
 }
 
 func (v *AstVisitor) VisitFuncCallArgList(ctx *parser.FuncCallArgListContext) any {
