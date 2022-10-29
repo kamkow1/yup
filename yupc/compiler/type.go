@@ -1,7 +1,9 @@
 package compiler
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
@@ -176,7 +178,7 @@ var StructNameStack = NewStack[string]()
 func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext) any {
 	name := ctx.Identifier().GetText()
 	StructNameStack.Push(&name)
-	
+
 	ispub := ctx.KeywordPublic() != nil
 	c := CompilationUnits.Peek().Module.Context()
 	structType := c.StructCreateNamed(name)
@@ -185,7 +187,6 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 		Type:     structType,
 		IsPublic: ispub,
 	}
-
 
 	fields := make([]*Field, 0)
 	methods := make([]*Function, 0)
@@ -201,7 +202,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 		structType.StructSetBody(fieldTypes, false)
 		CompilationUnits.Peek().Types[name].Type = structType
-		strct := &Structure{
+		CompilationUnits.Peek().Structs[name] = &Structure{
 			Name:     name,
 			Fields:   fields,
 			Methods:  []*Function{},
@@ -212,22 +213,21 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 			},
 		}
 
-		CompilationUnits.Peek().Structs[name] = strct
-
 		for _, method := range ctx.AllFuncDef() {
-			funct := v.Visit(method).(Function)
+			funct := v.Visit(method).(*Function)
 			funcName := funct.Name
+			fmt.Println(funcName)
 			newName := name + "_" + funcName
 			funct.Name = newName
 			funct.Value.SetName(newName)
 			funct.Value.SetLinkage(llvm.LinkOnceODRLinkage)
 
 			funct.MethodName = funcName
-			methods = append(methods, &funct)
+			methods = append(methods, funct)
 		}
 
 		CompilationUnits.Peek().Structs[name].Methods = methods
-	}	
+	}
 
 	StructNameStack.Pop()
 	return structType
@@ -252,12 +252,12 @@ func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressio
 	return GetStructFieldPtr(strct, fieldName)
 }
 
-func FindMethod(name, structName string, base Structure) (llvm.Value, bool) {
-	var method llvm.Value
+func FindMethod(name, structName string, base Structure) (*Function, bool) {
+	var method *Function
 	hasToPassSelf := false
 	found := false
 	for _, m := range base.Methods {
-		if m.MethodName == name {
+		if m.Name == name {
 			if !m.IsPublicMethod {
 				LogError("cannot call a private method `%s` on struct type `%s`", name, structName)
 			}
@@ -265,12 +265,12 @@ func FindMethod(name, structName string, base Structure) (llvm.Value, bool) {
 			if m.HasSelf {
 				hasToPassSelf = m.HasSelf
 			}
-			
-   			method = *m.Value
-   			found = true
+
+			method = m
+			found = true
 		}
 	}
-	
+
 	if !found {
 		LogError("cannot call method `%s` because it doesn't exist on struct `%s`", name, structName)
 	}
@@ -280,68 +280,83 @@ func FindMethod(name, structName string, base Structure) (llvm.Value, bool) {
 
 func (v *AstVisitor) VisitStaticMethodCallExpr(ctx *parser.StaticMethodCallExprContext) any {
 	name := ctx.Identifier().GetText()
-	base := CompilationUnits.Peek().Structs[name]
-	fncctx := ctx.FuncCall().(*parser.FuncCallContext)
-	methodName := fncctx.Identifier().GetText()
+	base, ok := CompilationUnits.Peek().Structs[name]
 
-	method, hasToPassSelf := FindMethod(methodName, name,  *base)
+	if !ok {
+		LogError("cannot call a static method on struct `%s` because this struct doesn't exist", name)
+	}
+
+	fncctx := ctx.FuncCall().(*parser.FuncCallContext)
+	methodName := base.Name + "_" + fncctx.Identifier().GetText()
+
+	method, hasToPassSelf := FindMethod(methodName, name, *base)
+	fmt.Println(method.Value.Name())
+
 	if hasToPassSelf {
 		LogError("cannot pass self in a static method call")
 	}
 
-	args := make([]any , 0)
+	args := make([]any, 0)
 	if fncctx.FuncCallArgList() != nil {
 		args = v.Visit(fncctx.FuncCallArgList()).([]any)
 	}
 
-	var valueArgs []llvm.Value
-	
+	valueArgs := make([]llvm.Value, 0)
 	for _, arg := range args {
-    	switch arg.(type) {
-        case llvm.Type:
-        case llvm.Value:
-            valueArgs = append(valueArgs, arg.(llvm.Value))
-    	}
+		switch arg.(type) {
+		case llvm.Type:
+		case llvm.Value:
+			valueArgs = append(valueArgs, arg.(llvm.Value))
+		}
 	}
 
-	return CompilationUnits.Peek().Builder.CreateCall(method.Type().ReturnType(), method, valueArgs, "")
+	module := CompilationUnits.Peek().Module
+	function := module.NamedFunction(method.Name)
+	returnType := function.Type().ReturnType()
+
+	return CompilationUnits.Peek().Builder.CreateCall(returnType, *method.Value, valueArgs, "")
 }
 
 func (v *AstVisitor) VisitMethodCallExpr(ctx *parser.MethodCallExprContext) any {
 	strct := v.Visit(ctx.Expression()).(llvm.Value)
-	
-	fncctx := ctx.FuncCall().(*parser.FuncCallContext)
-	name := fncctx.Identifier().GetText()
+	structName := strings.Split(strct.Type().ElementType().StructName(), ".")[0]
 
+	fncctx := ctx.FuncCall().(*parser.FuncCallContext)
+	name := structName + "_" + fncctx.Identifier().GetText()
 
 	if strct.Type().TypeKind() != llvm.PointerTypeKind {
 		LogError("cannot call methods on non-pointer type expressions: `%s`", strct.Type().String())
 	}
 
-	structName := strct.Type().ElementType().StructName()
-	base := CompilationUnits.Peek().Structs[structName]
+	base, ok := CompilationUnits.Peek().Structs[structName]
+	if !ok {
+		LogError("tired to call a method on an instance of an unknown type: `%s`", structName)
+	}
 
 	method, hasToPassSelf := FindMethod(name, structName, *base)
-		
-	args := make([]any , 0)
+
+	args := make([]any, 0)
 	if fncctx.FuncCallArgList() != nil {
 		args = v.Visit(fncctx.FuncCallArgList()).([]any)
 	}
 
 	var valueArgs []llvm.Value
 	if hasToPassSelf {
-    	valueArgs = append(valueArgs, strct)
-	}
-	
-	for _, arg := range args {
-    	switch arg.(type) {
-        case llvm.Type:
-        case llvm.Value:
-            valueArgs = append(valueArgs, arg.(llvm.Value))
-    	}
+		valueArgs = append(valueArgs, strct)
 	}
 
-	return CompilationUnits.Peek().Builder.CreateCall(method.Type().ReturnType(), method, valueArgs, "")
+	for _, arg := range args {
+		switch arg.(type) {
+		case llvm.Type:
+		case llvm.Value:
+			valueArgs = append(valueArgs, arg.(llvm.Value))
+		}
+	}
+
+	module := CompilationUnits.Peek().Module
+	function := module.NamedFunction(name)
+	returnType := function.Type().ReturnType()
+	return CompilationUnits.Peek().Builder.CreateCall(returnType, *method.Value, valueArgs, "")
 }
 
 func (v *AstVisitor) VisitStructInitExpression(ctx *parser.StructInitExpressionContext) any {
@@ -358,7 +373,7 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	var vals []llvm.Value
 	for i, expr := range ctx.AllExpression() {
 		arg := v.Visit(expr).(llvm.Value)
-		
+
 		voidptr := llvm.PointerType(llvm.Int8Type(), 0)
 		base := CompilationUnits.Peek().Structs[name]
 		isParamVoidPtr := base.Fields[i].Type.Type == voidptr

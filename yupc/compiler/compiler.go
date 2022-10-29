@@ -74,7 +74,7 @@ type CompilationUnit struct {
 	Module     llvm.Module
 	Locals     []map[string]LocalVariable
 	Globals    map[string]llvm.Value
-	Functions  map[string]Function
+	Functions  map[string]*Function
 	Structs    map[string]*Structure
 	Types 	   map[string]*TypeInfo
 }
@@ -87,7 +87,7 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 		Module:		llvm.NewModule(sf),
 		Locals:     []map[string]LocalVariable{},
 		Globals:    map[string]llvm.Value{},
-		Functions:  map[string]Function{},
+		Functions:  map[string]*Function{},
 		Structs:    map[string]*Structure{},
 		Types:		InitTypeMap(),
 	}

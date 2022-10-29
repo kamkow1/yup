@@ -30,7 +30,7 @@ varValue: SymbolAssign expression;
 exprAssign: expression varValue;
 
 funcDef: funcSig codeBlock;
-funcSig: attrList? KeywordPublic? Identifier SymbolColon KeywordFunction
+funcSig: attrList? KeywordExtern? KeywordPublic? Identifier SymbolColon KeywordFunction
         SymbolLparen funcParamList? SymbolRparen (SymbolArrow typeName)?;
 funcParamList: funcParam (SymbolComma funcParam)*;
 funcReturn: KeywordReturn (expression (SymbolComma expression)*)?;

@@ -17,6 +17,7 @@ KeywordStruct		    	:   'struct';
 KeywordTypeAlias	    	:   'alias';
 KeywordPublic		    	:	'pub';
 KeywordValueString	    	:	'v';
+KeywordExtern				:	'extern';
 
 SymbolBackSlash		    	:	'\\';
 SymbolArrow		    		:   '->';

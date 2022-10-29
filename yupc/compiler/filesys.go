@@ -86,7 +86,11 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 	if GlobalCompilerInfo.PrintModule {
 		CompilationUnits.Peek().Module.Dump()
 	}
-	// llvm.VerifyModule(CompilationUnits.Peek().Module, llvm.PrintMessageAction)
+
+	err := llvm.VerifyModule(CompilationUnits.Peek().Module, llvm.PrintMessageAction)
+	if err != nil {
+		LogError("verifying module `%s` failed. read error messages above", CompilationUnits.Peek().SourceFile)
+	}
 }
 
 func ProcessPathRecursively(p string) {

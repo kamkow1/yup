@@ -27,7 +27,7 @@ type Function struct {
 	ExitBlock      *llvm.BasicBlock
 	MethodName     string
 	IsPublicMethod bool
-	HasSelf		   bool
+	HasSelf        bool
 }
 
 func (v *AstVisitor) VisitFuncParamList(ctx *parser.FuncParamListContext) any {
@@ -39,26 +39,26 @@ func (v *AstVisitor) VisitFuncParamList(ctx *parser.FuncParamListContext) any {
 				IsVarArg: true,
 				Name:     "vargs",
 				Type:     nil,
-				IsSelf:	  false,
+				IsSelf:   false,
 			})
 		} else if pp.KeywordSelf() != nil {
 			if len(StructNameStack.Units) <= 0 {
 				LogError("cannot use self in a non-method function")
 			}
-    		
+
 			structName := StructNameStack.Peek()
 			structType := CompilationUnits.Peek().Types[*structName]
-    		
+
 			params = append(params, FuncParam{
-    			IsVarArg: false,
-    			IsConst:  pp.KeywordConst() != nil,
-    			Name: 	  "self",
-    			IsSelf:   true,
-    			Type: 	  &TypeInfo{
-        			Type: llvm.PointerType(structType.Type, 0),
-    			},
-    		})
-    	} else {
+				IsVarArg: false,
+				IsConst:  pp.KeywordConst() != nil,
+				Name:     "self",
+				IsSelf:   true,
+				Type: &TypeInfo{
+					Type: llvm.PointerType(structType.Type, 0),
+				},
+			})
+		} else {
 			params = append(params, FuncParam{
 				IsConst:  pp.KeywordConst() != nil,
 				IsVarArg: false,
@@ -79,7 +79,7 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 		LogError("function `%s` already exists in this module", name)
 	}
 
-	var params []FuncParam 	
+	var params []FuncParam
 	if ctx.FuncParamList() != nil {
 		params = v.Visit(ctx.FuncParamList()).([]FuncParam)
 	} else {
@@ -123,18 +123,20 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 	isPublic := ctx.KeywordPublic() != nil
 	if isPublic {
 		function.SetLinkage(llvm.LinkOnceAnyLinkage)
+	} else if ctx.KeywordExtern() != nil {
+		function.SetLinkage(llvm.ExternalLinkage)
 	} else {
 		function.SetLinkage(llvm.PrivateLinkage)
 	}
 
-	CompilationUnits.Peek().Functions[name] = Function{
-		Name:       	name,
-		Value:      	&function,
-		Params:     	params,
+	CompilationUnits.Peek().Functions[name] = &Function{
+		Name:           name,
+		Value:          &function,
+		Params:         params,
 		ExitBlock:      &llvm.BasicBlock{},
 		MethodName:     name,
 		IsPublicMethod: isPublic,
-		HasSelf: 		hasSelf,
+		HasSelf:        hasSelf,
 	}
 
 	return function
@@ -203,23 +205,8 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 
 func (v *AstVisitor) VisitFuncCallArgList(ctx *parser.FuncCallArgListContext) any {
 	var args []any
-	for i, expr := range ctx.AllExpression() {
-		arg := v.Visit(expr)
-		switch arg.(type) {
-		case llvm.Type:
-		case llvm.Value:
-			fn, ok := CompilationUnits.Peek().Functions[*FuncCallNameStack.Peek()]
-			if ok { // only if it's a user-defined function
-				if len(fn.Params) > 0 {
-					paramType := fn.Params[i].Type.Type
-					for paramType != arg.(llvm.Value).Type() {
-						arg = Cast(arg.(llvm.Value), fn.Params[i].Type)
-					}
-				}
-			}
-		}
-
-		args = append(args, arg)
+	for _, expr := range ctx.AllExpression() {
+		args = append(args, v.Visit(expr))
 	}
 
 	return args
@@ -284,11 +271,8 @@ var BuiltInTypeFunctions map[string]BuiltInTypeFunction = map[string]BuiltInType
 	},
 }
 
-var FuncCallNameStack = NewStack[string]()
-
 func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 	name := ctx.Identifier().GetText()
-	FuncCallNameStack.Push(&name)
 	var args []any
 	if ctx.FuncCallArgList() != nil {
 		args = v.Visit(ctx.FuncCallArgList()).([]any)
@@ -310,18 +294,18 @@ func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 		} else if ok2 {
 			funcToCall = CompilationUnits.Peek().Builder.CreateLoad(global.Type().ElementType(), global, "")
 		} else {
-			funcToCall = FindLocalVariable(name, len(CompilationUnits.Peek().Locals) - 1).Value
+			funcToCall = FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
 			funcToCall = CompilationUnits.Peek().Builder.CreateLoad(funcToCall.Type().ElementType(), funcToCall, "")
 		}
 
 		var paramTypes []llvm.Type
 		for _, arg := range args {
-    			switch arg.(type) {
-        		case llvm.Value:
+			switch arg.(type) {
+			case llvm.Value:
 				paramTypes = append(paramTypes, arg.(llvm.Value).Type())
 			case llvm.Type:
-    				paramTypes = append(paramTypes, arg.(llvm.Type))
-    			}
+				paramTypes = append(paramTypes, arg.(llvm.Type))
+			}
 		}
 
 		// TODO: inform the user if they've passed a wrong number or arguments
@@ -332,7 +316,6 @@ func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 			valueArgs = append(valueArgs, a.(llvm.Value))
 		}
 
-		FuncCallNameStack.Pop()
 		return CompilationUnits.Peek().Builder.CreateCall(funcToCall.Type().ReturnType(), funcToCall, valueArgs, "")
 	}
 }
@@ -347,8 +330,8 @@ func (v *AstVisitor) VisitFuncReturn(ctx *parser.FuncReturnContext) any {
 		value := v.Visit(ctx.Expression(0)).(llvm.Value)
 		if value.Type() != fncReturnType {
 			value = Cast(value, &TypeInfo{
-    				Type: fncReturnType,
-    			})
+				Type: fncReturnType,
+			})
 		}
 
 		returnValue := FindLocalVariable("__return_value", len(CompilationUnits.Peek().Locals)-1)
@@ -361,7 +344,7 @@ func (v *AstVisitor) VisitFuncReturn(ctx *parser.FuncReturnContext) any {
 			if val.Type().TypeKind() != fncReturnType.TypeKind() {
 				val = Cast(val, &TypeInfo{
 					Type: fncReturnType,
-    				})
+				})
 			}
 
 			vals = append(vals, val)

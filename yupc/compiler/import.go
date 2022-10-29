@@ -48,24 +48,42 @@ func ImportModule(name string) {
 
 	for name, typ := range unit.Types {
 		if typ.IsPublic {
-			CompilationUnits.Peek().Types[name] = typ
+			newType := CompilationUnits.Peek().Module.Context().StructCreateNamed(name)
+			newType.StructSetBody(typ.Type.StructElementTypes(), false)
+			_, ok := CompilationUnits.Peek().Types[name]
+			if !ok {
+				CompilationUnits.Peek().Types[name] = &TypeInfo{
+					Name: name,
+					Type: newType,
+				}
+			}
 		}
 	}
 
 	for name, strct := range unit.Structs {
-		if strct.IsPublic {
+		if _, ok := CompilationUnits.Peek().Structs[name]; !ok && strct.IsPublic {
 			CompilationUnits.Peek().Structs[name] = strct
 		}
 	}
 
-	for name, _ := range unit.Functions {
-		fnc := mod.NamedFunction(name)
-		fnc = llvm.AddFunction(CompilationUnits.Peek().Module, name, fnc.Type().ElementType())
-		CompilationUnits.Peek().Functions[name] = Function{
-			Name:      name,
-			Params:    make([]FuncParam, 0),
-			Value:     &fnc,
-			ExitBlock: nil,
+	for name, funcInfo := range unit.Functions {
+		function := mod.NamedFunction(funcInfo.Value.Name())
+
+		if !function.IsNil() {
+			functionType := function.Type()
+			if functionType.TypeKind() == llvm.PointerTypeKind {
+				functionType = functionType.ElementType()
+
+				if functionType.TypeKind() == llvm.FunctionTypeKind {
+					addedFunction := llvm.AddFunction(CompilationUnits.Peek().Module, funcInfo.Value.Name(), functionType)
+					CompilationUnits.Peek().Functions[funcInfo.Value.Name()] = &Function{
+						Name:      name,
+						Params:    funcInfo.Params,
+						Value:     &addedFunction,
+						ExitBlock: nil,
+					}
+				}
+			}
 		}
 	}
 
