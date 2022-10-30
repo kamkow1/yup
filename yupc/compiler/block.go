@@ -55,7 +55,7 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 		}
 	}
 
-	llvmLifeTimeEnd := CompilationUnits.Peek().Module.NamedFunction("llvm.lifetime.end")
+	llvmLifeTimeEnd := CompilationUnits.Peek().Module.NamedFunction("llvm.lifetime.end.p0i8")
 	if llvmLifeTimeEnd.IsNil() {
 		pts := []llvm.Type{llvm.Int64Type(), llvm.PointerType(llvm.Int8Type(), 0)}
 		ft := llvm.FunctionType(llvm.VoidType(), pts, false)

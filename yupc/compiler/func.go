@@ -76,7 +76,8 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 	name := ctx.Identifier().GetText()
 	_, ok := CompilationUnits.Peek().Functions[name]
 	if ok {
-		LogError("function `%s` already exists in this module", name)
+		LogError("function `%s` already exists in module `%s`",
+			name, CompilationUnits.Peek().SourceFile)
 	}
 
 	var params []FuncParam
@@ -199,7 +200,10 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 		CompilationUnits.Peek().Builder.CreateRet(load)
 	}
 
-	//return llvm.VerifyFunction(*function.Value, llvm.PrintMessageAction)
+	if err := llvm.VerifyFunction(*function.Value, llvm.PrintMessageAction); err != nil {
+		LogError("failed to verify function. read error message above")
+	}
+
 	return function
 }
 
@@ -286,12 +290,10 @@ func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 		return f1(args)
 	} else {
 		var funcToCall llvm.Value
-		_, ok := CompilationUnits.Peek().Functions[name]
-		global, ok2 := CompilationUnits.Peek().Globals[name]
 
-		if ok {
+		if _, ok := CompilationUnits.Peek().Functions[name]; ok {
 			funcToCall = CompilationUnits.Peek().Module.NamedFunction(name)
-		} else if ok2 {
+		} else if global, ok2 := CompilationUnits.Peek().Globals[name]; ok2 {
 			funcToCall = CompilationUnits.Peek().Builder.CreateLoad(global.Type().ElementType(), global, "")
 		} else {
 			funcToCall = FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value

@@ -14,13 +14,12 @@ type LocalVariable struct {
 
 func CreateAllocation(typ llvm.Type) llvm.Value {
 	alloca := CompilationUnits.Peek().Builder.CreateAlloca(typ, "")
-	if len(CompilationUnits.Peek().Locals) - 1 > 3 {
+	if len(CompilationUnits.Peek().Locals)-1 > 3 {
 		TrackAllocation(alloca)
 
 	}
 
-
-	ltsname := "llvm.lifetime.start"
+	ltsname := "llvm.lifetime.start.p0i8"
 	lifetimeStart := CompilationUnits.Peek().Module.NamedFunction(ltsname)
 	if lifetimeStart.IsNil() {
 		pts := []llvm.Type{
@@ -37,8 +36,8 @@ func CreateAllocation(typ llvm.Type) llvm.Value {
 	args := []llvm.Value{
 		size,
 		Cast(alloca, &TypeInfo{
-    		     Type: llvm.PointerType(llvm.Int8Type(), 0),
-    		}),
+			Type: llvm.PointerType(llvm.Int8Type(), 0),
+		}),
 	}
 
 	CompilationUnits.Peek().Builder.CreateCall(lifetimeStart.Type().ReturnType(), lifetimeStart, args, "")
@@ -94,7 +93,7 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 		if isInit {
 			value = v.Visit(ctx.VarValue()).(llvm.Value)
 			typ = &TypeInfo{
-    				Type: value.Type(),
+				Type: value.Type(),
 			}
 		}
 
@@ -106,7 +105,7 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 		if isInit && hasAnnot && value.Type() != typ.Type {
 			value = Cast(value, &TypeInfo{
 				Type: typ.Type,
-    			})
+			})
 		}
 
 		if isGlobal {
@@ -146,11 +145,11 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 }
 
 func (v *AstVisitor) VisitIdentifierExpr(ctx *parser.IdentifierExprContext) any {
-    var name string
+	var name string
 	if ctx.KeywordSelf() != nil {
 		name = "self"
 	} else {
-    	name = ctx.Identifier().GetText()
+		name = ctx.Identifier().GetText()
 	}
 
 	if typ, ok := CompilationUnits.Peek().Types[name]; ok {
@@ -181,7 +180,7 @@ func (v *AstVisitor) VisitAssign(ctx *parser.AssignContext) any {
 
 	if value.Type() == vr.Value.Type() {
 		value = Cast(value, &TypeInfo{
-    			Type: vr.Value.Type(),
+			Type: vr.Value.Type(),
 		})
 	}
 
@@ -193,9 +192,9 @@ func (v *AstVisitor) VisitExprAssign(ctx *parser.ExprAssignContext) any {
 	value := v.Visit(ctx.VarValue()).(llvm.Value)
 
 	if expr.Type().ElementType() != value.Type() {
-    		value = Cast(value, &TypeInfo{
-        		Type: expr.Type().ElementType(),
-    		})
+		value = Cast(value, &TypeInfo{
+			Type: expr.Type().ElementType(),
+		})
 	}
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, expr)

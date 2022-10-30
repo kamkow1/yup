@@ -87,8 +87,7 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 		CompilationUnits.Peek().Module.Dump()
 	}
 
-	err := llvm.VerifyModule(CompilationUnits.Peek().Module, llvm.PrintMessageAction)
-	if err != nil {
+	if err := llvm.VerifyModule(CompilationUnits.Peek().Module, llvm.PrintMessageAction); err != nil {
 		LogError("verifying module `%s` failed. read error messages above", CompilationUnits.Peek().SourceFile)
 	}
 }

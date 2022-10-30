@@ -48,14 +48,18 @@ func ImportModule(name string) {
 
 	for name, typ := range unit.Types {
 		if typ.IsPublic {
-			newType := CompilationUnits.Peek().Module.Context().StructCreateNamed(name)
-			newType.StructSetBody(typ.Type.StructElementTypes(), false)
-			_, ok := CompilationUnits.Peek().Types[name]
-			if !ok {
-				CompilationUnits.Peek().Types[name] = &TypeInfo{
-					Name: name,
-					Type: newType,
+			if typ.Type.TypeKind() == llvm.StructTypeKind {
+				newType := CompilationUnits.Peek().Module.Context().StructCreateNamed(name)
+				newType.StructSetBody(typ.Type.StructElementTypes(), false)
+				_, ok := CompilationUnits.Peek().Types[name]
+				if !ok {
+					CompilationUnits.Peek().Types[name] = &TypeInfo{
+						Name: name,
+						Type: newType,
+					}
 				}
+			} else {
+				CompilationUnits.Peek().Types[name] = typ
 			}
 		}
 	}
@@ -67,27 +71,29 @@ func ImportModule(name string) {
 	}
 
 	for name, funcInfo := range unit.Functions {
-		function := mod.NamedFunction(funcInfo.Value.Name())
+		// function doesn't exist so we can safely import it
+		if _, ok := CompilationUnits.Peek().Functions[name]; !ok {
+			functionValue := funcInfo.Value
+			vararg := functionValue.Type().ElementType().IsFunctionVarArg()
+			paramTypes := functionValue.Type().ElementType().ParamTypes()
+			returnType := functionValue.Type().ElementType().ReturnType()
+			
+			functionType := llvm.FunctionType(returnType, paramTypes, vararg)
+			newFunction := llvm.AddFunction(CompilationUnits.Peek().Module, functionValue.Name(), functionType)
 
-		if !function.IsNil() {
-			functionType := function.Type()
-			if functionType.TypeKind() == llvm.PointerTypeKind {
-				functionType = functionType.ElementType()
-
-				if functionType.TypeKind() == llvm.FunctionTypeKind {
-					addedFunction := llvm.AddFunction(CompilationUnits.Peek().Module, funcInfo.Value.Name(), functionType)
-					CompilationUnits.Peek().Functions[funcInfo.Value.Name()] = &Function{
-						Name:      name,
-						Params:    funcInfo.Params,
-						Value:     &addedFunction,
-						ExitBlock: nil,
-					}
-				}
+			CompilationUnits.Peek().Functions[newFunction.Name()] = &Function{
+				Name:       newFunction.Name(),
+				Params:     funcInfo.Params,
+				Value:      &newFunction,
+				ExitBlock:  funcInfo.ExitBlock,
+				MethodName: funcInfo.MethodName,
 			}
+		} else {
+    		LogError("function `%s` already exists in module `%s`", name, CompilationUnits.Peek().SourceFile)
 		}
 	}
 
-	for name, _ := range unit.Globals {
+	for name := range unit.Globals {
 		glb := mod.NamedGlobal(name)
 		glb = llvm.AddGlobal(CompilationUnits.Peek().Module, glb.Type(), name)
 		CompilationUnits.Peek().Globals[name] = glb
