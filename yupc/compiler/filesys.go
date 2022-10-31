@@ -80,6 +80,7 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 
 	cu := NewCompilationUnit(fp, bcName)
 	CompilationUnits.Push(cu)
+	// runtime.KeepAlive(cu)
 
 	v.Visit(tree)
 

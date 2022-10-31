@@ -256,7 +256,7 @@ func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressio
 func FindMethod(methodName, structName string) (llvm.Value, bool) {
 	method := CompilationUnits.Peek().Module.NamedFunction(methodName)
 	if method.IsNil() {
-		LogError("cannot call method `%s` because it doesn't exist on struct `%s` and is not available in the module `%s`",
+		LogError("cannot call method `%s` because it doesn't exist on struct `%s` and is not available in the module",
 			methodName, structName)
 	}
 

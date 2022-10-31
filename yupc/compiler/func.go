@@ -130,7 +130,7 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 		function.SetLinkage(llvm.PrivateLinkage)
 	}
 
-	CompilationUnits.Peek().Functions[name] = &Function{
+	functionInfo := &Function{
 		Name:           name,
 		Value:          &function,
 		Params:         params,
@@ -140,11 +140,13 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 		HasSelf:        hasSelf,
 	}
 
-	return function
+	CompilationUnits.Peek().Functions[name] = functionInfo
+	// runtime.KeepAlive(functionInfo)
+	return functionInfo
 }
 
 func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
-	signature := v.Visit(ctx.FuncSig()).(llvm.Value)
+	signature := *v.Visit(ctx.FuncSig()).(*Function).Value
 	isVoid := signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind
 	function := CompilationUnits.Peek().Functions[signature.Name()]
 

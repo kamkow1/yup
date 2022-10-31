@@ -73,23 +73,23 @@ func ImportModule(name string) {
 	for name, funcInfo := range unit.Functions {
 		// function doesn't exist so we can safely import it
 		if _, ok := CompilationUnits.Peek().Functions[name]; !ok {
-			functionValue := funcInfo.Value
-			vararg := functionValue.Type().ElementType().IsFunctionVarArg()
-			paramTypes := functionValue.Type().ElementType().ParamTypes()
-			returnType := functionValue.Type().ElementType().ReturnType()
-			
-			functionType := llvm.FunctionType(returnType, paramTypes, vararg)
-			newFunction := llvm.AddFunction(CompilationUnits.Peek().Module, functionValue.Name(), functionType)
+			if len(funcInfo.Value.Name()) > 0 {
+				returnType := funcInfo.Value.Type().ElementType().ReturnType()
+				paramTypes := funcInfo.Value.Type().ElementType().ParamTypes()
+				vararg := funcInfo.Value.Type().ElementType().IsFunctionVarArg()
 
-			CompilationUnits.Peek().Functions[newFunction.Name()] = &Function{
-				Name:       newFunction.Name(),
-				Params:     funcInfo.Params,
-				Value:      &newFunction,
-				ExitBlock:  funcInfo.ExitBlock,
-				MethodName: funcInfo.MethodName,
+				functionType := llvm.FunctionType(returnType, paramTypes, vararg)
+				newFunction := llvm.AddFunction(CompilationUnits.Peek().Module, funcInfo.Value.Name(), functionType)
+
+				CompilationUnits.Peek().Functions[newFunction.Name()] = &Function{
+					Name:       newFunction.Name(),
+					Params:     funcInfo.Params,
+					Value:      &newFunction,
+					ExitBlock:  funcInfo.ExitBlock,
+					MethodName: funcInfo.MethodName,
+				}
+
 			}
-		} else {
-    		LogError("function `%s` already exists in module `%s`", name, CompilationUnits.Peek().SourceFile)
 		}
 	}
 
