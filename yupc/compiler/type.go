@@ -160,7 +160,7 @@ type Field struct {
 type Structure struct {
 	Name     string
 	Fields   []*Field
-	Methods  []*Function
+	Methods  []Function
 	Type     *TypeInfo
 	IsPublic bool
 }
@@ -188,8 +188,9 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	}
 
 	fields := make([]*Field, 0)
-	methods := make([]*Function, 0)
+	methods := make([]Function, 0)
 	if ctx.SymbolLbrace() != nil { // struct has a body
+		// emit struct fields
 		for _, field := range ctx.AllStructField() {
 			fields = append(fields, v.Visit(field).(*Field))
 		}
@@ -204,7 +205,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 		CompilationUnits.Peek().Structs[name] = &Structure{
 			Name:     name,
 			Fields:   fields,
-			Methods:  []*Function{},
+			Methods:  []Function{},
 			IsPublic: ispub,
 			Type: &TypeInfo{
 				Name: name,
@@ -212,8 +213,9 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 			},
 		}
 
+		// emit struct methods and rename them
 		for _, method := range ctx.AllFuncDef() {
-			funct := v.Visit(method).(*Function)
+			funct := v.Visit(method).(Function)
 			funcName := funct.Name
 			newName := name + "_" + funcName
 			funct.Name = newName
@@ -221,8 +223,9 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 			funct.Value.SetLinkage(llvm.LinkOnceODRLinkage)
 			funct.MethodName = funcName
 
-			//delete(CompilationUnits.Peek().Functions, funcName)
-			// CompilationUnits.Peek().Functions[newName] = funct
+			// replace key in `Functions` map
+			delete(CompilationUnits.Peek().Functions, funcName)
+			CompilationUnits.Peek().Functions[newName] = funct
 
 			methods = append(methods, funct)
 		}
@@ -265,15 +268,17 @@ func FindMethod(methodName, structName string) (llvm.Value, bool) {
 		LogError("struct type not found { FindMethod() }. struct name: `%s`", structName)
 	}
 
-	var foundMethod *Function
+	var foundMethod Function
+	found := false
 	for _, method := range strct.Methods {
 		if method.Name == methodName {
 			foundMethod = method
+			found = true
 		}
 	}
 
-	if foundMethod == nil {
-		LogError("failed to find method named `%s` on struct `%s`", methodName, structName)
+	if !found {
+		LogError("could not find method `%s` on struct `%s`", methodName, structName)
 	}
 
 	return method, foundMethod.HasSelf

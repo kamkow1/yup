@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"unsafe"
 
@@ -22,7 +23,7 @@ type FuncParam struct {
 
 type Function struct {
 	Name           string
-	Value          *llvm.Value
+	Value          llvm.Value
 	Params         []FuncParam
 	ExitBlock      *llvm.BasicBlock
 	MethodName     string
@@ -130,9 +131,9 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 		function.SetLinkage(llvm.PrivateLinkage)
 	}
 
-	functionInfo := &Function{
+	functionInfo := Function{
 		Name:           name,
-		Value:          &function,
+		Value:          function,
 		Params:         params,
 		ExitBlock:      &llvm.BasicBlock{},
 		MethodName:     name,
@@ -140,13 +141,15 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 		HasSelf:        hasSelf,
 	}
 
+	runtime.KeepAlive(functionInfo)
+
 	CompilationUnits.Peek().Functions[name] = functionInfo
 	// runtime.KeepAlive(functionInfo)
 	return functionInfo
 }
 
 func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
-	signature := *v.Visit(ctx.FuncSig()).(*Function).Value
+	signature := v.Visit(ctx.FuncSig()).(Function).Value
 	isVoid := signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind
 	function := CompilationUnits.Peek().Functions[signature.Name()]
 
@@ -202,7 +205,7 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 		CompilationUnits.Peek().Builder.CreateRet(load)
 	}
 
-	if err := llvm.VerifyFunction(*function.Value, llvm.PrintMessageAction); err != nil {
+	if err := llvm.VerifyFunction(function.Value, llvm.PrintMessageAction); err != nil {
 		LogError("failed to verify function. read error message above")
 	}
 

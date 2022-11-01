@@ -157,7 +157,7 @@ func (v *AstVisitor) VisitIdentifierExpr(ctx *parser.IdentifierExprContext) any 
 	}
 
 	if fnc, ok := CompilationUnits.Peek().Functions[name]; ok {
-		return CompilationUnits.Peek().Builder.CreateLoad(fnc.Value.Type().ElementType(), *fnc.Value, "")
+		return CompilationUnits.Peek().Builder.CreateLoad(fnc.Value.Type().ElementType(), fnc.Value, "")
 	}
 
 	if global, ok := CompilationUnits.Peek().Globals[name]; ok {

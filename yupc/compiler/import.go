@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -81,14 +82,15 @@ func ImportModule(name string) {
 				functionType := llvm.FunctionType(returnType, paramTypes, vararg)
 				newFunction := llvm.AddFunction(CompilationUnits.Peek().Module, funcInfo.Value.Name(), functionType)
 
-				CompilationUnits.Peek().Functions[newFunction.Name()] = &Function{
+				CompilationUnits.Peek().Functions[newFunction.Name()] = Function{
 					Name:       newFunction.Name(),
 					Params:     funcInfo.Params,
-					Value:      &newFunction,
+					Value:      newFunction,
 					ExitBlock:  funcInfo.ExitBlock,
 					MethodName: funcInfo.MethodName,
 				}
-
+			} else {
+				fmt.Println("NAME: ", funcInfo.Name)
 			}
 		}
 	}
