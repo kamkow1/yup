@@ -90,7 +90,7 @@ expression: funcCall                                            #funcCallExpr
         |   structInit                                          #StructInitExpression
         |   constStructInit                                     #ConstStructInitExpression
         |   typeName                                            #LitTypeExpr
-        |   expression (SymbolIncrement | SymbolDecrement)	#IncremDecremExpr;
+        |   Identifier (SymbolIncrement | SymbolDecrement)	    #IncremDecremExpr;
 
 statement: expression SymbolTerminator
         |  assign SymbolTerminator

@@ -12,7 +12,7 @@ func (v *AstVisitor) VisitBinopExpr(ctx *parser.BinopExprContext) any {
 	if v0.Type() != v1.Type() {
 		v1 = Cast(v1, &TypeInfo{
 			Type: v0.Type(),
-    		})
+		})
 	}
 
 	binop := ctx.Binop().(*parser.BinopContext)
@@ -37,12 +37,12 @@ func CastIntToFloatIfNeeded(v0 llvm.Value) llvm.Value {
 }
 
 const (
-	EqualComp    int = iota
-	NotEqualComp     = iota
-	LessThanComp     = iota
-	MoreThanComp     = iota
-	LessOrEqualComp  = iota
-	MoreOrEqualComp  = iota
+	EqualComp       int = iota
+	NotEqualComp        = iota
+	LessThanComp        = iota
+	MoreThanComp        = iota
+	LessOrEqualComp     = iota
+	MoreOrEqualComp     = iota
 )
 
 func CompareInts(v0 llvm.Value, v1 llvm.Value, compType int) llvm.Value {
@@ -91,8 +91,8 @@ func (v *AstVisitor) VisitCompExpr(ctx *parser.CompExprContext) any {
 
 	if v0.Type() != v1.Type() {
 		v1 = Cast(v1, &TypeInfo{
-    			Type: v0.Type(),
-    		})
+			Type: v0.Type(),
+		})
 	}
 
 	v1tk := v1.Type().TypeKind()
@@ -157,10 +157,10 @@ func (v *AstVisitor) VisitNegatedExpression(ctx *parser.NegatedExpressionContext
 	expr := v.Visit(ctx.Expression()).(llvm.Value)
 	if expr.Type() != llvm.Int1Type() {
 		expr = Cast(expr, &TypeInfo{
-    			Type: llvm.Int1Type(),
+			Type: llvm.Int1Type(),
 		})
 	}
-	
+
 	ne := CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntNE),
 		expr, llvm.ConstInt(expr.Type(), 0, false), "")
 	xor := CompilationUnits.Peek().Builder.CreateXor(ne,
@@ -175,7 +175,7 @@ func (v *AstVisitor) VisitLogicalAndExpression(ctx *parser.LogicalAndExpressionC
 
 	if v0.Type() != v1.Type() {
 		v1 = Cast(v1, &TypeInfo{
-    			Type: v0.Type(),
+			Type: v0.Type(),
 		})
 	}
 
@@ -187,28 +187,29 @@ func (v *AstVisitor) VisitLogicalOrExpression(ctx *parser.LogicalOrExpressionCon
 	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
 
 	if v0.Type() != v1.Type() {
-    		v1 = Cast(v1, &TypeInfo{
-        		  Type: v0.Type(),
-    		})
+		v1 = Cast(v1, &TypeInfo{
+			Type: v0.Type(),
+		})
 	}
 
 	return CompilationUnits.Peek().Builder.CreateOr(v0, v1, "")
 }
 
 func (v *AstVisitor) VisitIncremDecremExpr(ctx *parser.IncremDecremExprContext) any {
-    	value := v.Visit(ctx.Expression()).(llvm.Value)
+	name := ctx.Identifier().GetText()
+	value := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
 	ptr := value
 
 	if value.Type().TypeKind() == llvm.PointerTypeKind {
 		value = CompilationUnits.Peek().Builder.CreateLoad(value.Type().ElementType(), value, "")
 	} else {
-    		LogError("cannot increment/decrement non-pointer variables")
+		LogError("cannot increment/decrement non-pointer variables")
 	}
-	
+
 	if value.Type().TypeKind() != llvm.IntegerTypeKind {
-    		value = Cast(value, &TypeInfo{
-        		Type: llvm.Int64Type(),
-    		})
+		value = Cast(value, &TypeInfo{
+			Type: llvm.Int64Type(),
+		})
 	}
 
 	var newValue llvm.Value
@@ -220,6 +221,6 @@ func (v *AstVisitor) VisitIncremDecremExpr(ctx *parser.IncremDecremExprContext) 
 		newValue = CompilationUnits.Peek().Builder.CreateSub(value, negone, "")
 	}
 
-    	CompilationUnits.Peek().Builder.CreateStore(newValue, ptr)
+	CompilationUnits.Peek().Builder.CreateStore(newValue, ptr)
 	return value
 }
