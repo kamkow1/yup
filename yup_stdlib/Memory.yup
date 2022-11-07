@@ -1,9 +1,9 @@
 
-pub malloc: fnc(size: i64) -> *void;
-pub free: fnc(ptr: *void);
-pub memset: fnc(arr: *void, count: i32, size: i64) -> *void;
-pub memcpy: fnc(dest: *void, src: *i8, n: i64) -> *void;
-pub realloc: fnc(ptr: *void, sz: i64) -> *void;
+extern malloc: fnc(size: i64) -> *void;
+extern free: fnc(ptr: *void);
+extern memset: fnc(arr: *void, count: i32, size: i64) -> *void;
+extern memcpy: fnc(dest: *void, src: *i8, n: i64) -> *void;
+extern realloc: fnc(ptr: *void, sz: i64) -> *void;
 
 pub alloc_memory: fnc(const sz: i64) -> *void {
 	return malloc(sz);

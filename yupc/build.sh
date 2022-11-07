@@ -1,3 +1,3 @@
 #!/bin/sh
 
-go build -o bin/yupc main.go
+go build -gcflags "-N" -o bin/yupc main.go

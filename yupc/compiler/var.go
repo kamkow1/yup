@@ -156,6 +156,11 @@ func (v *AstVisitor) VisitIdentifierExpr(ctx *parser.IdentifierExprContext) any 
 		return typ
 	}
 
+	function := CompilationUnits.Peek().Module.NamedFunction(name)
+	if !function.IsNil() {
+		return function
+	}
+
 	if fnc, ok := CompilationUnits.Peek().Functions[name]; ok {
 		return CompilationUnits.Peek().Builder.CreateLoad(fnc.Value.Type().ElementType(), fnc.Value, "")
 	}

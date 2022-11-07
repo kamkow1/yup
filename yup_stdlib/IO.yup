@@ -1,4 +1,4 @@
 
-pub printf: fnc(fmt: *i8, ...) -> i32;
-pub scanf: fnc(fmt: *i8, ...) -> i32;
+extern printf: fnc(fmt: *i8, ...) -> i32;
+extern scanf: fnc(fmt: *i8, ...) -> i32;
 

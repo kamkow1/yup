@@ -1,7 +1,8 @@
 package compiler
 
 import (
-	"fmt"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -16,25 +17,26 @@ func ImportModule(name string) {
 		name = strings.ReplaceAll(name, elems[0], p)
 	}
 
-	if filepath.Ext(name) == ".bc" {
-		module, err := llvm.ParseBitcodeFile(name)
+	if filepath.Ext(name) == ".c" {
+		bitcode := strings.TrimSuffix(name, filepath.Ext(".c")) + ".bc"
+		dir := filepath.Dir(bitcode)
+		fileName := filepath.Base(bitcode)
+		bitcode = filepath.Join(dir, "build", fileName)
+
+		cmdargs := []string{"-c", "-emit-llvm", name, "-o", bitcode}
+		cmd := exec.Command("clang-14", cmdargs...)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+
 		if err != nil {
-			LogError("failed to import %s: %s", name, err)
+			LogError("compiling imported C failed (%s):\n %s", name, err.Error())
 		}
 
-		cu := NewCompilationUnit(name, name)
-		cu.Module = module
-		CompilationUnits.Push(cu)
-	} else if filepath.Ext(name) == ".ll" {
-		ctx := &llvm.Context{}
-		file, err := llvm.NewMemoryBufferFromFile(name)
+		module, err := llvm.ParseBitcodeFile(bitcode)
 		if err != nil {
-			LogError("failedt to import %s: %s", name, err)
-		}
-
-		module, err2 := ctx.ParseIR(file)
-		if err2 != nil {
-			LogError("failed to import %s: %s", name, err2)
+			LogError("failed to parse Bitcode: %s", err.Error())
 		}
 
 		cu := NewCompilationUnit(name, name)
@@ -74,24 +76,30 @@ func ImportModule(name string) {
 	for name, funcInfo := range unit.Functions {
 		// function doesn't exist so we can safely import it
 		if _, ok := CompilationUnits.Peek().Functions[name]; !ok {
-			if len(funcInfo.Value.Name()) > 0 {
-				returnType := funcInfo.Value.Type().ElementType().ReturnType()
-				paramTypes := funcInfo.Value.Type().ElementType().ParamTypes()
-				vararg := funcInfo.Value.Type().ElementType().IsFunctionVarArg()
 
-				functionType := llvm.FunctionType(returnType, paramTypes, vararg)
-				newFunction := llvm.AddFunction(CompilationUnits.Peek().Module, funcInfo.Value.Name(), functionType)
+			function := mod.NamedFunction(funcInfo.Name)
 
-				CompilationUnits.Peek().Functions[newFunction.Name()] = Function{
-					Name:       newFunction.Name(),
-					Params:     funcInfo.Params,
-					Value:      newFunction,
-					ExitBlock:  funcInfo.ExitBlock,
-					MethodName: funcInfo.MethodName,
-				}
-			} else {
-				fmt.Println("NAME: ", funcInfo.Name)
+			//if len(mod.NamedFunction(funcInfo.Name).Name()) > 0 {
+			returnType := function.Type().ElementType().ReturnType()
+			paramTypes := function.Type().ElementType().ParamTypes()
+			vararg := function.Type().ElementType().IsFunctionVarArg()
+
+			functionType := llvm.FunctionType(returnType, paramTypes, vararg)
+			newFunction := llvm.AddFunction(CompilationUnits.Peek().Module, funcInfo.Name, functionType)
+
+			CompilationUnits.Peek().Functions[newFunction.Name()] = Function{
+				Name:       newFunction.Name(),
+				Params:     funcInfo.Params,
+				Value:      newFunction,
+				ExitBlock:  funcInfo.ExitBlock,
+				MethodName: funcInfo.MethodName,
 			}
+			//} else {
+			//	fmt.Println("NAME: ", funcInfo.Name)
+			//	functionType := funcInfo.Value.Type()
+			//	newFunction := llvm.AddFunction(CompilationUnits.Peek().Module, funcInfo.Name, functionType)
+			//	_ = newFunction
+			//}
 		}
 	}
 

@@ -45,6 +45,6 @@ func MakeExec(objpath string, execname string) {
 	err := cmd.Run()
 
 	if err != nil {
-		LogError("failed to construct an executable")
+		LogError("failed to construct an executable: \n%s\n", err.Error())
 	}
 }

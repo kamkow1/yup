@@ -175,7 +175,7 @@ func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
 var StructNameStack = NewStack[string]()
 
 func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext) any {
-	name := ctx.Identifier().GetText()
+	name := ctx.Identifier(0).GetText()
 	StructNameStack.Push(&name)
 
 	ispub := ctx.KeywordPublic() != nil
@@ -189,6 +189,33 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 	fields := make([]*Field, 0)
 	methods := make([]Function, 0)
+
+	// inherit other structs
+	if ctx.SymbolExclMark() != nil { // has inherit list
+		for i, inh := range ctx.AllIdentifier() {
+			if i != 0 {
+				structName := inh.GetText()
+				strct := CompilationUnits.Peek().Structs[structName]
+				for _, field := range strct.Fields {
+					fields = append(fields, field)
+				}
+
+				for _, method := range strct.Methods {
+					// construct a new method for the struct
+					split := strings.Split(method.Name, "_")
+					split = split[1:len(split)]
+					newName := name + "_" + strings.Join(split, "_")
+
+					newMethod := method
+					newMethod.Name = newName
+					newMethod.Value.SetName(newName)
+
+					methods = append(methods, newMethod)
+				}
+			}
+		}
+	}
+
 	if ctx.SymbolLbrace() != nil { // struct has a body
 		// emit struct fields
 		for _, field := range ctx.AllStructField() {
