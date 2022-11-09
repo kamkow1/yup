@@ -44,8 +44,8 @@ ifThenBlock: codeBlock;
 ifElseBlock: KeywordElse codeBlock;
 
 constant: stringExpr | (ValueInteger typeAnnot?) | ValueFloat | ValueChar | ValueNull;
-multilineString: ValueString+;
-stringExpr: (KeywordValueString? ValueString) | multilineString;
+multilineString: (ValueString SymbolBackSlash)+;
+stringExpr: KeywordValueString? (ValueString | multilineString);
 
 compOper: SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
 
@@ -65,6 +65,8 @@ fieldAssignment: expression SymbolDot Identifier varValue;
 typeAliasDeclaration: Identifier SymbolColon KeywordTypeAlias typeName;
 structInit: Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 constStructInit: SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
+
+preprocDecl: SymbolHash Identifier Identifier? expression? SymbolTerminator?;
 
 expression: funcCall                                            #funcCallExpr
         |   (Identifier | KeywordSelf)                          #identifierExpr
@@ -87,7 +89,8 @@ expression: funcCall                                            #funcCallExpr
         |   structInit                                          #StructInitExpression
         |   constStructInit                                     #ConstStructInitExpression
         |   typeName                                            #LitTypeExpr
-        |   Identifier (SymbolIncrement | SymbolDecrement)	    #IncremDecremExpr;
+        |   Identifier (SymbolIncrement | SymbolDecrement)	    #IncremDecremExpr
+        |   preprocDecl                                         #MacroRef;
 
 statement: expression SymbolTerminator
         |  assign SymbolTerminator
@@ -105,5 +108,6 @@ statement: expression SymbolTerminator
         |  funcDef
         |  codeBlock
         |  SymbolTerminator
-        |  structDeclaration;
+        |  structDeclaration
+        |  preprocDecl;
 

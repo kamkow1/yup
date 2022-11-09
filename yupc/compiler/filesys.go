@@ -86,6 +86,9 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 
 	v.Visit(tree)
 
+	// set all inline assembly for the module
+	CompilationUnits.Peek().Module.SetInlineAsm(InlineAsm)
+
 	if GlobalCompilerInfo.PrintModule {
 		CompilationUnits.Peek().Module.Dump()
 	}

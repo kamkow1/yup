@@ -77,6 +77,7 @@ type CompilationUnit struct {
 	Functions  map[string]*Function
 	Structs    map[string]*Structure
 	Types 	   map[string]*TypeInfo
+	Macros	   map[string]*MacroInfo
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
@@ -90,6 +91,7 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 		Globals:    map[string]*llvm.Value{},
 		Functions:  map[string]*Function{},
 		Structs:    map[string]*Structure{},
+		Macros:		map[string]*MacroInfo{},
 		Types:		InitTypeMap(),
 	}
 }
@@ -335,7 +337,13 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 	case *parser.StaticMethodCallExprContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitStaticMethodCallExpr(ctx)
-    	
+
+	case *parser.PreprocDeclContext:
+		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+		return v.VisitPreprocDecl(ctx)
+	case *parser.MacroRefContext:
+		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+		return v.Visit(ctx.PreprocDecl())
 
 	default:
 		LogError("stepped into an unimplemented context: %s\n", ctx.GetText())

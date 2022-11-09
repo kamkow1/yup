@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
@@ -82,10 +83,16 @@ func (v *AstVisitor) VisitMultilineStringExpression(ctx *parser.MultilineStringE
 }
 
 func (v *AstVisitor) VisitMultilineString(ctx *parser.MultilineStringContext) any {
-	buf := ctx.GetText()
-	buf = buf[1 : len(buf)-1]
+	//buf := ctx.GetText()
+	//buf = buf[1 : len(buf)-1]
+	var elems []string
+	for _, str := range ctx.AllValueString() {
+		value := str.GetText()
+		value = value[1 : len(value)-1]
+		elems = append(elems, value)
+	}
 
-	return buf
+	return strings.Join(elems, "\n")
 }
 
 func (v *AstVisitor) VisitConstArray(ctx *parser.ConstArrayContext) any {
