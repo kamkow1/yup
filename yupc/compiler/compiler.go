@@ -284,14 +284,6 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitImportDecl(ctx)
 
-	// Attribute
-	case *parser.AttrListContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitAttrList(ctx)
-	case *parser.AttrContext:
-		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitAttr(ctx)
-
 	// Loop
 	case *parser.ForLoopStatementContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()

@@ -8,9 +8,6 @@ file: statement*;
 
 codeBlock: SymbolLbrace statement* SymbolRbrace;
 
-attrList: SymbolHash SymbolLsqbr (attr (SymbolComma attr)*)? SymbolRsqbr;
-attr: Identifier SymbolLparen (ValueString (SymbolComma ValueString)*)? SymbolRparen;
-
 typeAnnot: SymbolColon typeName;
 typeName: (typeExt* (Identifier | structType | funcType));
 typeExt: arrayTypeExt | SymbolAsterisk | SymbolQuestMark;
@@ -24,13 +21,13 @@ arrayIndex: SymbolLsqbr expression SymbolRsqbr;
 constArray: SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
 
 assign: Identifier varValue;
-varDecl: attrList? KeywordPublic? declType Identifier (SymbolComma Identifier)* typeAnnot? varValue?;
+varDecl: KeywordPublic? declType Identifier (SymbolComma Identifier)* typeAnnot? varValue?;
 declType: (KeywordVar | KeywordConst);
 varValue: SymbolAssign expression;
 exprAssign: expression varValue;
 
 funcDef: funcSig codeBlock;
-funcSig: attrList? KeywordExtern? KeywordPublic? Identifier SymbolColon KeywordFunction
+funcSig: KeywordExtern? KeywordPublic? Identifier SymbolColon KeywordFunction
         SymbolLparen funcParamList? SymbolRparen (SymbolArrow typeName)?;
 funcParamList: funcParam (SymbolComma funcParam)*;
 funcReturn: KeywordReturn (expression (SymbolComma expression)*)?;
@@ -60,7 +57,7 @@ finalStatement:	statement;
 continueStatement: KeywordContinue;
 breakStatement: KeywordBreak;
 
-structDeclaration: attrList? KeywordPublic? Identifier SymbolColon KeywordStruct 
+structDeclaration: KeywordPublic? Identifier SymbolColon KeywordStruct 
         (SymbolExclMark Identifier (SymbolComma Identifier)*)?
 		((SymbolLbrace structField* funcDef* SymbolRbrace) | SymbolTerminator);
 structField: Identifier typeAnnot SymbolTerminator;

@@ -123,10 +123,6 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 			CompilationUnits.Peek().Globals[name] = &glb
 
 		} else {
-			if ctx.AttrList() != nil {
-				LogError("local variable %s cannot have an attribute list", name)
-			}
-
 			alloca := CreateAllocation(typ.Type)
 			loclen := len(CompilationUnits.Peek().Locals) - 1
 			CompilationUnits.Peek().Locals[loclen][name] = &LocalVariable{
