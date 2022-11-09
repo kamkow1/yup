@@ -284,8 +284,9 @@ func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationC
 	name := ctx.Identifier().GetText()
 
 	CompilationUnits.Peek().Types[name] = &TypeInfo{
-		Name: name,
-		Type: original.Type,
+		IsPublic: ctx.KeywordPublic() != nil,
+		Name:     name,
+		Type:     original.Type,
 	}
 
 	return nil

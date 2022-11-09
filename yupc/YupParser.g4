@@ -62,7 +62,7 @@ structDeclaration: KeywordPublic? Identifier SymbolColon KeywordStruct
 		((SymbolLbrace structField* funcDef* SymbolRbrace) | SymbolTerminator);
 structField: Identifier typeAnnot SymbolTerminator;
 fieldAssignment: expression SymbolDot Identifier varValue;
-typeAliasDeclaration: Identifier SymbolColon KeywordTypeAlias typeName;
+typeAliasDeclaration: KeywordPublic? Identifier SymbolColon KeywordTypeAlias typeName;
 structInit: Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 constStructInit: SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 
