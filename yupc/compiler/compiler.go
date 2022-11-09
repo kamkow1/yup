@@ -71,23 +71,24 @@ type CompilationUnit struct {
 	SourceFile string
 	ModuleName string
 	Builder    llvm.Builder
-	Module     llvm.Module
-	Locals     []map[string]LocalVariable
-	Globals    map[string]llvm.Value
-	Functions  map[string]Function
+	Module     *llvm.Module
+	Locals     []map[string]*LocalVariable
+	Globals    map[string]*llvm.Value
+	Functions  map[string]*Function
 	Structs    map[string]*Structure
 	Types 	   map[string]*TypeInfo
 }
 
 func NewCompilationUnit(sf string, bc string) *CompilationUnit {
+	m := llvm.NewModule(sf)
 	return &CompilationUnit{
 		SourceFile: sf,
 		ModuleName: bc,
 		Builder:    llvm.NewBuilder(),
-		Module:		llvm.NewModule(sf),
-		Locals:     []map[string]LocalVariable{},
-		Globals:    map[string]llvm.Value{},
-		Functions:  map[string]Function{},
+		Module:		&m,
+		Locals:     []map[string]*LocalVariable{},
+		Globals:    map[string]*llvm.Value{},
+		Functions:  map[string]*Function{},
 		Structs:    map[string]*Structure{},
 		Types:		InitTypeMap(),
 	}
@@ -95,7 +96,7 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 
 var CompilationUnits = NewStack[CompilationUnit]()
 
-func GetBCWriteData() (llvm.Module, string) {
+func GetBCWriteData() (*llvm.Module, string) {
 	mod := CompilationUnits.Peek().Module
 	p := CompilationUnits.Peek().ModuleName
 	return mod, p

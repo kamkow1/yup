@@ -13,8 +13,7 @@ type BlockExitStatus struct {
 }
 
 func CreateBlock() {
-	m := map[string]LocalVariable{}
-	CompilationUnits.Peek().Locals = append(CompilationUnits.Peek().Locals, m)
+	CompilationUnits.Peek().Locals = append(CompilationUnits.Peek().Locals, map[string]*LocalVariable{})
 }
 
 func RemoveBlock() {
@@ -59,7 +58,7 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 	if llvmLifeTimeEnd.IsNil() {
 		pts := []llvm.Type{llvm.Int64Type(), llvm.PointerType(llvm.Int8Type(), 0)}
 		ft := llvm.FunctionType(llvm.VoidType(), pts, false)
-		llvmLifeTimeEnd = llvm.AddFunction(CompilationUnits.Peek().Module, "llvm.lifetime.end", ft)
+		llvmLifeTimeEnd = llvm.AddFunction(*CompilationUnits.Peek().Module, "llvm.lifetime.end", ft)
 	}
 
 	hasTerminated := blockExitStatus.HasBranched || blockExitStatus.HasBrokenOut || blockExitStatus.HasContinued || blockExitStatus.HasReturned

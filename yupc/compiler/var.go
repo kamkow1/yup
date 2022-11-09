@@ -28,7 +28,7 @@ func CreateAllocation(typ llvm.Type) llvm.Value {
 		}
 
 		ft := llvm.FunctionType(llvm.VoidType(), pts, false)
-		lifetimeStart = llvm.AddFunction(CompilationUnits.Peek().Module, ltsname, ft)
+		lifetimeStart = llvm.AddFunction(*CompilationUnits.Peek().Module, ltsname, ft)
 	}
 
 	targetData := llvm.NewTargetData(CompilationUnits.Peek().Module.DataLayout())
@@ -44,15 +44,15 @@ func CreateAllocation(typ llvm.Type) llvm.Value {
 	return alloca
 }
 
-func FindLocalVariable(name string, i int) LocalVariable {
+func FindLocalVariable(name string, i int) *LocalVariable {
 
-	var local LocalVariable
+	var local *LocalVariable
 	if v, ok := CompilationUnits.Peek().Locals[i][name]; ok {
 		local = v
 	} else if i >= 1 {
 		local = FindLocalVariable(name, i-1)
 	} else {
-		LogError("tried to reference an unknown variable: %s", name)
+		LogError("tried to reference an unknown identifier: %s", name)
 	}
 
 	return local
@@ -109,7 +109,7 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 		}
 
 		if isGlobal {
-			glb := llvm.AddGlobal(CompilationUnits.Peek().Module, typ.Type, name)
+			glb := llvm.AddGlobal(*CompilationUnits.Peek().Module, typ.Type, name)
 			if isInit {
 				glb.SetInitializer(value)
 			}
@@ -120,7 +120,7 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 				glb.SetLinkage(llvm.LinkOnceAnyLinkage)
 			}
 
-			CompilationUnits.Peek().Globals[name] = glb
+			CompilationUnits.Peek().Globals[name] = &glb
 
 		} else {
 			if ctx.AttrList() != nil {
@@ -129,7 +129,7 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 
 			alloca := CreateAllocation(typ.Type)
 			loclen := len(CompilationUnits.Peek().Locals) - 1
-			CompilationUnits.Peek().Locals[loclen][name] = LocalVariable{
+			CompilationUnits.Peek().Locals[loclen][name] = &LocalVariable{
 				Name:    name,
 				IsConst: isConstant,
 				Value:   alloca,
@@ -162,11 +162,11 @@ func (v *AstVisitor) VisitIdentifierExpr(ctx *parser.IdentifierExprContext) any 
 	}
 
 	if fnc, ok := CompilationUnits.Peek().Functions[name]; ok {
-		return CompilationUnits.Peek().Builder.CreateLoad(fnc.Value.Type().ElementType(), fnc.Value, "")
+		return CompilationUnits.Peek().Builder.CreateLoad(fnc.Value.Type().ElementType(), *fnc.Value, "")
 	}
 
 	if global, ok := CompilationUnits.Peek().Globals[name]; ok {
-		return CompilationUnits.Peek().Builder.CreateLoad(global.Type().ElementType(), global, "")
+		return CompilationUnits.Peek().Builder.CreateLoad(global.Type().ElementType(), *global, "")
 	}
 
 	val := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value

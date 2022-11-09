@@ -36,13 +36,15 @@ var DefaultImportPaths map[string]string = map[string]string{
 	"#project": GetCwd(),
 }
 
-func WriteBCFile(mod llvm.Module, p string) {
+func WriteBCFile(mod *llvm.Module, p string) {
 	if f, err := os.Create(p); err != nil {
 		LogError(err.Error())
-	} else if err2 := llvm.WriteBitcodeToFile(mod, f); err2 != nil {
-		LogError(err2.Error())
 	} else {
 		defer f.Close()
+
+		if err := llvm.WriteBitcodeToFile(*mod, f); err != nil {
+			LogError(err.Error())
+		}
 	}
 }
 
@@ -88,7 +90,7 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 		CompilationUnits.Peek().Module.Dump()
 	}
 
-	if err := llvm.VerifyModule(CompilationUnits.Peek().Module, llvm.PrintMessageAction); err != nil {
+	if err := llvm.VerifyModule(*CompilationUnits.Peek().Module, llvm.PrintMessageAction); err != nil {
 		LogError("verifying module `%s` failed. read error messages above", CompilationUnits.Peek().SourceFile)
 	}
 }

@@ -32,10 +32,10 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	function := CompilationUnits.Peek().Functions[functionName]
 
-	loopBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.body")
-	mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "for.merge")
+	loopBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(*function.Value, "for.body")
+	mergeBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(*function.Value, "for.merge")
 
-	prepBlock := llvm.AddBasicBlock(function.Value, "for.prep")
+	prepBlock := llvm.AddBasicBlock(*function.Value, "for.prep")
 	CompilationUnits.Peek().Builder.CreateBr(prepBlock)
 	CompilationUnits.Peek().Builder.SetInsertPoint(prepBlock, prepBlock.FirstInstruction())
 
@@ -170,14 +170,14 @@ func (v *AstVisitor) VisitIfStatement(ctx *parser.IfStatementContext) any {
 
 	functionName := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
 	function := CompilationUnits.Peek().Functions[functionName]
-	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(function.Value, "if.then")
+	thenBlock := CompilationUnits.Peek().Module.Context().AddBasicBlock(*function.Value, "if.then")
 
 	var elseBlock llvm.BasicBlock
 	if ctx.IfElseBlock() != nil {
-		elseBlock = llvm.AddBasicBlock(function.Value, "if.else")
+		elseBlock = llvm.AddBasicBlock(*function.Value, "if.else")
 	}
 
-	mergeBlock := llvm.AddBasicBlock(function.Value, "if.merge")
+	mergeBlock := llvm.AddBasicBlock(*function.Value, "if.merge")
 
 	if ctx.IfElseBlock() != nil {
 		CompilationUnits.Peek().Builder.CreateCondBr(cond, thenBlock, elseBlock)

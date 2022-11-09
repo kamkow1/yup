@@ -14,6 +14,7 @@ type TypeInfo struct {
 	IsPublic bool
 }
 
+// initialize built-in types
 func InitTypeMap() map[string]*TypeInfo {
 	return map[string]*TypeInfo{
 		"i1": &TypeInfo{
@@ -160,7 +161,7 @@ type Field struct {
 type Structure struct {
 	Name     string
 	Fields   []*Field
-	Methods  []Function
+	Methods  []*Function
 	Type     *TypeInfo
 	IsPublic bool
 }
@@ -188,7 +189,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	}
 
 	fields := make([]*Field, 0)
-	methods := make([]Function, 0)
+	methods := make([]*Function, 0)
 
 	// inherit other structs
 	if ctx.SymbolExclMark() != nil { // has inherit list
@@ -202,13 +203,27 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 				for _, method := range strct.Methods {
 					// construct a new method for the struct
-					split := strings.Split(method.Name, "_")
+					split := strings.Split(method.Value.Name(), "_")
 					split = split[1:len(split)]
 					newName := name + "_" + strings.Join(split, "_")
 
-					newMethod := method
-					newMethod.Name = newName
-					newMethod.Value.SetName(newName)
+					returnType := method.Value.Type().ElementType().ReturnType()
+					paramTypes := method.Value.Type().ParamTypes()
+					vararg := method.Value.Type().IsFunctionVarArg()
+
+					functionType := llvm.FunctionType(returnType, paramTypes, vararg)
+
+					module := CompilationUnits.Peek().Module
+					functionValue := llvm.AddFunction(*module, newName, functionType)
+
+					newMethod := &Function{
+						Name:           newName,
+						Value:          &functionValue,
+						ExitBlock:      method.ExitBlock,
+						MethodName:     method.MethodName,
+						IsPublicMethod: method.IsPublicMethod,
+						HasSelf:        method.HasSelf,
+					}
 
 					methods = append(methods, newMethod)
 				}
@@ -232,7 +247,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 		CompilationUnits.Peek().Structs[name] = &Structure{
 			Name:     name,
 			Fields:   fields,
-			Methods:  []Function{},
+			Methods:  []*Function{},
 			IsPublic: ispub,
 			Type: &TypeInfo{
 				Name: name,
@@ -242,7 +257,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 		// emit struct methods and rename them
 		for _, method := range ctx.AllFuncDef() {
-			funct := v.Visit(method).(Function)
+			funct := v.Visit(method).(*Function)
 			funcName := funct.Name
 			newName := name + "_" + funcName
 			funct.Name = newName
@@ -295,7 +310,7 @@ func FindMethod(methodName, structName string) (llvm.Value, bool) {
 		LogError("struct type not found { FindMethod() }. struct name: `%s`", structName)
 	}
 
-	var foundMethod Function
+	var foundMethod *Function
 	found := false
 	for _, method := range strct.Methods {
 		if method.Name == methodName {

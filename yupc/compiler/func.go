@@ -23,7 +23,7 @@ type FuncParam struct {
 
 type Function struct {
 	Name           string
-	Value          llvm.Value
+	Value          *llvm.Value
 	Params         []FuncParam
 	ExitBlock      *llvm.BasicBlock
 	MethodName     string
@@ -114,7 +114,7 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 	}
 
 	funcType := llvm.FunctionType(returnType.Type, types, isVarArg)
-	function := llvm.AddFunction(CompilationUnits.Peek().Module, name, funcType)
+	function := llvm.AddFunction(*CompilationUnits.Peek().Module, name, funcType)
 
 	for i, pt := range params {
 		if !pt.IsVarArg {
@@ -131,9 +131,9 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 		function.SetLinkage(llvm.PrivateLinkage)
 	}
 
-	functionInfo := Function{
+	functionInfo := &Function{
 		Name:           name,
-		Value:          function,
+		Value:          &function,
 		Params:         params,
 		ExitBlock:      &llvm.BasicBlock{},
 		MethodName:     name,
@@ -149,13 +149,13 @@ func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 }
 
 func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
-	signature := v.Visit(ctx.FuncSig()).(Function).Value
+	signature := v.Visit(ctx.FuncSig()).(*Function).Value
 	isVoid := signature.Type().ReturnType().ElementType().TypeKind() == llvm.VoidTypeKind
 	function := CompilationUnits.Peek().Functions[signature.Name()]
 
 	CreateBlock()
-	bodyBlock := llvm.AddBasicBlock(signature, "body")
-	*function.ExitBlock = llvm.AddBasicBlock(signature, "exit")
+	bodyBlock := llvm.AddBasicBlock(*signature, "body")
+	*function.ExitBlock = llvm.AddBasicBlock(*signature, "exit")
 
 	CompilationUnits.Peek().Builder.SetInsertPointAtEnd(bodyBlock)
 
@@ -163,7 +163,7 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 		name := "__return_value"
 		returnType := function.Value.Type().ReturnType().ElementType()
 		a := CompilationUnits.Peek().Builder.CreateAlloca(returnType, name)
-		loc := LocalVariable{
+		loc := &LocalVariable{
 			Name:    name,
 			IsConst: true,
 			Value:   a,
@@ -178,7 +178,7 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 		for i, p := range signature.Params() {
 			alloca := CreateAllocation(p.Type())
 			loclen := len(CompilationUnits.Peek().Locals) - 1
-			CompilationUnits.Peek().Locals[loclen][p.Name()] = LocalVariable{
+			CompilationUnits.Peek().Locals[loclen][p.Name()] = &LocalVariable{
 				Name:    p.Name(),
 				IsConst: function.Params[i].IsConst,
 				Value:   alloca,
@@ -205,7 +205,7 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 		CompilationUnits.Peek().Builder.CreateRet(load)
 	}
 
-	if err := llvm.VerifyFunction(function.Value, llvm.PrintMessageAction); err != nil {
+	if err := llvm.VerifyFunction(*function.Value, llvm.PrintMessageAction); err != nil {
 		LogError("failed to verify function. read error message above")
 	}
 
@@ -299,7 +299,7 @@ func (v *AstVisitor) VisitFuncCall(ctx *parser.FuncCallContext) any {
 		if _, ok := CompilationUnits.Peek().Functions[name]; ok {
 			funcToCall = CompilationUnits.Peek().Module.NamedFunction(name)
 		} else if global, ok2 := CompilationUnits.Peek().Globals[name]; ok2 {
-			funcToCall = CompilationUnits.Peek().Builder.CreateLoad(global.Type().ElementType(), global, "")
+			funcToCall = CompilationUnits.Peek().Builder.CreateLoad(global.Type().ElementType(), *global, "")
 		} else {
 			funcToCall = FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
 			funcToCall = CompilationUnits.Peek().Builder.CreateLoad(funcToCall.Type().ElementType(), funcToCall, "")
