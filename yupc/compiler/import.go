@@ -47,22 +47,19 @@ func ImportModule(name string) {
 	}
 
 	unit := CompilationUnits.Pop()
-	mod := unit.Module
+	//mod := unit.Module
 
 	for name, typ := range unit.Types {
-		if typ.IsPublic {
+		if _, ok := CompilationUnits.Peek().Types[name]; !ok && typ.IsPublic {
 			if typ.Type.TypeKind() == llvm.StructTypeKind {
-				newType := CompilationUnits.Peek().Module.Context().StructCreateNamed(name)
-				newType.StructSetBody(typ.Type.StructElementTypes(), false)
-				_, ok := CompilationUnits.Peek().Types[name]
-				if !ok {
-					CompilationUnits.Peek().Types[name] = &TypeInfo{
-						Name: name,
-						Type: newType,
-					}
+				c := CompilationUnits.Peek().Module.Context()
+				structType := c.StructCreateNamed(typ.Type.StructName())
+				structType.StructSetBody(typ.Type.StructElementTypes(), false)
+
+				CompilationUnits.Peek().Types[name] = &TypeInfo{
+					Name: typ.Type.StructName(),
+					Type: structType,
 				}
-			} else {
-				CompilationUnits.Peek().Types[name] = typ
 			}
 		}
 	}
@@ -77,10 +74,8 @@ func ImportModule(name string) {
 		// function doesn't exist so we can safely import it
 		if _, ok := CompilationUnits.Peek().Functions[name]; !ok {
 
-			function := mod.NamedFunction(funcInfo.Name)
-
-			//if len(mod.NamedFunction(funcInfo.Name).Name()) > 0 {
-			returnType := function.Type().ElementType().ReturnType()
+			function := unit.Module.NamedFunction(funcInfo.Name)
+			returnType := function.Type().ReturnType().ReturnType()
 			paramTypes := function.Type().ElementType().ParamTypes()
 			vararg := function.Type().ElementType().IsFunctionVarArg()
 
@@ -94,24 +89,17 @@ func ImportModule(name string) {
 				ExitBlock:  funcInfo.ExitBlock,
 				MethodName: funcInfo.MethodName,
 			}
-
-			//} else {
-			//	fmt.Println("NAME: ", funcInfo.Name)
-			//	functionType := funcInfo.Value.Type()
-			//	newFunction := llvm.AddFunction(CompilationUnits.Peek().Module, funcInfo.Name, functionType)
-			//	_ = newFunction
-			//}
 		}
 	}
 
 	for name := range unit.Globals {
-		glb := mod.NamedGlobal(name)
+		glb := unit.Module.NamedGlobal(name)
 		glb = llvm.AddGlobal(*CompilationUnits.Peek().Module, glb.Type(), name)
 		CompilationUnits.Peek().Globals[name] = &glb
 	}
 
-	mod.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())
-	llvm.LinkModules(*CompilationUnits.Peek().Module, *mod)
+	unit.Module.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())
+	llvm.LinkModules(*CompilationUnits.Peek().Module, *unit.Module)
 }
 
 func (v *AstVisitor) VisitImportDecl(ctx *parser.ImportDeclContext) any {

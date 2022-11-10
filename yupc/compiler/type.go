@@ -444,14 +444,23 @@ func GetStructFieldPtr(strct llvm.Value, fieldname string) llvm.Value {
 		LogError("cannot access struct fields on a non-pointer type: `%s`", strct.Type().String())
 	}
 
-	strctname := strct.Type().ElementType().StructName()
-	baseStruct := CompilationUnits.Peek().Structs[strctname]
+	strctname := strings.Split(strct.Type().ElementType().StructName(), ".")[0]
+	baseStruct, ok := CompilationUnits.Peek().Structs[strctname]
+	if !ok {
+		LogError("unable to find struct base `%s`", strctname)
+	}
 
 	var field llvm.Value
+	found := false
 	for i, f := range baseStruct.Fields {
 		if fieldname == f.Name {
+			found = true
 			field = CompilationUnits.Peek().Builder.CreateStructGEP(strct.Type().ElementType(), strct, i, "")
 		}
+	}
+
+	if !found {
+		LogError("unable to find field named `%s` on struct `%s`", fieldname, strctname)
 	}
 
 	return field
