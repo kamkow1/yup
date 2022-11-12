@@ -84,7 +84,7 @@ expression: funcCall                                            #funcCallExpr
         |   constant                                            #constantExpression
         |   multilineString										#MultilineStringExpression
         |   expression SymbolDot Identifier						#FieldAccessExpression
-        |   expression SymbolDot funcCall						#MethodCallExpr
+        |   Identifier SymbolColon SymbolColon expression SymbolDot funcCall #MethodCallExpr
         |	Identifier SymbolColon SymbolColon funcCall			#StaticMethodCallExpr
         |   structInit                                          #StructInitExpression
         |   constStructInit                                     #ConstStructInitExpression

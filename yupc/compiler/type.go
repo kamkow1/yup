@@ -367,7 +367,8 @@ func (v *AstVisitor) VisitMethodCallExpr(ctx *parser.MethodCallExprContext) any 
 		LogError("cannot call methods on non-pointer type expressions: `%s`", strct.Type().String())
 	}
 
-	structName := strings.Split(strct.Type().ElementType().StructName(), ".")[0]
+	//structName := strings.Split(strct.Type().ElementType().StructName(), ".")[0]
+	structName := ctx.Identifier().GetText()
 	fncctx := ctx.FuncCall().(*parser.FuncCallContext)
 	name := structName + "_" + fncctx.Identifier().GetText()
 

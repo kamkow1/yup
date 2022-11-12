@@ -47,18 +47,12 @@ func ImportModule(name string) {
 	}
 
 	unit := CompilationUnits.Pop()
-	//mod := unit.Module
-
 	for name, typ := range unit.Types {
 		if _, ok := CompilationUnits.Peek().Types[name]; !ok && typ.IsPublic {
-			if typ.Type.TypeKind() == llvm.StructTypeKind {
-				c := CompilationUnits.Peek().Module.Context()
-				structType := c.StructCreateNamed(typ.Type.StructName())
-				structType.StructSetBody(typ.Type.StructElementTypes(), false)
-
+			if !CompilationUnits.Peek().Module.GetTypeByName(name).IsNil() {
 				CompilationUnits.Peek().Types[name] = &TypeInfo{
-					Name: typ.Type.StructName(),
-					Type: structType,
+					Name: name,
+					Type: typ.Type,
 				}
 			}
 		}
