@@ -72,7 +72,11 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 	}
 
 	if ctx.ValueNull() != nil {
-		value = llvm.ConstPointerNull(llvm.PointerType(llvm.Int8Type(), 0))
+		value = llvm.ConstNull(v.Visit(ctx.TypeAnnot()).(*TypeInfo).Type)
+	}
+
+	if ctx.ValueNullptr() != nil {
+		value = llvm.ConstPointerNull(v.Visit(ctx.TypeAnnot()).(*TypeInfo).Type)
 	}
 
 	return value

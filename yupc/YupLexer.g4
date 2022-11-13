@@ -62,7 +62,8 @@ ValueString					: 	'"' (~["\\] | EscapedValue)* '"';
 
 ValueInteger                :   '-'? '0'..'9'+;
 ValueFloat                  :   '-'? ('0'..'9')+ '.' ('0'..'9')*;
-ValueNull                   :   'Null';
+ValueNull                   :   'CNull';
+ValueNullptr                :   'CNullptr';
 
 Identifier                  :   ('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_')*;
 Comment                     :   '/*' .*? '*/' -> channel(HIDDEN);
