@@ -18,6 +18,7 @@ KeywordTypeAlias	    	:   'alias';
 KeywordPublic		    	:	'pub';
 KeywordValueString	    	:	'v';
 KeywordExtern				:	'extern';
+KeywordUnsig                :   'u';
 
 SymbolBackSlash		    	:	'\\';
 SymbolArrow		    		:   '->';

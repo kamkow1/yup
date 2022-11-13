@@ -45,44 +45,85 @@ const (
 	MoreOrEqualComp     = iota
 )
 
-func CompareInts(v0 llvm.Value, v1 llvm.Value, compType int) llvm.Value {
-	var result llvm.Value
+func CompareInts(v0 llvm.Value, v1 llvm.Value, compType int, signed bool) llvm.Value {
+	var pred llvm.IntPredicate
 	switch compType {
 	case EqualComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntEQ), v0, v1, "")
+		pred = llvm.IntEQ
 	case NotEqualComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntNE), v0, v1, "")
+		pred = llvm.IntNE
 	case MoreThanComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntUGT), v0, v1, "")
+		if signed {
+			pred = llvm.IntSGT
+		} else {
+			pred = llvm.IntUGT
+		}
 	case LessThanComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntULT), v0, v1, "")
+		if signed {
+			pred = llvm.IntSLT
+		} else {
+			pred = llvm.IntULT
+		}
 	case LessOrEqualComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntULE), v0, v1, "")
+		if signed {
+			pred = llvm.IntSLE
+		} else {
+			pred = llvm.IntULE
+		}
 	case MoreOrEqualComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.IntUGE), v0, v1, "")
+		if signed {
+			pred = llvm.IntSGE
+		} else {
+			pred = llvm.IntUGE
+		}
 	}
 
-	return result
+	return CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(pred), v0, v1, "")
 }
 
-func CompareNonInts(v0 llvm.Value, v1 llvm.Value, compType int) llvm.Value {
-	var result llvm.Value
+func CompareNonInts(v0 llvm.Value, v1 llvm.Value, compType int, signed bool) llvm.Value {
+	var pred llvm.FloatPredicate
 	switch compType {
 	case EqualComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.FloatUEQ), v0, v1, "")
+		//result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.FloatUEQ), v0, v1, "")
+		if signed {
+			pred = llvm.FloatOEQ
+		} else {
+			pred = llvm.FloatUEQ
+		}
 	case NotEqualComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.FloatUNE), v0, v1, "")
+		if signed {
+			pred = llvm.FloatONE
+		} else {
+			pred = llvm.FloatUNE
+		}
 	case MoreThanComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.FloatUGT), v0, v1, "")
+		if signed {
+			pred = llvm.FloatOGT
+		} else {
+			pred = llvm.FloatUGT
+		}
 	case LessThanComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.FloatULT), v0, v1, "")
+		if signed {
+			pred = llvm.FloatOLT
+		} else {
+			pred = llvm.FloatULT
+		}
 	case LessOrEqualComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.FloatULE), v0, v1, "")
+		if signed {
+			pred = llvm.FloatOLE
+		} else {
+			pred = llvm.FloatULE
+		}
 	case MoreOrEqualComp:
-		result = CompilationUnits.Peek().Builder.CreateICmp(llvm.IntPredicate(llvm.FloatUGE), v0, v1, "")
+		if signed {
+			pred = llvm.FloatOGE
+		} else {
+			pred = llvm.FloatUGE
+		}
 	}
 
-	return result
+	return CompilationUnits.Peek().Builder.CreateFCmp(llvm.FloatPredicate(pred), v0, v1, "")
 }
 
 func (v *AstVisitor) VisitCompExpr(ctx *parser.CompExprContext) any {
@@ -98,56 +139,43 @@ func (v *AstVisitor) VisitCompExpr(ctx *parser.CompExprContext) any {
 	v1tk := v1.Type().TypeKind()
 	v0tk := v0.Type().TypeKind()
 
+	isIntegerCmp := v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind
+
 	var value llvm.Value
 	op := ctx.CompOper().(*parser.CompOperContext)
+	signed := op.KeywordUnsig() == nil
+	var compType int
+
 	if op.SymbolEqual() != nil {
-		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
-			value = CompareInts(v0, v1, EqualComp)
-		} else {
-			v0 = CastIntToFloatIfNeeded(v0)
-			v1 = CastIntToFloatIfNeeded(v1)
-			value = CompareNonInts(v0, v1, EqualComp)
-		}
-	} else if op.SymbolNotEqual() != nil {
-		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
-			value = CompareInts(v0, v1, NotEqualComp)
-		} else {
-			v0 = CastIntToFloatIfNeeded(v0)
-			v1 = CastIntToFloatIfNeeded(v1)
-			value = CompareNonInts(v0, v1, NotEqualComp)
-		}
-	} else if op.SymbolMoreThan() != nil {
-		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
-			value = CompareInts(v0, v1, MoreThanComp)
-		} else {
-			v0 = CastIntToFloatIfNeeded(v0)
-			v1 = CastIntToFloatIfNeeded(v1)
-			value = CompareInts(v0, v1, MoreThanComp)
-		}
-	} else if op.SymbolLessThan() != nil {
-		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
-			value = CompareInts(v0, v1, LessThanComp)
-		} else {
-			v0 = CastIntToFloatIfNeeded(v0)
-			v1 = CastIntToFloatIfNeeded(v1)
-			value = CompareNonInts(v0, v1, LessThanComp)
-		}
-	} else if op.SymbolLessOrEqual() != nil {
-		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
-			value = CompareInts(v0, v1, LessOrEqualComp)
-		} else {
-			v0 = CastIntToFloatIfNeeded(v0)
-			v1 = CastIntToFloatIfNeeded(v1)
-			value = CompareNonInts(v0, v1, LessOrEqualComp)
-		}
-	} else if op.SymbolMoreOrEqual() != nil {
-		if v0tk == llvm.IntegerTypeKind && v1tk == llvm.IntegerTypeKind {
-			value = CompareNonInts(v0, v1, MoreOrEqualComp)
-		} else {
-			v0 = CastIntToFloatIfNeeded(v0)
-			v1 = CastIntToFloatIfNeeded(v1)
-			value = CompareNonInts(v0, v1, MoreOrEqualComp)
-		}
+		compType = EqualComp
+	}
+
+	if op.SymbolNotEqual() != nil {
+		compType = NotEqualComp
+	}
+
+	if op.SymbolMoreThan() != nil {
+		compType = MoreThanComp
+	}
+
+	if op.SymbolLessThan() != nil {
+		compType = LessThanComp
+	}
+
+	if op.SymbolLessOrEqual() != nil {
+		compType = LessOrEqualComp
+	}
+
+	if op.SymbolMoreOrEqual() != nil {
+		compType = MoreOrEqualComp
+	}
+
+	if isIntegerCmp || v1.IsNull() {
+		value = CompareInts(v0, v1, compType, signed)
+	} else {
+		v0 = CastIntToFloatIfNeeded(v0)
+		v1 = CastIntToFloatIfNeeded(v1)
+		value = CompareNonInts(v0, v1, compType, signed)
 	}
 
 	return value

@@ -47,7 +47,7 @@ constant: stringExpr | (ValueInteger typeAnnot?) | ValueFloat | ValueChar | (Val
 multilineString: (ValueString SymbolBackSlash)+;
 stringExpr: KeywordValueString? (ValueString | multilineString);
 
-compOper: SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual;
+compOper: KeywordUnsig? (SymbolEqual | SymbolNotEqual | SymbolMoreThan | SymbolLessThan | SymbolLessOrEqual | SymbolMoreOrEqual);
 
 forLoopStatement: KeywordFor (arrayBasedLoop | conditionBasedLoop | statementBasedLoop) codeBlock;
 arrayBasedLoop:	varDecl KeywordIn expression;
