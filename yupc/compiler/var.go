@@ -9,7 +9,6 @@ type LocalVariable struct {
 	Name    string
 	IsConst bool
 	Value   llvm.Value
-	IsUsed  bool
 }
 
 func CreateAllocation(typ llvm.Type) llvm.Value {
@@ -179,7 +178,6 @@ func (v *AstVisitor) VisitAssign(ctx *parser.AssignContext) any {
 	}
 
 	value := v.Visit(ctx.VarValue()).(llvm.Value)
-	vr.IsUsed = true
 
 	if value.Type() == vr.Value.Type() {
 		value = Cast(value, &TypeInfo{

@@ -167,7 +167,6 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 			Name:    name,
 			IsConst: true,
 			Value:   a,
-			IsUsed:  false,
 		}
 		CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1][name] = loc
 	}
@@ -182,7 +181,6 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 				Name:    p.Name(),
 				IsConst: function.Params[i].IsConst,
 				Value:   alloca,
-				IsUsed:  false,
 			}
 			CompilationUnits.Peek().Builder.CreateStore(p, alloca)
 		}

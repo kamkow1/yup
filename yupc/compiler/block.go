@@ -47,13 +47,6 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 		v.Visit(st)
 	}
 
-	for _, loc := range CompilationUnits.Peek().Locals[len(CompilationUnits.Peek().Locals)-1] {
-		if loc.IsUsed {
-			fnname := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
-			LogError("unused variable in function `%s`: %s", fnname, loc.Name)
-		}
-	}
-
 	llvmLifeTimeEnd := CompilationUnits.Peek().Module.NamedFunction("llvm.lifetime.end.p0i8")
 	if llvmLifeTimeEnd.IsNil() {
 		pts := []llvm.Type{llvm.Int64Type(), llvm.PointerType(llvm.Int8Type(), 0)}
