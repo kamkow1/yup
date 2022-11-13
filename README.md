@@ -34,8 +34,8 @@ pub main: fnc() -> i32 {
 }
 ```
 
-if you'd like to see a more complex usage of the language, see yup_stdlib/Vector.yup
-or yup_stdlib/Core/SharedPointer.yup. these are some of the more advanced usages of Yup.
+if you'd like to see a more complex usage of the language, see yup_stdlib/FileSys.yup
+or yup_stdlib/Errors.yup. these are some of the more advanced usages of Yup.
 
 # installing the standard library
 
