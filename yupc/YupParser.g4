@@ -57,7 +57,7 @@ finalStatement:	statement;
 continueStatement: KeywordContinue;
 breakStatement: KeywordBreak;
 
-structDeclaration: KeywordPublic? Identifier SymbolColon KeywordStruct 
+structDeclaration: KeywordPublic? Identifier SymbolColon (KeywordStruct | KeywordInterf)
         (SymbolExclMark Identifier (SymbolComma Identifier)*)?
 		((SymbolLbrace structField* funcDef* SymbolRbrace) | SymbolTerminator);
 structField: Identifier typeAnnot SymbolTerminator;

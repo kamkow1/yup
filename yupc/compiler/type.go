@@ -180,15 +180,18 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	StructNameStack.Push(&name)
 
 	ispub := ctx.KeywordPublic() != nil
-	c := CompilationUnits.Peek().Module.Context()
-	
-	typeFromModule := CompilationUnits.Peek().Module.GetTypeByName(name)
+	isInterface := ctx.KeywordInterf() != nil
+
 	var structType llvm.Type
-	if typeFromModule.IsNil() {
-		structType = c.StructCreateNamed(name)
-	} else {
-		structType = typeFromModule
-    }
+	if !isInterface {
+		c := CompilationUnits.Peek().Module.Context()	
+		typeFromModule := CompilationUnits.Peek().Module.GetTypeByName(name)
+		if typeFromModule.IsNil() {
+			structType = c.StructCreateNamed(name)
+		} else {
+			structType = typeFromModule
+    	}
+	}
 	
 	CompilationUnits.Peek().Types[name] = &TypeInfo{
 		Name:     name,
@@ -205,8 +208,11 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 			if i != 0 {
 				structName := inh.GetText()
 				strct := CompilationUnits.Peek().Structs[structName]
-				for _, field := range strct.Fields {
-					fields = append(fields, field)
+
+				if !isInterface {
+					for _, field := range strct.Fields {
+						fields = append(fields, field)
+					}
 				}
 
 				for _, method := range strct.Methods {
@@ -241,17 +247,21 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 	if ctx.SymbolLbrace() != nil { // struct has a body
 		// emit struct fields
-		for _, field := range ctx.AllStructField() {
-			fields = append(fields, v.Visit(field).(*Field))
-		}
 
-		var fieldTypes []llvm.Type
-		for _, field := range fields {
-			fieldTypes = append(fieldTypes, field.Type.Type)
-		}
+		if !isInterface {
+			for _, field := range ctx.AllStructField() {
+				fields = append(fields, v.Visit(field).(*Field))
+			}
 
-		structType.StructSetBody(fieldTypes, false)
-		CompilationUnits.Peek().Types[name].Type = structType
+			var fieldTypes []llvm.Type
+			for _, field := range fields {
+				fieldTypes = append(fieldTypes, field.Type.Type)
+			}
+
+			structType.StructSetBody(fieldTypes, false)
+			CompilationUnits.Peek().Types[name].Type = structType
+		}
+		
 		CompilationUnits.Peek().Structs[name] = &Structure{
 			Name:     name,
 			Fields:   fields,

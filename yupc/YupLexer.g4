@@ -14,6 +14,7 @@ KeywordTo		    		:	'to';
 KeywordContinue		    	:	'continue';
 KeywordBreak		    	:	'break';
 KeywordStruct		    	:   'struct';
+KeywordInterf				:	'interf';
 KeywordTypeAlias	    	:   'alias';
 KeywordPublic		    	:	'pub';
 KeywordValueString	    	:	'v';
