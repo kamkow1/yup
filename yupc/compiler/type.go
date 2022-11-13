@@ -294,9 +294,10 @@ func (v *AstVisitor) VisitTypeAliasDeclaration(ctx *parser.TypeAliasDeclarationC
 
 func (v *AstVisitor) VisitFieldAccessExpression(ctx *parser.FieldAccessExpressionContext) any {
 	strct := v.Visit(ctx.Expression()).(llvm.Value)
-	fieldName := ctx.Identifier().GetText()
+	structName := ctx.Identifier(0).GetText()
+	fieldName := ctx.Identifier(1).GetText()
 
-	return GetStructFieldPtr(strct, fieldName)
+	return GetStructFieldPtr(strct, fieldName, structName)
 }
 
 func FindMethod(methodName, structName string) (llvm.Value, bool) {
@@ -440,15 +441,14 @@ func (v *AstVisitor) VisitConstStructInit(ctx *parser.ConstStructInitContext) an
 	return llvm.ConstStruct(values, false)
 }
 
-func GetStructFieldPtr(strct llvm.Value, fieldname string) llvm.Value {
+func GetStructFieldPtr(strct llvm.Value, fieldname string, structname string) llvm.Value {
 	if strct.Type().TypeKind() != llvm.PointerTypeKind {
 		LogError("cannot access struct fields on a non-pointer type: `%s`", strct.Type().String())
 	}
 
-	strctname := strings.Split(strct.Type().ElementType().StructName(), ".")[0]
-	baseStruct, ok := CompilationUnits.Peek().Structs[strctname]
+	baseStruct, ok := CompilationUnits.Peek().Structs[structname]
 	if !ok {
-		LogError("unable to find struct base `%s`", strctname)
+		LogError("unable to find struct base `%s`", structname)
 	}
 
 	var field llvm.Value
@@ -461,7 +461,7 @@ func GetStructFieldPtr(strct llvm.Value, fieldname string) llvm.Value {
 	}
 
 	if !found {
-		LogError("unable to find field named `%s` on struct `%s`", fieldname, strctname)
+		LogError("unable to find field named `%s` on struct `%s`", fieldname, structname)
 	}
 
 	return field

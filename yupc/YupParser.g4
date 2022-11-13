@@ -61,7 +61,6 @@ structDeclaration: KeywordPublic? Identifier SymbolColon KeywordStruct
         (SymbolExclMark Identifier (SymbolComma Identifier)*)?
 		((SymbolLbrace structField* funcDef* SymbolRbrace) | SymbolTerminator);
 structField: Identifier typeAnnot SymbolTerminator;
-fieldAssignment: expression SymbolDot Identifier varValue;
 typeAliasDeclaration: KeywordPublic? Identifier SymbolColon KeywordTypeAlias typeName;
 structInit: Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 constStructInit: SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
@@ -83,7 +82,7 @@ expression: funcCall                                            #funcCallExpr
         |   expression SymbolOr expression                      #LogicalOrExpression
         |   constant                                            #constantExpression
         |   multilineString										#MultilineStringExpression
-        |   expression SymbolDot Identifier						#FieldAccessExpression
+        |   Identifier SymbolColon SymbolColon expression SymbolDot Identifier #FieldAccessExpression
         |   Identifier SymbolColon SymbolColon expression SymbolDot funcCall #MethodCallExpr
         |	Identifier SymbolColon SymbolColon funcCall			#StaticMethodCallExpr
         |   structInit                                          #StructInitExpression
@@ -102,7 +101,6 @@ statement: expression SymbolTerminator
         |  continueStatement SymbolTerminator
         |  breakStatement SymbolTerminator
         |  typeAliasDeclaration SymbolTerminator
-        |  fieldAssignment SymbolTerminator
         |  forLoopStatement
         |  ifStatement
         |  funcDef
