@@ -49,11 +49,9 @@ func ImportModule(name string) {
 	unit := CompilationUnits.Pop()
 	for name, typ := range unit.Types {
 		if _, ok := CompilationUnits.Peek().Types[name]; !ok && typ.IsPublic {
-			if !CompilationUnits.Peek().Module.GetTypeByName(name).IsNil() {
-				CompilationUnits.Peek().Types[name] = &TypeInfo{
-					Name: name,
-					Type: typ.Type,
-				}
+			CompilationUnits.Peek().Types[name] = &TypeInfo{
+				Name: name,
+				Type: typ.Type,
 			}
 		}
 	}

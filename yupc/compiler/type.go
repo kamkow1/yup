@@ -181,7 +181,15 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 	ispub := ctx.KeywordPublic() != nil
 	c := CompilationUnits.Peek().Module.Context()
-	structType := c.StructCreateNamed(name)
+	
+	typeFromModule := CompilationUnits.Peek().Module.GetTypeByName(name)
+	var structType llvm.Type
+	if typeFromModule.IsNil() {
+		structType = c.StructCreateNamed(name)
+	} else {
+		structType = typeFromModule
+    }
+	
 	CompilationUnits.Peek().Types[name] = &TypeInfo{
 		Name:     name,
 		Type:     structType,
