@@ -1,4 +1,0 @@
-
-extern printf: fnc(fmt: *i8, ...) -> i32;
-extern scanf: fnc(fmt: *i8, ...) -> i32;
-

@@ -1,0 +1,11 @@
+//import "#std/IO/FileSys.yup";
+
+_IO_FILE: struct;
+
+extern const stdout: *_IO_FILE;
+//const stdout: *_IO_FILE;
+
+extern printf: fnc(fmt: *i8, ...) -> i32;
+extern scanf: fnc(fmt: *i8, ...) -> i32;
+extern fprintf: fnc(fd: *_IO_FILE, text: *i8, ...) -> i32;
+
