@@ -21,7 +21,7 @@ arrayIndex: SymbolLsqbr expression SymbolRsqbr;
 constArray: SymbolLsqbr (expression (SymbolComma expression)*)? SymbolRsqbr;
 
 assign: Identifier varValue;
-varDecl: KeywordPublic? declType Identifier (SymbolComma Identifier)* typeAnnot? varValue?;
+varDecl: KeywordExtern? KeywordPublic? declType Identifier (SymbolComma Identifier)* typeAnnot? varValue?;
 declType: (KeywordVar | KeywordConst);
 varValue: SymbolAssign expression;
 exprAssign: expression varValue;

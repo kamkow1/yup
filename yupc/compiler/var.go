@@ -114,8 +114,10 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 				glb.SetInitializer(value)
 			}
 
-			if ctx.KeywordPublic() == nil {
-				glb.SetLinkage(llvm.PrivateLinkage)
+			if ctx.KeywordPublic() != nil {
+				glb.SetLinkage(llvm.LinkOnceAnyLinkage)
+			} else if ctx.KeywordExtern() != nil {
+				glb.SetLinkage(llvm.ExternalLinkage)
 			} else {
 				glb.SetLinkage(llvm.LinkOnceAnyLinkage)
 			}
