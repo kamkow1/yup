@@ -199,8 +199,16 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 		IsPublic: ispub,
 	}
 
-	fields := make([]*Field, 0)
-	methods := make([]*Function, 0)
+	CompilationUnits.Peek().Structs[name] = &Structure{
+		Name:     name,
+		Fields:   make([]*Field, 0),
+		Methods:  make([]*Function, 0),
+		IsPublic: ispub,
+		Type: &TypeInfo{
+			Name: name,
+			Type: structType,
+		},
+	}
 
 	// inherit other structs
 	if ctx.SymbolExclMark() != nil { // has inherit list
@@ -211,7 +219,8 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 				if !isInterface {
 					for _, field := range strct.Fields {
-						fields = append(fields, field)
+    					fields := CompilationUnits.Peek().Structs[name].Fields
+						CompilationUnits.Peek().Structs[name].Fields = append(fields, field)
 					}
 				}
 
@@ -239,7 +248,8 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 						HasSelf:        method.HasSelf,
 					}
 
-					methods = append(methods, newMethod)
+					structMethods := CompilationUnits.Peek().Structs[name].Methods
+					CompilationUnits.Peek().Structs[name].Methods = append(structMethods, newMethod)
 				}
 			}
 		}
@@ -250,11 +260,12 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 		if !isInterface {
 			for _, field := range ctx.AllStructField() {
-				fields = append(fields, v.Visit(field).(*Field))
+				structFields := CompilationUnits.Peek().Structs[name].Fields
+				CompilationUnits.Peek().Structs[name].Fields = append(structFields, v.Visit(field).(*Field))
 			}
 
 			var fieldTypes []llvm.Type
-			for _, field := range fields {
+			for _, field := range CompilationUnits.Peek().Structs[name].Fields {
 				fieldTypes = append(fieldTypes, field.Type.Type)
 			}
 
@@ -262,16 +273,6 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 			CompilationUnits.Peek().Types[name].Type = structType
 		}
 		
-		CompilationUnits.Peek().Structs[name] = &Structure{
-			Name:     name,
-			Fields:   fields,
-			Methods:  []*Function{},
-			IsPublic: ispub,
-			Type: &TypeInfo{
-				Name: name,
-				Type: structType,
-			},
-		}
 
 		// emit struct methods and rename them
 		for _, method := range ctx.AllFuncDef() {
@@ -287,10 +288,9 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 			delete(CompilationUnits.Peek().Functions, funcName)
 			CompilationUnits.Peek().Functions[newName] = funct
 
-			methods = append(methods, funct)
+			methods := CompilationUnits.Peek().Structs[name].Methods
+			CompilationUnits.Peek().Structs[name].Methods = append(methods, funct)
 		}
-
-		CompilationUnits.Peek().Structs[name].Methods = methods
 	}
 
 	StructNameStack.Pop()
