@@ -1,7 +1,8 @@
 import "#std/Memory.yup";
-import "#std/Boolean.yup";
+import "#std/Bool.yup";
 
-pub strcpy: fnc(dest: *i8, src: *i8) -> *i8;
+extern strcpy: fnc(dest: *i8, src: *i8) -> *i8;
+
 pub copy_cstring: fnc(dest: *i8, src: *i8) -> *i8 {
 	return strcpy(dest, src);
 }
@@ -17,15 +18,15 @@ pub cstring_len: fnc(s: *i8) -> i64 {
 
 pub compare_cstrings: fnc(s1: *i8, s2: *i8) -> i1 {
 	if cstring_len(s1) != cstring_len(s2) {
-		return FALSE;
+		return 0:i1;
 	}
 	
-	for var i = 0; i < cstring_len(s1); &i++; {
-		if s1[i].* == s2[i].* {
+	/*for var i = 0; i < cstring_len(s1); i++; {
+		if TRUE { //(s1[i].*) == (s2[i].*) {
 			return TRUE;
 		}
-	}
+	}*/
 	
-	return FALSE;
+	return 0:i1;
 }
 

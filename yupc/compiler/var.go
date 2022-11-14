@@ -108,20 +108,27 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 		}
 
 		if isGlobal {
-			glb := llvm.AddGlobal(*CompilationUnits.Peek().Module, typ.Type, name)
+    		var global llvm.Value
+    		globalFromModule := CompilationUnits.Peek().Module.NamedGlobal(name)
+    		if !globalFromModule.IsNil() {
+				global = globalFromModule
+    		} else {
+				global = llvm.AddGlobal(*CompilationUnits.Peek().Module, typ.Type, name)
+    		}
+    		
 			if isInit {
-				glb.SetInitializer(value)
+				global.SetInitializer(value)
 			}
 
 			if ctx.KeywordPublic() != nil {
-				glb.SetLinkage(llvm.LinkOnceAnyLinkage)
+				global.SetLinkage(llvm.LinkOnceAnyLinkage)
 			} else if ctx.KeywordExtern() != nil {
-				glb.SetLinkage(llvm.ExternalLinkage)
+				global.SetLinkage(llvm.ExternalLinkage)
 			} else {
-				glb.SetLinkage(llvm.LinkOnceAnyLinkage)
+				global.SetLinkage(llvm.LinkOnceAnyLinkage)
 			}
 
-			CompilationUnits.Peek().Globals[name] = &glb
+			CompilationUnits.Peek().Globals[name] = &global
 
 		} else {
 			alloca := CreateAllocation(typ.Type)
