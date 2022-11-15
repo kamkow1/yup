@@ -16,17 +16,16 @@ pub cstring_len: fnc(s: *i8) -> i64 {
 	return c;
 }
 
-pub compare_cstrings: fnc(s1: *i8, s2: *i8) -> i1 {
-	if cstring_len(s1) != cstring_len(s2) {
-		return 0:i1;
-	}
-	
-	/*for var i = 0; i < cstring_len(s1); i++; {
-		if TRUE { //(s1[i].*) == (s2[i].*) {
-			return TRUE;
-		}
-	}*/
-	
-	return 0:i1;
-}
+pub compare_cstrings: fnc(s0: *i8, s1: *i8) -> Bool {
+    if cstring_len(s0) != cstring_len(s1) {
+        return 0:Bool;
+    }
 
+    for var i = 0; i < cstring_len(s0); i++; {
+        if (s0[i].*) != (s1[i].*) {
+            return 0:Bool;
+        }
+    }
+
+    return 1:Bool; 
+}

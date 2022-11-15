@@ -1,0 +1,12 @@
+import "#std/IO/IO.yup";
+
+/*
+func_name    - comes from the `#current_func` macro
+line         - comes from the `#near_line` macro
+      NOTE: 
+      line number indicates the line where the `#near_line` macro was invoked
+*/
+
+pub debug: fnc(value: *void, func_name: *i8, line: i64, msg: *i8) -> i32 {
+    return printf("%s:%d :: %p :: %s\n", func_name, line, value, msg);
+}
