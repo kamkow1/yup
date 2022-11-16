@@ -86,9 +86,11 @@ func ImportModule(name string) {
 
 	for name := range unit.Globals {
     	if _, ok := CompilationUnits.Peek().Globals[name]; !ok {
-			glb := unit.Module.NamedGlobal(name)
-			glb = llvm.AddGlobal(*CompilationUnits.Peek().Module, glb.Type(), name)
-			CompilationUnits.Peek().Globals[name] = &glb
+			if CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
+				glb := unit.Module.NamedGlobal(name)
+				glb = llvm.AddGlobal(*CompilationUnits.Peek().Module, glb.Type(), name)
+				CompilationUnits.Peek().Globals[name] = &glb
+			}
     	}
 	}
 
