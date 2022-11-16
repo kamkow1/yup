@@ -60,7 +60,7 @@ SymbolDecrement		    	:	'--';
 
 ValueChar                   :   '\'' ('a'..'z' | 'A' .. 'Z' | '0'..'9' | '_' | '\n' | '\r') '\'';
 fragment EscapedValue	    :   '\\' [abfnrtv\\'"];
-ValueString					: 	'"' (~["\\] | EscapedValue)* '"';
+ValueString					: 	'"' (~["\\] | EscapedValue | '-')* '"';
 
 ValueInteger                :   '-'? '0'..'9'+;
 ValueFloat                  :   '-'? ('0'..'9')+ '.' ('0'..'9')*;

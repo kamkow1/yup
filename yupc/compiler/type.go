@@ -184,15 +184,15 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 	var structType llvm.Type
 	if !isInterface {
-		c := CompilationUnits.Peek().Module.Context()	
+		c := CompilationUnits.Peek().Module.Context()
 		typeFromModule := CompilationUnits.Peek().Module.GetTypeByName(name)
 		if typeFromModule.IsNil() {
 			structType = c.StructCreateNamed(name)
 		} else {
 			structType = typeFromModule
-    	}
+		}
 	}
-	
+
 	CompilationUnits.Peek().Types[name] = &TypeInfo{
 		Name:     name,
 		Type:     structType,
@@ -219,7 +219,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 
 				if !isInterface {
 					for _, field := range strct.Fields {
-    					fields := CompilationUnits.Peek().Structs[name].Fields
+						fields := CompilationUnits.Peek().Structs[name].Fields
 						CompilationUnits.Peek().Structs[name].Fields = append(fields, field)
 					}
 				}
@@ -272,7 +272,6 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 			structType.StructSetBody(fieldTypes, false)
 			CompilationUnits.Peek().Types[name].Type = structType
 		}
-		
 
 		// emit struct methods and rename them
 		for _, method := range ctx.AllFuncDef() {
@@ -490,6 +489,8 @@ func Cast(value llvm.Value, typ *TypeInfo) llvm.Value {
 	typtk := typ.Type.TypeKind()
 	inttk := llvm.IntegerTypeKind
 	ptrtk := llvm.PointerTypeKind
+	flttk := llvm.FloatTypeKind
+	dbltk := llvm.DoubleTypeKind
 
 	if valtk == inttk && typtk == inttk {
 		return CompilationUnits.Peek().Builder.CreateIntCast(value, typ.Type, "")
@@ -505,6 +506,14 @@ func Cast(value llvm.Value, typ *TypeInfo) llvm.Value {
 
 	if valtk == ptrtk && typtk == ptrtk {
 		return CompilationUnits.Peek().Builder.CreatePointerCast(value, typ.Type, "")
+	}
+
+	if (valtk == flttk || valtk == dbltk) && typtk == inttk {
+		return CompilationUnits.Peek().Builder.CreateFPToSI(value, typ.Type, "")
+	}
+
+	if valtk == inttk && (typtk == flttk || typtk == dbltk) {
+		return CompilationUnits.Peek().Builder.CreateSIToFP(value, typ.Type, "")
 	}
 
 	return CompilationUnits.Peek().Builder.CreateBitCast(value, typ.Type, "")

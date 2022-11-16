@@ -91,7 +91,7 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 		Globals:    map[string]*llvm.Value{},
 		Functions:  map[string]*Function{},
 		Structs:    map[string]*Structure{},
-		Macros:		map[string]*MacroInfo{},
+		Macros:		InitMacroMap(),
 		Types:		InitTypeMap(),
 	}
 }

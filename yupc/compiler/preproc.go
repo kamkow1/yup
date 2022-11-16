@@ -18,7 +18,22 @@ const (
 	Asm   = "asm"
 )
 
-var InlineAsm = "" // buffer for inline assembl
+var InlineAsm = "" // buffer for inline assembly
+
+func InitMacroMap() map[string]*MacroInfo {
+	macros := map[string]*MacroInfo{
+		"current_func": &MacroInfo{
+			Name:     "current_func",
+			IsPublic: true,
+		},
+		"near_line": &MacroInfo{
+			Name:     "near_line",
+			IsPublic: true,
+		},
+	}
+
+	return macros
+}
 
 func (v *AstVisitor) VisitPreprocDecl(ctx *parser.PreprocDeclContext) any {
 	// macro type name
@@ -44,8 +59,19 @@ func (v *AstVisitor) VisitPreprocDecl(ctx *parser.PreprocDeclContext) any {
 		{
 			name := ctx.Identifier(0).GetText()
 			macro, ok := CompilationUnits.Peek().Macros[name]
+
 			if !ok {
 				LogError("tried to reference an unknown macro `%s`", name)
+			}
+
+			// macros that depend on the current location / interpreter state
+			if name == "current_func" {
+				currentFunc := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
+				macro.Value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(currentFunc, "")
+			}
+
+			if name == "near_line" {
+				macro.Value = llvm.ConstInt(llvm.Int64Type(), uint64(GlobalCompilerInfo.Line), false)
 			}
 
 			return macro.Value

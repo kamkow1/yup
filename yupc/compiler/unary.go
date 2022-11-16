@@ -5,35 +5,57 @@ import (
 	"tinygo.org/x/go-llvm"
 )
 
-func (v *AstVisitor) VisitBinopExpr(ctx *parser.BinopExprContext) any {
-	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
-	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
-
-	if v0.Type() != v1.Type() {
-		v1 = Cast(v1, &TypeInfo{
-			Type: v0.Type(),
-		})
-	}
-
-	binop := ctx.Binop().(*parser.BinopContext)
-
-	if binop.SymbolPlus() != nil {
-		return CompilationUnits.Peek().Builder.CreateAdd(v0, v1, "")
-	} else if binop.SymbolMinus() != nil {
-		return CompilationUnits.Peek().Builder.CreateSub(v0, v1, "")
-	} else if binop.SymbolAsterisk() != nil {
-		return CompilationUnits.Peek().Builder.CreateMul(v0, v1, "")
-	} else {
-		return CompilationUnits.Peek().Builder.CreateFDiv(v0, v1, "")
-	}
-}
-
 func CastIntToFloatIfNeeded(v0 llvm.Value) llvm.Value {
 	if v0.Type().TypeKind() == llvm.IntegerTypeKind {
 		v0 = CompilationUnits.Peek().Builder.CreateSIToFP(v0, llvm.FloatType(), "")
 	}
 
 	return v0
+}
+
+func (v *AstVisitor) VisitBinopExpr(ctx *parser.BinopExprContext) any {
+	v0 := v.Visit(ctx.Expression(0)).(llvm.Value)
+	v1 := v.Visit(ctx.Expression(1)).(llvm.Value)
+
+	if v0.Type().TypeKind() != v1.Type().TypeKind() {
+		LogError("cannot perform a binary operation on values of different types: v0 = `%s`, v1 = `%s`",
+			v0.Type().String(), v1.Type().String())
+	}
+
+	binop := ctx.Binop().(*parser.BinopContext)
+
+	isV0Float := v0.Type().TypeKind() == llvm.FloatTypeKind
+	isV1Float := v1.Type().TypeKind() == llvm.FloatTypeKind
+	isV0Double := v0.Type().TypeKind() == llvm.DoubleTypeKind
+	isV1Double := v1.Type().TypeKind() == llvm.DoubleTypeKind
+
+	isfloat := isV0Float || isV1Float || isV0Double || isV1Double
+
+	if binop.SymbolPlus() != nil {
+		if isfloat {
+			return CompilationUnits.Peek().Builder.CreateFAdd(v0, v1, "")
+		} else {
+			return CompilationUnits.Peek().Builder.CreateAdd(v0, v1, "")
+		}
+	} else if binop.SymbolMinus() != nil {
+		if isfloat {
+			return CompilationUnits.Peek().Builder.CreateFSub(v0, v1, "")
+		} else {
+			return CompilationUnits.Peek().Builder.CreateAdd(v0, v1, "")
+		}
+	} else if binop.SymbolAsterisk() != nil {
+		if isfloat {
+			return CompilationUnits.Peek().Builder.CreateFMul(v0, v1, "")
+		} else {
+			return CompilationUnits.Peek().Builder.CreateAdd(v0, v1, "")
+		}
+	} else {
+		if isfloat {
+			return CompilationUnits.Peek().Builder.CreateFDiv(v0, v1, "")
+		} else {
+			return CompilationUnits.Peek().Builder.CreateAdd(v0, v1, "")
+		}
+	}
 }
 
 const (

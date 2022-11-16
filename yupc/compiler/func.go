@@ -268,6 +268,26 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 		err := cmd.Run()
 		return llvm.ConstInt(llvm.Int1Type(), boolToInt(err != nil), false)
 	},
+	"any_fmt": func(args []any) llvm.Value {
+		value := args[0].(llvm.Value)
+		terminator := args[1].(string)
+
+		var formatString string
+
+		if value.Type().TypeKind() == llvm.IntegerTypeKind {
+			formatString = "%d" + terminator
+		}
+
+		if value.Type().String() == llvm.PointerType(llvm.Int8Type(), 0).String() {
+			formatString = "%s" + terminator
+		}
+
+		if value.Type().TypeKind() == llvm.FloatTypeKind {
+			formatString = "%f" + terminator
+		}
+
+		return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(formatString, "fmt_str")
+	},
 }
 
 type BuiltInTypeFunction func([]any) llvm.Type
