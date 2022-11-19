@@ -27,6 +27,11 @@ pub File: struct {
         return f;
     }
 
+    pub delete: fnc(self) {
+        free_memory(cast(self, *void));
+        self = #FILE_NULL;
+    }
+
     pub open: fnc(self, const mode: *i8) {
         File::self.real_handle = fopen(File::self.name.*, mode);
         if File::self.real_handle.* == #IO_FILE_NULL {
@@ -44,8 +49,17 @@ pub File: struct {
             Errors::latest_reason("failed to close file");
             Errors::raise_code(1);
         }
+    }
 
-        free_memory(cast(self, *void));
-        self = #FILE_NULL;
+    pub override_or_new: fnc(self, const fmt: *i8) {
+        File::self.open("w");
+        fprintf(File::self.handle(), fmt);
+        File::self.close();
+    }
+
+    pub append_or_new: fnc(self, const fmt: *i8) {
+        File::self.open("a");
+        fprintf(File::self.handle(), fmt);
+        File::self.close();
     }
 }
