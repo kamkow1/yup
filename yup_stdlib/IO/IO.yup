@@ -1,11 +1,51 @@
-//import "#std/IO/FileSys.yup";
+import "#std/Errors.yup";
+import "#std/Memory/Memory.yup";
 
-_IO_FILE: struct;
+pub _IO_FILE: struct;
 
 extern const stdout: *_IO_FILE;
-//const stdout: *_IO_FILE;
 
 extern printf: fnc(fmt: *i8, ...) -> i32;
 extern scanf: fnc(fmt: *i8, ...) -> i32;
 extern fprintf: fnc(fd: *_IO_FILE, text: *i8, ...) -> i32;
 
+extern fopen: fnc(const filename: *i8, const mode: *i8) -> *_IO_FILE;
+extern fclose: fnc(const file: *_IO_FILE) -> i32;
+
+File: struct;
+#macro CLOSE_SUCC_RESULT 	0:i32;
+#macro IO_FILE_NULL 		CNullptr:*_IO_FILE;
+#macro FILE_NULL 			CNullptr:*File;
+
+pub File: struct {
+	real_handle: *_IO_FILE;
+	name: *i8;
+    
+	pub new: fnc(const _name: *i8) -> *File {
+		const f: *File = alloc_memory(sizeof(File));
+		File::f.name = _name;
+		return f;
+    }
+
+    pub open: fnc(self, const mode: *i8) {
+		File::self.real_handle = fopen(File::self.name.*, mode);
+		if File::self.real_handle.* == #IO_FILE_NULL {
+			Errors::latest_reason("failed to open file");
+			Errors::raise_code(1);
+    	}
+    }
+
+	pub handle: fnc(self) -> *_IO_FILE {
+		return File::self.real_handle.*;
+    }
+
+    pub close: fnc(self) {
+		if fclose(File::self.handle()) != #CLOSE_SUCC_RESULT {
+			Errors::latest_reason("failed to close file");
+			Errors::raise_code(1);
+    	}
+
+    	free_memory(cast(self, *void));
+    	self = #FILE_NULL;
+    }
+}

@@ -1,5 +1,4 @@
 import "#std/Debug.yup";
-import "#std/Memory.yup";
 import "#std/Bool.yup";
 
 extern strcpy: fnc(dest: *i8, src: *i8) -> *i8;

@@ -1,0 +1,12 @@
+import "#std/Memory/Memory.yup";
+
+pub Allocator: struct {
+    pub new: fnc() -> *Allocator {
+        return alloc_memory(sizeof(Allocator));
+    }
+
+    pub delete: fnc(self) {
+		free_memory(cast(self, *void));
+		self = CNullptr:*Allocator;
+	}
+}

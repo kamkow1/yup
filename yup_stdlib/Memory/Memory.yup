@@ -1,5 +1,3 @@
-import "#std/Null.yup";
-
 extern malloc: fnc(size: i64) -> *void;
 extern free: fnc(ptr: *void);
 extern memset: fnc(arr: *void, count: i32, size: i64) -> *void;
@@ -25,8 +23,7 @@ pub copy_memory: fnc(const dest: *void, const src: *i8, const n: i64) -> *void {
 pub realloc_memory: fnc(const ptr: *void, const original_size: i64, const new_size: i64) -> *void {
 	if new_size == 0 {
 		free_memory(ptr);
-		//return NULL;
-        return 0;
+        return CNullptr:*void;
 	}
 
 	if not ptr {

@@ -1,14 +1,7 @@
-import "#std/IO/IO.yup";
-
 extern exit: fnc(code: i32);
 extern perror: fnc(msg: *i8);
 
 pub Errors: interf {
-    pub raise: fnc(msg: *i8, code: i32) {
-        printf(msg);
-        exit(code);
-    }
-
     pub raise_code: fnc(code: i32) {
         exit(code);
     }
