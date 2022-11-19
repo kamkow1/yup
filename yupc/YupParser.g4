@@ -43,7 +43,7 @@ ifStatement: KeywordIf expression ifThenBlock ifElseBlock?;
 ifThenBlock: codeBlock;
 ifElseBlock: KeywordElse codeBlock;
 
-constant: stringExpr | (ValueInteger typeAnnot?) | ValueFloat | ValueChar | (ValueNull typeAnnot) | (ValueNullptr typeAnnot);
+constant: stringExpr | (ValueInteger KeywordUnsig? typeAnnot?) | ValueFloat | ValueChar | (ValueNull typeAnnot) | (ValueNullptr typeAnnot);
 multilineString: (ValueString SymbolBackSlash)+;
 stringExpr: KeywordValueString? (ValueString | multilineString);
 

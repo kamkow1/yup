@@ -41,7 +41,8 @@ func (v *AstVisitor) VisitConstant(ctx *parser.ConstantContext) any {
 				Type: llvm.Int32Type(),
 			}
 		}
-		value = llvm.ConstInt(typ.Type, uint64(i), false)
+
+		value = llvm.ConstInt(typ.Type, uint64(i), ctx.KeywordUnsig() == nil)
 	}
 
 	if ctx.ValueFloat() != nil {
