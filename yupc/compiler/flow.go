@@ -40,11 +40,11 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 	CompilationUnits.Peek().Builder.SetInsertPoint(prepBlock, prepBlock.FirstInstruction())
 
 	LoopStack.Push(&Loop{
-		loopBlock,
-		mergeBlock,
-		false,
-		false,
-		nil,
+		BodyBlock:		 loopBlock,
+		MergeBlock:		 mergeBlock,
+		SkipCurrentIter: false,
+		BreakLoop:		 false,
+		FinalStatement:	 nil,
 	})
 
 	if ctx.ConditionBasedLoop() != nil {
@@ -67,8 +67,8 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 		CompilationUnits.Peek().Builder.SetInsertPoint(loopBlock, loopBlock.FirstInstruction())
 
 		exitStatus := v.Visit(ctx.CodeBlock()).(BlockExitStatus)
-		hasTerminated := exitStatus.HasReturned || exitStatus.HasContinued || exitStatus.HasBrokenOut || exitStatus.HasBranched
-		if !hasTerminated {
+		hasTerminated := exitStatus.HasReturned || exitStatus.HasContinued || exitStatus.HasBrokenOut
+		if !hasTerminated || exitStatus.HasBranched { 
 			cond1 := v.Visit(ctx.ConditionBasedLoop()).(llvm.Value)
 			if cond1.Type() != llvm.Int1Type() {
 				cond1 = Cast(cond1, i1typeinfo)
@@ -108,7 +108,7 @@ func (v *AstVisitor) VisitForLoopStatement(ctx *parser.ForLoopStatementContext) 
 
 		exitStatus := v.Visit(ctx.CodeBlock()).(BlockExitStatus)
 		hasTerminated := exitStatus.HasReturned || exitStatus.HasBranched || exitStatus.HasContinued || exitStatus.HasBrokenOut
-		if !hasTerminated {
+		if !hasTerminated || exitStatus.HasBranched {
 			v.Visit(LoopStack.Peek().FinalStatement)
 			cond1 := v.Visit(sblctx.Statement(1)).(llvm.Value)
 			CompilationUnits.Peek().Builder.CreateStore(cond1, condValue)

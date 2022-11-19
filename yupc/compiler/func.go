@@ -187,7 +187,7 @@ func (v *AstVisitor) VisitFuncDef(ctx *parser.FuncDefContext) any {
 	}
 
 	exitStatus := v.Visit(ctx.CodeBlock()).(BlockExitStatus)
-	hasTerminated := exitStatus.HasBranched || exitStatus.HasBrokenOut || exitStatus.HasContinued || exitStatus.HasReturned
+	hasTerminated := exitStatus.HasBrokenOut || exitStatus.HasContinued || exitStatus.HasReturned
 
 	if isVoid {
 		if !hasTerminated || exitStatus.HasBranched {
