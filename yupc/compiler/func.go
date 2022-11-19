@@ -221,6 +221,8 @@ func (v *AstVisitor) VisitFuncCallArgList(ctx *parser.FuncCallArgListContext) an
 
 type BuiltInValueFunction func([]any) llvm.Value
 
+var NoReturn = llvm.ConstInt(llvm.Int1Type(), uint64(0), false)
+
 var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInValueFunction{
 	"cast": func(args []any) llvm.Value {
 		return Cast(args[0].(llvm.Value), args[1].(*TypeInfo))
@@ -287,6 +289,35 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 		}
 
 		return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(formatString, "fmt_str")
+	},
+	"va_begin": func(args []any) llvm.Value {
+		vaStart := CompilationUnits.Peek().Module.NamedFunction("llvm.va_start")
+		if vaStart.IsNil() {
+			arguments := []llvm.Type{llvm.PointerType(llvm.Int8Type(), 0)}
+			functionType := llvm.FunctionType(llvm.VoidType(), arguments, false)
+			vaStart = llvm.AddFunction(*CompilationUnits.Peek().Module, "llvm.va_start", functionType)
+		}
+
+		returnType := vaStart.Type().ReturnType()
+		callArgs := []llvm.Value{args[0].(llvm.Value)}
+		CompilationUnits.Peek().Builder.CreateCall(returnType, vaStart, callArgs, "")
+
+		return NoReturn
+	},
+	"va_end": func(args []any) llvm.Value {
+		vaEnd := CompilationUnits.Peek().Module.NamedFunction("llvm.va_end")
+		if vaEnd.IsNil() {
+			arguments := []llvm.Type{llvm.PointerType(llvm.Int8Type(), 0)}
+			functionType := llvm.FunctionType(llvm.VoidType(), arguments, false)
+			vaEnd = llvm.AddFunction(*CompilationUnits.Peek().Module, "llvm.va_end", functionType)
+		}
+
+		return NoReturn
+	},
+	"va_get": func(args []any) llvm.Value {
+		list := args[0].(llvm.Value)
+		typ := args[1].(*TypeInfo).Type
+		return CompilationUnits.Peek().Builder.CreateVAArg(list, typ, "vacall")
 	},
 }
 

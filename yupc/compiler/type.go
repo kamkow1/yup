@@ -17,6 +17,25 @@ type TypeInfo struct {
 // initialize built-in types
 func InitTypeMap() map[string]*TypeInfo {
 	return map[string]*TypeInfo{
+		"va_list": &TypeInfo{
+			Name: "va_list",
+			Type: (func() llvm.Type {
+				vaList := CompilationUnits.Peek().Module.GetTypeByName("va_list")
+				if vaList.IsNil() {
+					c := CompilationUnits.Peek().Module.Context()
+					vaList = c.StructCreateNamed("va_list")
+					vaList.StructSetBody([]llvm.Type{
+						llvm.Int32Type(),
+						llvm.Int32Type(),
+						llvm.PointerType(llvm.Int8Type(), 0),
+						llvm.PointerType(llvm.Int8Type(), 0),
+					}, false)
+				}
+
+				return vaList
+			})(),
+			IsPublic: true,
+		},
 		"i1": &TypeInfo{
 			Name:     "i1",
 			Type:     llvm.Int1Type(),

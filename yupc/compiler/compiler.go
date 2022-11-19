@@ -92,7 +92,7 @@ func NewCompilationUnit(sf string, bc string) *CompilationUnit {
 		Functions:  map[string]*Function{},
 		Structs:    map[string]*Structure{},
 		Macros:		InitMacroMap(),
-		Types:		InitTypeMap(),
+		Types:		map[string]*TypeInfo{}, //InitTypeMap(),
 	}
 }
 

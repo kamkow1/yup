@@ -82,6 +82,7 @@ func ProcessSourceFile(file string, fp string, bcName string) {
 
 	cu := NewCompilationUnit(fp, bcName)
 	CompilationUnits.Push(cu)
+	cu.Types = InitTypeMap()
 	// runtime.KeepAlive(cu)
 
 	v.Visit(tree)
