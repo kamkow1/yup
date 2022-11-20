@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"github.com/antlr/antlr4/runtime/Go/antlr/v4"
 	"github.com/kamkow1/yup/yupc/parser"
 	"tinygo.org/x/go-llvm"
 )
@@ -8,7 +9,7 @@ import (
 type MacroInfo struct {
 	Name     string
 	IsPublic bool
-	Value    llvm.Value
+	Value    any
 	// TODO: add macros with blocks
 	// TODO: add macro type
 }
@@ -44,7 +45,15 @@ func (v *AstVisitor) VisitPreprocDecl(ctx *parser.PreprocDeclContext) any {
 			macro := &MacroInfo{
 				Name:     macroId,
 				IsPublic: false, // TODO: visibility modifiers for macros
-				Value:    v.Visit(ctx.Expression()).(llvm.Value),
+				//Value:    v.Visit(ctx.Expression()).(llvm.Value),
+			}
+
+			if ctx.Expression() != nil {
+				macro.Value = ctx.Expression()
+			}
+
+			if ctx.CodeBlock() != nil {
+				macro.Value = ctx.CodeBlock()
 			}
 
 			CompilationUnits.Peek().Macros[macroId] = macro
@@ -60,21 +69,32 @@ func (v *AstVisitor) VisitPreprocDecl(ctx *parser.PreprocDeclContext) any {
 			name := ctx.Identifier(0).GetText()
 			macro, ok := CompilationUnits.Peek().Macros[name]
 
+			var value llvm.Value
+
 			if !ok {
 				LogError("tried to reference an unknown macro `%s`", name)
 			}
 
-			// macros that depend on the current location / interpreter state
-			if name == "current_func" {
-				currentFunc := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
-				macro.Value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(currentFunc, "")
+			switch name {
+			case "current_func":
+				{
+					currentFunc := CompilationUnits.Peek().Builder.GetInsertBlock().Parent().Name()
+					value = CompilationUnits.Peek().Builder.CreateGlobalStringPtr(currentFunc, "")
+				}
+			case "near_line":
+				value = llvm.ConstInt(llvm.Int64Type(), uint64(GlobalCompilerInfo.Line), false)
+			default:
+				{
+					switch macro.Value.(type) {
+					case *parser.CodeBlockContext:
+						v.VisitCodeBlock(macro.Value.(*parser.CodeBlockContext))
+					default:
+						value = v.Visit(macro.Value.(antlr.ParseTree)).(llvm.Value)
+					}
+				}
 			}
 
-			if name == "near_line" {
-				macro.Value = llvm.ConstInt(llvm.Int64Type(), uint64(GlobalCompilerInfo.Line), false)
-			}
-
-			return macro.Value
+			return value
 		}
 	}
 

@@ -65,7 +65,8 @@ typeAliasDeclaration: KeywordPublic? Identifier SymbolColon KeywordTypeAlias typ
 structInit: Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 constStructInit: SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 
-preprocDecl: SymbolHash Identifier Identifier? expression? SymbolTerminator?;
+preprocDecl: SymbolHash Identifier Identifier? macroArgList (expression | codeBlock)? SymbolTerminator?;
+macroArgList: SymbolLparen (Identifier (SymbolComma Identifier)*)? SymbolRparen;
 
 expression: funcCall                                            #funcCallExpr
         |   (Identifier | KeywordSelf)                          #identifierExpr
