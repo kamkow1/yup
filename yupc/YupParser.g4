@@ -87,6 +87,7 @@ expression: funcCall                                            #funcCallExpr
         |   Identifier SymbolColon SymbolColon expression SymbolDot funcCall #MethodCallExpr
         |	Identifier SymbolColon SymbolColon funcCall			#StaticMethodCallExpr
         |   structInit                                          #StructInitExpression
+        |   SymbolDot Identifier SymbolAssign expression        #FieldExprPair
         |   constStructInit                                     #ConstStructInitExpression
         |   typeName                                            #LitTypeExpr
         |   Identifier (SymbolIncrement | SymbolDecrement)      #IncremDecremExpr

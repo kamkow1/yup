@@ -15,6 +15,11 @@ type TypeInfo struct {
 	IsPublic bool
 }
 
+type FieldExprPair struct {
+	FieldName string
+	Expr      llvm.Value
+}
+
 // initialize built-in types
 func InitTypeMap() map[string]*TypeInfo {
 	return map[string]*TypeInfo{
@@ -433,16 +438,21 @@ func (v *AstVisitor) VisitMethodCallExpr(ctx *parser.MethodCallExprContext) any 
 	return CompilationUnits.Peek().Builder.CreateCall(method.Type().ReturnType(), method, valueArgs, "")
 }
 
-func (v *AstVisitor) VisitStructInitExpression(ctx *parser.StructInitExpressionContext) any {
-	return v.Visit(ctx.StructInit())
+func (v *AstVisitor) VisitFieldExprPair(ctx *parser.FieldExprPairContext) FieldExprPair {
+	return FieldExprPair{
+		FieldName: ctx.Identifier().GetText(),
+		Expr:      v.Visit(ctx.Expression()).(llvm.Value),
+	}
 }
 
-func InitializeStructDynamically(strct llvm.Value, values []llvm.Value) llvm.Value {
-	for i, value := range values {
-		typ := strct.Type().ElementType()
-		name := fmt.Sprintf("dyn_struct_%d", i)
-		field := CompilationUnits.Peek().Builder.CreateStructGEP(typ, strct, i, name)
-		CompilationUnits.Peek().Builder.CreateStore(value, field)
+func InitializeStructDynamically(structType *Structure, strct llvm.Value, pairs []FieldExprPair) llvm.Value {
+	for i, pair := range pairs {
+		if structType.Fields[i].Name == pair.FieldName {
+			typ := structType.Type.Type
+			name := fmt.Sprintf("dyn_struct_%d", i)
+			field := CompilationUnits.Peek().Builder.CreateStructGEP(typ, strct, i, name)
+			CompilationUnits.Peek().Builder.CreateStore(pair.Expr, field)
+		}
 	}
 
 	return strct
@@ -450,47 +460,37 @@ func InitializeStructDynamically(strct llvm.Value, values []llvm.Value) llvm.Val
 
 func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	name := ctx.Identifier().GetText()
-	strct, ok := CompilationUnits.Peek().Types[name]
+	strct, ok := CompilationUnits.Peek().Structs[name]
 	if !ok {
 		LogError("tried to initialize an unknown struct type: `%s`", name)
 	}
 
-	var vals []llvm.Value
-	for i, expr := range ctx.AllExpression() {
-		arg := v.Visit(expr).(llvm.Value)
-
-		voidptr := llvm.PointerType(llvm.Int8Type(), 0)
-		base := CompilationUnits.Peek().Structs[name]
-		isParamVoidPtr := base.Fields[i].Type.Type == voidptr
-		isArgVoidPtr := arg.Type() == voidptr
-
-		if isParamVoidPtr && !isArgVoidPtr {
-			arg = Cast(arg, &TypeInfo{
-				Type: voidptr,
-			})
-		}
-
-		vals = append(vals, arg)
+	var fieldPairs []FieldExprPair
+	for _, pair := range ctx.AllExpression() {
+		fieldPairs = append(fieldPairs, v.Visit(pair).(FieldExprPair))
 	}
 
-	structAlloca := CreateAllocation(strct.Type)
+	structAlloca := CreateAllocation(strct.Type.Type)
 	// initialize a struct dynamically
 	// because LLVM doesn't allow non-constant exprs
 	var constStruct llvm.Value
 	if ctx.KeywordDyn() != nil {
-		constStruct = llvm.ConstNamedStruct(strct.Type, []llvm.Value{})
-		InitializeStructDynamically(structAlloca, vals)
+		constStruct = llvm.ConstNamedStruct(strct.Type.Type, []llvm.Value{})
+		InitializeStructDynamically(strct, structAlloca, fieldPairs)
 	} else {
-		for _, val := range vals {
-			if !val.IsConstant() {
+		var values []llvm.Value
+		for _, pair := range fieldPairs {
+			if !pair.Expr.IsConstant() {
 				LogError("tried to initialize non-dynamic struct dynamically. dynamic structs must have `dyn` keyword")
 			}
+
+			values = append(values, pair.Expr)
 		}
 
-		constStruct = llvm.ConstNamedStruct(strct.Type, vals)
+		constStruct = llvm.ConstNamedStruct(strct.Type.Type, values)
+		CompilationUnits.Peek().Builder.CreateStore(constStruct, structAlloca)
 	}
 
-	CompilationUnits.Peek().Builder.CreateStore(constStruct, structAlloca)
 	loadType := structAlloca.Type().ElementType()
 	return CompilationUnits.Peek().Builder.CreateLoad(loadType, structAlloca, "")
 }

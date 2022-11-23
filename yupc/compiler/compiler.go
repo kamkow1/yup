@@ -304,6 +304,9 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitBreakStatement(ctx)
 
 	// Struct
+	case *parser.FieldExprPairContext:
+		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+		return v.VisitFieldExprPair(ctx)
 	case *parser.StructDeclarationContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitStructDeclaration(ctx)
@@ -318,7 +321,7 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		return v.VisitFieldAccessExpression(ctx)
 	case *parser.StructInitExpressionContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-		return v.VisitStructInitExpression(ctx)
+		return v.VisitStructInit(ctx.StructInit().(*parser.StructInitContext))
 	case *parser.StructInitContext:
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitStructInit(ctx)
