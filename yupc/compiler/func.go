@@ -75,8 +75,8 @@ func (v *AstVisitor) VisitFuncParamList(ctx *parser.FuncParamListContext) any {
 
 func (v *AstVisitor) VisitFuncSig(ctx *parser.FuncSigContext) any {
 	name := ctx.Identifier().GetText()
-	_, ok := CompilationUnits.Peek().Functions[name]
-	if ok {
+	fnc, ok := CompilationUnits.Peek().Functions[name]
+	if ok && fnc.Value.Linkage() != llvm.ExternalLinkage {
 		LogError("function `%s` already exists in module `%s`",
 			name, CompilationUnits.Peek().SourceFile)
 	}

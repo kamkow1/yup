@@ -62,7 +62,7 @@ structDeclaration: KeywordPublic? Identifier SymbolColon (KeywordStruct | Keywor
 		((SymbolLbrace structField* funcDef* SymbolRbrace) | SymbolTerminator);
 structField: Identifier typeAnnot SymbolTerminator;
 typeAliasDeclaration: KeywordPublic? Identifier SymbolColon KeywordTypeAlias typeName;
-structInit: Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
+structInit: KeywordDyn? Identifier SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 constStructInit: SymbolDot SymbolLbrace (expression (SymbolComma expression)*)? SymbolRbrace;
 
 preprocDecl: SymbolHash Identifier Identifier? macroArgList (expression | codeBlock)? SymbolTerminator?;
@@ -89,7 +89,7 @@ expression: funcCall                                            #funcCallExpr
         |   structInit                                          #StructInitExpression
         |   constStructInit                                     #ConstStructInitExpression
         |   typeName                                            #LitTypeExpr
-        |   Identifier (SymbolIncrement | SymbolDecrement)	    #IncremDecremExpr
+        |   Identifier (SymbolIncrement | SymbolDecrement)      #IncremDecremExpr
         |   preprocDecl                                         #MacroRef;
 
 statement: expression SymbolTerminator

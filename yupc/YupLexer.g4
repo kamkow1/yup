@@ -20,6 +20,7 @@ KeywordPublic		    	:	'pub';
 KeywordValueString	    	:	'v';
 KeywordExtern				:	'extern';
 KeywordUnsig                :   'u';
+KeywordDyn                  :   'dyn';
 
 SymbolBackSlash		    	:	'\\';
 SymbolArrow		    		:   '->';

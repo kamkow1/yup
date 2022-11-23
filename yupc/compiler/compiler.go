@@ -24,7 +24,7 @@ func RunCompileJob(args []string) {
 		modname := CompilationUnits.Peek().ModuleName
 		objpath := DumpObjectFile(modname)
 		MakeExec(objpath, GlobalCompilerInfo.OutName)
-	}	
+	}
 }
 
 type CompilerInfo struct {
@@ -33,7 +33,7 @@ type CompilerInfo struct {
 	Verbose      bool
 	PrintModule  bool
 	StaticLibs   []string
-	OutName 	 string
+	OutName	     string
 }
 
 func NewCompilerInfo() *CompilerInfo {
@@ -129,8 +129,8 @@ func (v *AstVisitor) Visit(tree antlr.ParseTree) any {
 		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
 		return v.VisitStatement(ctx)
 	case *parser.IncremDecremExprContext:
-    		GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
-    		return v.VisitIncremDecremExpr(ctx);
+        GlobalCompilerInfo.Line = ctx.GetStart().GetLine()
+        return v.VisitIncremDecremExpr(ctx);
 
 	// Type
 	case *parser.TypeAnnotContext:

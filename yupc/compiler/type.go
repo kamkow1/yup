@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -436,6 +437,17 @@ func (v *AstVisitor) VisitStructInitExpression(ctx *parser.StructInitExpressionC
 	return v.Visit(ctx.StructInit())
 }
 
+func InitializeStructDynamically(strct llvm.Value, values []llvm.Value) llvm.Value {
+	for i, value := range values {
+		typ := strct.Type().ElementType()
+		name := fmt.Sprintf("dyn_struct_%d", i)
+		field := CompilationUnits.Peek().Builder.CreateStructGEP(typ, strct, i, name)
+		CompilationUnits.Peek().Builder.CreateStore(value, field)
+	}
+
+	return strct
+}
+
 func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	name := ctx.Identifier().GetText()
 	strct, ok := CompilationUnits.Peek().Types[name]
@@ -461,7 +473,26 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 		vals = append(vals, arg)
 	}
 
-	return llvm.ConstNamedStruct(strct.Type, vals)
+	structAlloca := CreateAllocation(strct.Type)
+	// initialize a struct dynamically
+	// because LLVM doesn't allow non-constant exprs
+	var constStruct llvm.Value
+	if ctx.KeywordDyn() != nil {
+		constStruct = llvm.ConstNamedStruct(strct.Type, []llvm.Value{})
+		InitializeStructDynamically(structAlloca, vals)
+	} else {
+		for _, val := range vals {
+			if !val.IsConstant() {
+				LogError("tried to initialize non-dynamic struct dynamically. dynamic structs must have `dyn` keyword")
+			}
+		}
+
+		constStruct = llvm.ConstNamedStruct(strct.Type, vals)
+	}
+
+	CompilationUnits.Peek().Builder.CreateStore(constStruct, structAlloca)
+	loadType := structAlloca.Type().ElementType()
+	return CompilationUnits.Peek().Builder.CreateLoad(loadType, structAlloca, "")
 }
 
 func (v *AstVisitor) VisitConstStructInitExpression(ctx *parser.ConstStructInitExpressionContext) any {

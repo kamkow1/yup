@@ -247,7 +247,8 @@ func (v *AstVisitor) VisitLogicalOrExpression(ctx *parser.LogicalOrExpressionCon
 
 func (v *AstVisitor) VisitIncremDecremExpr(ctx *parser.IncremDecremExprContext) any {
 	name := ctx.Identifier().GetText()
-	value := FindLocalVariable(name, len(CompilationUnits.Peek().Locals)-1).Value
+	localsLen := len(CompilationUnits.Peek().Locals) - 1
+	value := FindLocalVariable(name, localsLen).Value
 	ptr := value
 
 	if value.Type().TypeKind() == llvm.PointerTypeKind {
