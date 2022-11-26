@@ -445,23 +445,26 @@ func (v *AstVisitor) VisitFieldExprPair(ctx *parser.FieldExprPairContext) FieldE
 	}
 }
 
-func InitializeStructDynamically(structType *Structure, strct llvm.Value, pairs []FieldExprPair) llvm.Value {
+func InitializeStructDynamically(strct *Structure, typ llvm.Type, alloca llvm.Value, pairs []FieldExprPair) llvm.Value {
+	if len(strct.Fields) < 1 {
+		LogError("tried to initialize struct `%s` but it has 0 fields", strct.Name)
+	}
+
 	for i, pair := range pairs {
-		if structType.Fields[i].Name == pair.FieldName {
-			typ := structType.Type.Type
+		if strct.Fields[i].Name == pair.FieldName {
 			name := fmt.Sprintf("dyn_struct_%d", i)
-			field := CompilationUnits.Peek().Builder.CreateStructGEP(typ, strct, i, name)
+			field := CompilationUnits.Peek().Builder.CreateStructGEP(typ, alloca, i, name)
 			CompilationUnits.Peek().Builder.CreateStore(pair.Expr, field)
 		}
 	}
 
-	return strct
+	return alloca
 }
 
 func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	name := ctx.Identifier().GetText()
-	strct, ok := CompilationUnits.Peek().Structs[name]
-	if !ok {
+	structType := CompilationUnits.Peek().Module.GetTypeByName(name)
+	if structType.IsNil() {
 		LogError("tried to initialize an unknown struct type: `%s`", name)
 	}
 
@@ -470,13 +473,14 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 		fieldPairs = append(fieldPairs, v.Visit(pair).(FieldExprPair))
 	}
 
-	structAlloca := CreateAllocation(strct.Type.Type)
+	structAlloca := CreateAllocation(structType)
 	// initialize a struct dynamically
 	// because LLVM doesn't allow non-constant exprs
 	var constStruct llvm.Value
 	if ctx.KeywordDyn() != nil {
-		constStruct = llvm.ConstNamedStruct(strct.Type.Type, []llvm.Value{})
-		InitializeStructDynamically(strct, structAlloca, fieldPairs)
+		constStruct = llvm.ConstStruct([]llvm.Value{}, false)
+		strct := CompilationUnits.Peek().Structs[name]
+		InitializeStructDynamically(strct, structType, structAlloca, fieldPairs)
 	} else {
 		var values []llvm.Value
 		for _, pair := range fieldPairs {
@@ -487,7 +491,7 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 			values = append(values, pair.Expr)
 		}
 
-		constStruct = llvm.ConstNamedStruct(strct.Type.Type, values)
+		constStruct = llvm.ConstNamedStruct(structType, values)
 		CompilationUnits.Peek().Builder.CreateStore(constStruct, structAlloca)
 	}
 

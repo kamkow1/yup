@@ -85,17 +85,18 @@ func ImportModule(name string) {
 	}
 
 	for name := range unit.Globals {
-    	if _, ok := CompilationUnits.Peek().Globals[name]; !ok {
+		if _, ok := CompilationUnits.Peek().Globals[name]; !ok {
 			if CompilationUnits.Peek().Module.NamedGlobal(name).IsNil() {
 				glb := unit.Module.NamedGlobal(name)
 				glb = llvm.AddGlobal(*CompilationUnits.Peek().Module, glb.Type(), name)
 				CompilationUnits.Peek().Globals[name] = &glb
 			}
-    	}
+		}
 	}
 
 	unit.Module.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())
-	llvm.LinkModules(*CompilationUnits.Peek().Module, *unit.Module)
+	// TODO: figure out why linking causes deformed names
+	//llvm.LinkModules(*CompilationUnits.Peek().Module, *unit.Module)
 }
 
 func (v *AstVisitor) VisitImportDecl(ctx *parser.ImportDeclContext) any {
