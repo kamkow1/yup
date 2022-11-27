@@ -1,3 +1,4 @@
+import "#std/Debug.yup";
 import "#std/Memory/Memory.yup";
 import "#std/Bool.yup";
 
@@ -31,6 +32,7 @@ pub Vec: struct {
         const original_size = sizeof(Vec::self.items.*);
         const items: **void = realloc_memory(cast(Vec::self.items.*, *void), original_size, new_size);
         if items {
+            debug("items", #current_func(), #near_line(), "reallocated items");
             Vec::self.items = items;
             Vec::self.cap = new_cap;
             status = #VEC_SUCC();
@@ -47,6 +49,8 @@ pub Vec: struct {
     pub push: fnc(self, const new_item: *void) -> Bool {
         var status = #VEC_FAIL();
         if (Vec::self.cap.*) == (Vec::self.total.*) {
+            debug(new_item, #current_func(), #near_line(), "pushing");
+
             status = Vec::self.resize(Vec::self.cap.* * 2:i64);
             if status != #VEC_FAIL() {
                 Vec::self.items.*[Vec::self.increm_total()] = new_item;

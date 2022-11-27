@@ -1,5 +1,5 @@
 import "#std/Errors.yup";
-import "#std/Memory/Memory.yup";
+import "#std/Memory.yup";
 
 pub _IO_FILE: struct;
 
@@ -21,10 +21,10 @@ pub File: struct {
     real_handle: *_IO_FILE;
     name: *i8;
     
-    pub new: fnc(const _name: *i8) -> *File {
-        const f: *File = alloc_memory(sizeof(File));
-        File::f.name = _name;
-        return f;
+    pub new: fnc(const _name: *i8) -> File {
+        return File.!{
+            .name = _name,
+        };
     }
 
     pub delete: fnc(self) {

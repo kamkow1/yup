@@ -1,0 +1,60 @@
+import "#std/Errors.yup";
+import "#std/Result.yup";
+import "#std/Debug.yup";
+
+extern malloc: fnc(size: i64) -> *void;
+extern free: fnc(ptr: *void);
+extern memset: fnc(arr: *void, count: i32, size: i64) -> *void;
+extern memcpy: fnc(dest: *void, src: *i8, n: i64) -> *void;
+extern realloc: fnc(ptr: *void, sz: i64) -> *void;
+
+pub alloc_memory: fnc(const sz: i64) -> *void {
+	return malloc(sz);
+}
+
+pub free_memory: fnc(const ptr: *void) {
+	free(ptr);
+}
+
+pub init_memory: fnc(const arr: *void, const cnt: i32, const sz: i64) -> *void {
+	return memset(arr, cnt, sz);
+}
+
+pub copy_memory: fnc(const dest: *void, const src: *i8, const n: i64) -> *void {
+	return memcpy(dest, src, n);
+}
+
+#macro REALLOC_NO_ERROR() VError.!{
+    .code = 0,
+    .message = "no error has occured during realloc_memory() call",
+};
+
+pub realloc_memory: fnc(const ptr: *void, const original_size: i64, const new_size: i64) -> Result {
+	if new_size == 0 {
+		free_memory(ptr);
+        return Result.!{
+            .value = CNullptr:*void,
+            .error = VError.!{
+                .code = 1, 
+                .message = "failed to reallocate memory: `new_size` is equal to 0",
+            },
+        };
+    }
+
+	if ptr == CNullptr:*void {
+		return Result.!{
+            .value = alloc_memory(new_size),
+            .error = #REALLOC_NO_ERROR(),
+        };
+    }
+
+	const new_ptr = alloc_memory(new_size);
+	if new_ptr {
+		copy_memory(new_ptr, ptr, original_size);
+    }
+
+	return Result.!{
+        .value = new_ptr,
+        .error = #REALLOC_NO_ERROR(),
+    };
+}

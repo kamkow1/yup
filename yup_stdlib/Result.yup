@@ -1,0 +1,19 @@
+import "#std/Errors.yup";
+import "#std/Bool.yup";
+
+// `Result.yup` requires it's own `malloc()`
+extern malloc: fnc(size: i64) -> *void;
+
+pub Result: struct {
+    value: *void; // value that a result can hold
+    error: VError; // error in case something went wrong
+                    // it's up to the consumer to handle it
+    pub has_error: fnc(self) -> Bool {
+        /*
+        if Result::self.error.* != CNullptr:*VError {
+            return 1:Bool;
+        }*/
+
+        return 0:Bool;
+    }
+}

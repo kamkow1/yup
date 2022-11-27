@@ -1,5 +1,3 @@
-import "#std/IO/IO.yup";
-
 /*
 value        - as string
 func_name    - comes from the `#current_func` macro
@@ -7,6 +5,8 @@ line         - comes from the `#near_line` macro
       NOTE: 
       line number indicates the line where the `#near_line` macro was invoked
 */
+
+extern printf: fnc(const fmt: *i8, ...) -> i32;
 
 pub debug: fnc(value: *void, func_name: *i8, line: i64, msg: *i8) {
     printf("%s():%d -- %p -- %s\n", func_name, line, value, msg);

@@ -1,6 +1,20 @@
 extern exit: fnc(code: i32);
 extern perror: fnc(msg: *i8);
 
+extern malloc: fnc(ptr: i64) -> *void;
+
+pub VError: struct {
+    code: i32;
+    message: *i8;
+
+    pub new: fnc(_code: i32, _msg: *i8) -> *VError {
+        const ve: *VError = malloc(sizeof(VError));
+        VError::ve.code = _code;
+        VError::ve.message = _msg;
+        return ve;
+    }
+}
+
 pub Errors: interf {
     pub raise_code: fnc(code: i32) {
         exit(code);
