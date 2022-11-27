@@ -485,7 +485,7 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	}
 
 	structAlloca := CreateAllocation(structType)
-	if ctx.KeywordDyn() != nil {
+	if ctx.SymbolExclMark() != nil {
 		strct := CompilationUnits.Peek().Structs[name]
 		newStruct := InitializeStructDynamically(strct, structType, structAlloca, fieldPairs)
 
