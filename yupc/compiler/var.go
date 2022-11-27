@@ -108,14 +108,14 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 		}
 
 		if isGlobal {
-    		var global llvm.Value
-    		globalFromModule := CompilationUnits.Peek().Module.NamedGlobal(name)
-    		if !globalFromModule.IsNil() {
+			var global llvm.Value
+			globalFromModule := CompilationUnits.Peek().Module.NamedGlobal(name)
+			if !globalFromModule.IsNil() {
 				global = globalFromModule
-    		} else {
+			} else {
 				global = llvm.AddGlobal(*CompilationUnits.Peek().Module, typ.Type, name)
-    		}
-    		
+			}
+
 			if isInit {
 				global.SetInitializer(value)
 			}
@@ -131,6 +131,10 @@ func (v *AstVisitor) VisitVarDecl(ctx *parser.VarDeclContext) any {
 			CompilationUnits.Peek().Globals[name] = &global
 
 		} else {
+			if typ == nil {
+				LogError("tried to declare variable `%s` without a type annotation", name)
+			}
+
 			alloca := CreateAllocation(typ.Type)
 			loclen := len(CompilationUnits.Peek().Locals) - 1
 			CompilationUnits.Peek().Locals[loclen][name] = &LocalVariable{

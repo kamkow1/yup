@@ -96,7 +96,7 @@ func ImportModule(name string) {
 
 	unit.Module.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())
 	// TODO: figure out why linking causes deformed names
-	//llvm.LinkModules(*CompilationUnits.Peek().Module, *unit.Module)
+	llvm.LinkModules(*CompilationUnits.Peek().Module, *unit.Module)
 }
 
 func (v *AstVisitor) VisitImportDecl(ctx *parser.ImportDeclContext) any {

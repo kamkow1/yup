@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -96,12 +95,21 @@ func InitTypeMap() map[string]*TypeInfo {
 }
 
 func GetTypeFromName(name string) *TypeInfo {
-	typ, ok := CompilationUnits.Peek().Types[name]
-	if !ok {
-		LogError("unknown type: %s", name)
+	typ := CompilationUnits.Peek().Module.GetTypeByName(name)
+
+	if typ.IsNil() {
+		typeInfo, ok := CompilationUnits.Peek().Types[name]
+		if !ok {
+			LogError("unknown type: %s", name)
+		}
+
+		return typeInfo
 	}
 
-	return typ
+	return &TypeInfo{
+		Name: name,
+		Type: typ,
+	}
 }
 
 func reverseTypeExtList(array []parser.ITypeExtContext) []parser.ITypeExtContext {
@@ -450,12 +458,9 @@ func InitializeStructDynamically(strct *Structure, typ llvm.Type, alloca llvm.Va
 		LogError("tried to initialize struct `%s` but it has 0 fields", strct.Name)
 	}
 
-	for i, pair := range pairs {
-		if strct.Fields[i].Name == pair.FieldName {
-			name := fmt.Sprintf("dyn_struct_%d", i)
-			field := CompilationUnits.Peek().Builder.CreateStructGEP(typ, alloca, i, name)
-			CompilationUnits.Peek().Builder.CreateStore(pair.Expr, field)
-		}
+	for _, pair := range pairs {
+		fieldPtr := GetStructFieldPtr(alloca, pair.FieldName, strct.Name)
+		CompilationUnits.Peek().Builder.CreateStore(pair.Expr, fieldPtr)
 	}
 
 	return alloca
@@ -465,7 +470,13 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	name := ctx.Identifier().GetText()
 	structType := CompilationUnits.Peek().Module.GetTypeByName(name)
 	if structType.IsNil() {
-		LogError("tried to initialize an unknown struct type: `%s`", name)
+		typeInfo, ok := CompilationUnits.Peek().Types[name]
+
+		if !ok {
+			LogError("tried to initialize an unknown struct type: `%s`", name)
+		}
+
+		structType = typeInfo.Type
 	}
 
 	var fieldPairs []FieldExprPair
@@ -474,13 +485,12 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	}
 
 	structAlloca := CreateAllocation(structType)
-	// initialize a struct dynamically
-	// because LLVM doesn't allow non-constant exprs
-	var constStruct llvm.Value
 	if ctx.KeywordDyn() != nil {
-		constStruct = llvm.ConstStruct([]llvm.Value{}, false)
 		strct := CompilationUnits.Peek().Structs[name]
-		InitializeStructDynamically(strct, structType, structAlloca, fieldPairs)
+		newStruct := InitializeStructDynamically(strct, structType, structAlloca, fieldPairs)
+
+		loadType := newStruct.Type().ElementType()
+		return CompilationUnits.Peek().Builder.CreateLoad(loadType, newStruct, "")
 	} else {
 		var values []llvm.Value
 		for _, pair := range fieldPairs {
@@ -491,12 +501,8 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 			values = append(values, pair.Expr)
 		}
 
-		constStruct = llvm.ConstNamedStruct(structType, values)
-		CompilationUnits.Peek().Builder.CreateStore(constStruct, structAlloca)
+		return llvm.ConstNamedStruct(structType, values)
 	}
-
-	loadType := structAlloca.Type().ElementType()
-	return CompilationUnits.Peek().Builder.CreateLoad(loadType, structAlloca, "")
 }
 
 func (v *AstVisitor) VisitConstStructInitExpression(ctx *parser.ConstStructInitExpressionContext) any {

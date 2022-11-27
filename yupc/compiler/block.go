@@ -67,9 +67,9 @@ func (v *AstVisitor) VisitCodeBlock(ctx *parser.CodeBlockContext) any {
 			args := []llvm.Value{size, Cast(*ta, typeinfo)}
 			_ = args
 
-			if blockExitStatus.HasReturned {
+			/*if blockExitStatus.HasReturned {
 				CompilationUnits.Peek().Builder.CreateCall(llvm.VoidType(), llvmLifeTimeEnd, args, "")
-			}
+			}*/
 		}
 	}
 
