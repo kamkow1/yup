@@ -1,16 +1,6 @@
 import "#std/Errors.yup";
 import "#std/Memory.yup";
-
-pub _IO_FILE: struct;
-
-extern const stdout: *_IO_FILE;
-
-extern printf: fnc(fmt: *i8, ...) -> i32;
-extern scanf: fnc(fmt: *i8, ...) -> i32;
-extern fprintf: fnc(fd: *_IO_FILE, text: *i8, ...) -> i32;
-
-extern fopen: fnc(const filename: *i8, const mode: *i8) -> *_IO_FILE;
-extern fclose: fnc(const file: *_IO_FILE) -> i32;
+import "#std/LibC.yup";
 
 File: struct;
 #macro CLOSE_SUCC_RESULT() 0:i32;

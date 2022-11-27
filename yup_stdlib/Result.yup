@@ -1,8 +1,6 @@
 import "#std/Errors.yup";
 import "#std/Bool.yup";
-
-// `Result.yup` requires it's own `malloc()`
-extern malloc: fnc(size: i64) -> *void;
+import "#std/LibC.yup";
 
 pub Result: struct {
     value: *void; // value that a result can hold

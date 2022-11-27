@@ -1,0 +1,29 @@
+// IO
+
+pub _IO_FILE: struct;
+
+extern const stdout: *_IO_FILE;
+
+extern printf: fnc(fmt: *i8, ...) -> i32;
+extern scanf: fnc(fmt: *i8, ...) -> i32;
+extern fprintf: fnc(fd: *_IO_FILE, text: *i8, ...) -> i32;
+
+extern fopen: fnc(const filename: *i8, const mode: *i8) -> *_IO_FILE;
+extern fclose: fnc(const file: *_IO_FILE) -> i32;
+
+// Memory
+
+extern malloc: fnc(size: i64) -> *void;
+extern free: fnc(ptr: *void);
+extern memset: fnc(arr: *void, count: i32, size: i64) -> *void;
+extern memcpy: fnc(dest: *void, src: *i8, n: i64) -> *void;
+extern realloc: fnc(ptr: *void, sz: i64) -> *void;
+
+// Errors
+
+extern exit: fnc(code: i32);
+extern perror: fnc(msg: *i8);
+
+// Strings
+
+extern strcpy: fnc(dest: *i8, src: *i8) -> *i8;

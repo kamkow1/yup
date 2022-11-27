@@ -1,7 +1,4 @@
-extern exit: fnc(code: i32);
-extern perror: fnc(msg: *i8);
-
-extern malloc: fnc(ptr: i64) -> *void;
+import "#std/LibC.yup";
 
 pub VError: struct {
     code: i32;

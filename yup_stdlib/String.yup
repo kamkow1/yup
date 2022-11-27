@@ -1,7 +1,6 @@
 import "#std/Debug.yup";
 import "#std/Bool.yup";
-
-extern strcpy: fnc(dest: *i8, src: *i8) -> *i8;
+import "#std/LibC.yup";
 
 pub copy_cstring: fnc(dest: *i8, src: *i8) -> *i8 {
 	return strcpy(dest, src);
