@@ -190,10 +190,12 @@ func (v *AstVisitor) VisitAssign(ctx *parser.AssignContext) any {
 
 	value := v.Visit(ctx.VarValue()).(llvm.Value)
 
-	if value.Type() == vr.Value.Type() {
-		value = Cast(value, &TypeInfo{
-			Type: vr.Value.Type(),
-		})
+	varType := vr.Value.Type().ElementType()
+	valueType := value.Type()
+
+	if valueType != varType {
+		LogError("type mismatch. tried to assign `%s` to `%s`",
+			valueType.String(), varType.String())
 	}
 
 	return CompilationUnits.Peek().Builder.CreateStore(value, vr.Value)

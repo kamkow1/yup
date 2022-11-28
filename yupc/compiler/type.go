@@ -12,11 +12,24 @@ type TypeInfo struct {
 	Name     string
 	Type     llvm.Type
 	IsPublic bool
+	IsInterf bool
 }
 
 type FieldExprPair struct {
 	FieldName string
 	Expr      llvm.Value
+}
+
+type Field struct {
+	Name string
+	Type *TypeInfo
+}
+
+type Structure struct {
+	Name     string
+	Fields   []*Field
+	Methods  []*Function
+	IsPublic bool
 }
 
 // initialize built-in types
@@ -95,15 +108,23 @@ func InitTypeMap() map[string]*TypeInfo {
 }
 
 func GetTypeFromName(name string) *TypeInfo {
+
+	// use an existing type from LLVM module
 	typ := CompilationUnits.Peek().Module.GetTypeByName(name)
 
-	if typ.IsNil() {
-		typeInfo, ok := CompilationUnits.Peek().Types[name]
-		if !ok {
-			LogError("unknown type: %s", name)
-		}
+	if typ.IsNil() || len(strings.TrimSpace(typ.StructName())) == 0 {
 
-		return typeInfo
+		// use type the as a *TypeInfo
+		typeInfo, ok := CompilationUnits.Peek().Types[name]
+
+		// is an exising type
+		if ok {
+			return typeInfo
+		} else {
+			if !ok {
+				LogError("unknown type: %s", name)
+			}
+		}
 	}
 
 	return &TypeInfo{
@@ -123,11 +144,18 @@ func reverseTypeExtList(array []parser.ITypeExtContext) []parser.ITypeExtContext
 func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 
 	var typ *TypeInfo
+
+	// is just an identifier
 	if ctx.Identifier() != nil {
+		// grab existing name
 		typ = GetTypeFromName(ctx.Identifier().GetText())
+
+		// is a struct type
 	} else if ctx.StructType() != nil {
 		strtp := ctx.StructType().(*parser.StructTypeContext)
 		var types []llvm.Type
+
+		// get the fields
 		for _, tp := range strtp.AllTypeName() {
 			types = append(types, v.Visit(tp).(*TypeInfo).Type)
 		}
@@ -135,9 +163,12 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 		typ = &TypeInfo{
 			Type: llvm.StructType(types, false),
 		}
+
+		// is a function type
 	} else if ctx.FuncType() != nil {
 		fntp := ctx.FuncType().(*parser.FuncTypeContext)
 
+		// get the return type
 		var retType llvm.Type
 		if fntp.SymbolArrow() != nil {
 			retType = v.Visit(fntp.TypeName()).(llvm.Type)
@@ -145,6 +176,7 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 			retType = llvm.VoidType()
 		}
 
+		// get params
 		params := make([]FuncParam, 0)
 		if fntp.FuncParamList() != nil {
 			params = v.Visit(fntp.FuncParamList()).([]FuncParam)
@@ -166,14 +198,19 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 		}
 	}
 
+	// type extensions are in a reversed order
+	// so yup's *i32 is llvm's i32*
 	for _, ext := range reverseTypeExtList(ctx.AllTypeExt()) {
 		extension := ext.(*parser.TypeExtContext)
+
+		// pointer types
 		if extension.SymbolAsterisk() != nil {
 			typ = &TypeInfo{
 				Type: llvm.PointerType(typ.Type, 0),
 			}
 		}
 
+		// compile-time sized array types
 		if extension.ArrayTypeExt() != nil {
 			extctx := extension.ArrayTypeExt().(*parser.ArrayTypeExtContext)
 			size, _ := strconv.Atoi(extctx.ValueInteger().GetText())
@@ -184,19 +221,6 @@ func (v *AstVisitor) VisitTypeName(ctx *parser.TypeNameContext) any {
 	}
 
 	return typ
-}
-
-type Field struct {
-	Name string
-	Type *TypeInfo
-}
-
-type Structure struct {
-	Name     string
-	Fields   []*Field
-	Methods  []*Function
-	Type     *TypeInfo
-	IsPublic bool
 }
 
 func (v *AstVisitor) VisitStructField(ctx *parser.StructFieldContext) any {
@@ -229,6 +253,7 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 	CompilationUnits.Peek().Types[name] = &TypeInfo{
 		Name:     name,
 		Type:     structType,
+		IsInterf: isInterface,
 		IsPublic: ispub,
 	}
 
@@ -237,10 +262,6 @@ func (v *AstVisitor) VisitStructDeclaration(ctx *parser.StructDeclarationContext
 		Fields:   make([]*Field, 0),
 		Methods:  make([]*Function, 0),
 		IsPublic: ispub,
-		Type: &TypeInfo{
-			Name: name,
-			Type: structType,
-		},
 	}
 
 	// inherit other structs
@@ -468,16 +489,7 @@ func InitializeStructDynamically(strct *Structure, typ llvm.Type, alloca llvm.Va
 
 func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	name := ctx.Identifier().GetText()
-	structType := CompilationUnits.Peek().Module.GetTypeByName(name)
-	if structType.IsNil() {
-		typeInfo, ok := CompilationUnits.Peek().Types[name]
-
-		if !ok {
-			LogError("tried to initialize an unknown struct type: `%s`", name)
-		}
-
-		structType = typeInfo.Type
-	}
+	structType := GetTypeFromName(name).Type
 
 	var fieldPairs []FieldExprPair
 	for _, pair := range ctx.AllExpression() {
@@ -485,12 +497,31 @@ func (v *AstVisitor) VisitStructInit(ctx *parser.StructInitContext) any {
 	}
 
 	structAlloca := CreateAllocation(structType)
-	if ctx.SymbolExclMark() != nil {
-		strct := CompilationUnits.Peek().Structs[name]
-		newStruct := InitializeStructDynamically(strct, structType, structAlloca, fieldPairs)
+	strct := CompilationUnits.Peek().Structs[name]
 
-		loadType := newStruct.Type().ElementType()
-		return CompilationUnits.Peek().Builder.CreateLoad(loadType, newStruct, "")
+	// initialize non-constant struct
+	if ctx.SymbolExclMark() != nil {
+		if len(strct.Fields) < 1 {
+			LogError("tried to initialize struct `%s` but it has 0 fields", strct.Name)
+		}
+
+		for _, pair := range fieldPairs {
+			fieldPtr := GetStructFieldPtr(structAlloca, pair.FieldName, strct.Name)
+
+			if fieldPtr.Type().ElementType() != pair.Expr.Type() {
+				tempCast := CastWithTempAlloca(pair.Expr, fieldPtr.Type())
+
+				loadType := tempCast.Type().ElementType()
+				pair.Expr = CompilationUnits.Peek().Builder.CreateLoad(loadType, tempCast, "")
+			}
+
+			CompilationUnits.Peek().Builder.CreateStore(pair.Expr, fieldPtr)
+		}
+
+		loadType := structAlloca.Type().ElementType()
+		return CompilationUnits.Peek().Builder.CreateLoad(loadType, structAlloca, "")
+
+		// initialize constant-only struct
 	} else {
 		var values []llvm.Value
 		for _, pair := range fieldPairs {
@@ -577,4 +608,16 @@ func Cast(value llvm.Value, typ *TypeInfo) llvm.Value {
 	}
 
 	return CompilationUnits.Peek().Builder.CreateBitCast(value, typ.Type, "")
+}
+
+func CastWithTempAlloca(toCast llvm.Value, target llvm.Type) llvm.Value {
+
+	tempAlloca := CreateAllocation(toCast.Type())
+	CompilationUnits.Peek().Builder.CreateStore(toCast, tempAlloca)
+
+	tempCast := Cast(tempAlloca, &TypeInfo{
+		Type: target,
+	})
+
+	return tempCast
 }

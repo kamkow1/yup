@@ -1,9 +1,6 @@
 package compiler
 
 import (
-	"os"
-	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -17,41 +14,18 @@ func ImportModule(name string) {
 		name = strings.ReplaceAll(name, elems[0], p)
 	}
 
-	if filepath.Ext(name) == ".c" {
-		bitcode := strings.TrimSuffix(name, filepath.Ext(".c")) + ".bc"
-		dir := filepath.Dir(bitcode)
-		fileName := filepath.Base(bitcode)
-		bitcode = filepath.Join(dir, "build", fileName)
-
-		cmdargs := []string{"-c", "-emit-llvm", name, "-o", bitcode}
-		cmd := exec.Command("clang-14", cmdargs...)
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
-
-		if err != nil {
-			LogError("compiling imported C failed (%s):\n %s", name, err.Error())
-		}
-
-		module, err := llvm.ParseBitcodeFile(bitcode)
-		if err != nil {
-			LogError("failed to parse Bitcode: %s", err.Error())
-		}
-
-		cu := NewCompilationUnit(name, name)
-		cu.Module = &module
-		CompilationUnits.Push(cu)
-	} else {
-		ProcessPathRecursively(name)
-	}
+	ProcessPathRecursively(name)
 
 	unit := CompilationUnits.Pop()
 	for name, typ := range unit.Types {
 		if _, ok := CompilationUnits.Peek().Types[name]; !ok && typ.IsPublic {
-			CompilationUnits.Peek().Types[name] = &TypeInfo{
-				Name: name,
-				Type: typ.Type,
+
+			// skip all interaces
+			if !typ.IsInterf {
+				CompilationUnits.Peek().Types[name] = &TypeInfo{
+					Name: name,
+					Type: typ.Type,
+				}
 			}
 		}
 	}
@@ -95,7 +69,6 @@ func ImportModule(name string) {
 	}
 
 	unit.Module.SetDataLayout(CompilationUnits.Peek().Module.DataLayout())
-	// TODO: figure out why linking causes deformed names
 	llvm.LinkModules(*CompilationUnits.Peek().Module, *unit.Module)
 }
 

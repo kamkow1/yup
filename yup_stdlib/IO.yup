@@ -5,7 +5,6 @@ import "#std/LibC.yup";
 File: struct;
 #macro CLOSE_SUCC_RESULT() 0:i32;
 #macro IO_FILE_NULL() CNullptr:*_IO_FILE;
-#macro FILE_NULL() CNullptr:*File;
 
 pub File: struct {
     real_handle: *_IO_FILE;
@@ -17,13 +16,9 @@ pub File: struct {
         };
     }
 
-    pub delete: fnc(self) {
-        free_memory(cast(self, *void));
-        self = #FILE_NULL();
-    }
-
     pub open: fnc(self, const mode: *i8) {
         File::self.real_handle = fopen(File::self.name.*, mode);
+
         if File::self.real_handle.* == #IO_FILE_NULL() {
             Errors::latest_reason("failed to open file");
             Errors::raise_code(1);

@@ -239,7 +239,15 @@ var BuiltInValueFunctions map[string]BuiltInValueFunction = map[string]BuiltInVa
 		return result
 	},
 	"printable_type": func(args []any) llvm.Value {
-		str := args[0].(llvm.Value).Type().String()
+		var str string
+
+		switch args[0].(type) {
+		case llvm.Value:
+			str = args[0].(llvm.Value).Type().String()
+		case *TypeInfo:
+			str = args[0].(*TypeInfo).Type.String()
+		}
+
 		return CompilationUnits.Peek().Builder.CreateGlobalStringPtr(str, "")
 	},
 	"range": func(args []any) llvm.Value {

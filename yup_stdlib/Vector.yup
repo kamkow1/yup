@@ -1,75 +1,32 @@
 import "#std/Debug.yup";
-import "#std/Memory/Memory.yup";
+import "#std/Memory.yup";
 import "#std/Bool.yup";
+import "#std/Result.yup";
 
-#macro VEC_INIT_CAP() 1;
-#macro VEC_INIT_TOT() 0;
-#macro VEC_FAIL() 0:Bool;
-#macro VEC_SUCC() 1:Bool;
+#macro VEC_INIT_CAP() 1:i64;
+#macro VEC_INIT_TOT() 0:i64;
 
 pub Vec: struct {
     items: **void;
     cap: i64;
     total: i64;
 
-    pub new: fnc() -> *Vec {
-        const vec: *Vec = alloc_memory(sizeof(Vec));
-        Vec::vec.cap = #VEC_INIT_CAP();
-        Vec::vec.total = #VEC_INIT_TOT();
-        Vec::vec.items = alloc_memory(sizeof(*void) * cast(Vec::vec.cap.*, i64));
-
-        return vec;
+    pub new: fnc() -> Vec {
+        return Vec.!{
+            .cap    = #VEC_INIT_CAP(),
+            .total  = #VEC_INIT_TOT(),
+            .items  = cast(alloc_memory(sizeof(*void) * #VEC_INIT_CAP()), **void),
+        };
     }
 
     pub delete: fnc(self) {
         free_memory(cast(Vec::self.items.*, *void));
-        free_memory(cast(self, *void));
     }
 
-    pub resize: fnc(self, const new_cap: i64) -> Bool {
-        var status = #VEC_FAIL();
+    resize: fnc(self, const new_cap: i64) {
         const new_size = sizeof(*void) * new_cap;
         const original_size = sizeof(Vec::self.items.*);
-        const items: **void = realloc_memory(cast(Vec::self.items.*, *void), original_size, new_size);
-        if items {
-            debug("items", #current_func(), #near_line(), "reallocated items");
-            Vec::self.items = items;
-            Vec::self.cap = new_cap;
-            status = #VEC_SUCC();
-        }
 
-        return status;
-    }
-
-    increm_total: fnc(self) -> i64 {
-        Vec::self.total = Vec::self.total.* + 1:i64;
-        return Vec::self.total.*;
-    }
-
-    pub push: fnc(self, const new_item: *void) -> Bool {
-        var status = #VEC_FAIL();
-        if (Vec::self.cap.*) == (Vec::self.total.*) {
-            debug(new_item, #current_func(), #near_line(), "pushing");
-
-            status = Vec::self.resize(Vec::self.cap.* * 2:i64);
-            if status != #VEC_FAIL() {
-                Vec::self.items.*[Vec::self.increm_total()] = new_item;
-            }
-        } else {
-            Vec::self.items.*[Vec::self.increm_total()] = new_item;
-            status = #VEC_SUCC();
-        }
-
-        return status;
-    }
-
-    pub request: fnc(self, const idx: i64) -> *void {
-        var read = CNullptr:*void;
-        if (idx >= 0:i64) and (idx <= Vec::self.total.*) {
-            read = Vec::self.items.*[idx].*;
-        }
-
-        return read;
+        //const new_items: **void = realloc_memory(cast(Vec::self.items.*, *void), original_size, new_size);
     }
 }
-
