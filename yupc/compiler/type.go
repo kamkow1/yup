@@ -453,7 +453,8 @@ func (v *AstVisitor) VisitMethodCallExpr(ctx *parser.MethodCallExprContext) any 
 
 	var valueArgs []llvm.Value
 	if hasToPassSelf {
-		valueArgs = append(valueArgs, strct)
+		selfParamType := method.Params()[0].Type()
+		valueArgs = append(valueArgs, CastWithTempAlloca(strct, selfParamType))
 	}
 
 	for _, arg := range args {
